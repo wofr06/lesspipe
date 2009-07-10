@@ -388,18 +388,29 @@ isrpm () {
     fi
     # setup $b as a batch file containing "$b.out"
     typeset b
+# nasty hack to make rpm inspection work on MacOSX (and other BSD based systems)
+#ifdef broken_cpio
     b=$(nexttmp -d)
-    echo "$b.out" > "$b"
-    # to support older versions of cpio the --to-stdout option is not used here
-    #rpm2cpio "$1"|cpio -i --quiet --rename-batch-file "$b" "$2"
-    #cat "$b.out"
     rpm2cpio "$1"|pax -rw "$2" $b
     cat "$b/$2"
+#else
+    b=$(nexttmp)
+    echo "$b.out" > "$b"
+    # to support older versions of cpio the --to-stdout option is not used here
+    rpm2cpio "$1"|cpio -i --quiet --rename-batch-file "$b" "$2"
+    cat "$b.out"
+#endif
   elif cmd_exist rpmunpack && cmd_exist cpio; then
+#ifdef broken_cpio
+    b=$(nexttmp -d)
+    cat "$1" | rpmunpack | gzip -cd |pax -rw "$2" $b
+    cat "$b/$2"
+#else
     # rpmunpack will write to stdout if it gets file from stdin
     # extract file $2 from archive $1, assume that cpio is sufficiently new
     # (option --to-stdout existing) if rpmunpack is installed
     cat "$1" | rpmunpack | gzip -cd | cpio -i --quiet --to-stdout "$2"
+#endif
   fi
 }
 

@@ -376,4 +376,6 @@ lzip		N
 xz		N
 7za		N
 pstotext	Y	# pstotext is better than the fallback ps2ascii
+### please change to Y on MacOSX (and other BSD systems?)
+broken_cpio	N       # this seems to be needed on MacOSX for rpm inspection
 

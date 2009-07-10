@@ -302,13 +302,11 @@ isrpm () {
     fi
     # setup $b as a batch file containing "$b.out"
     typeset b
-    b=$(nexttmp -d)
+    b=$(nexttmp)
     echo "$b.out" > "$b"
     # to support older versions of cpio the --to-stdout option is not used here
-    #rpm2cpio "$1"|cpio -i --quiet --rename-batch-file "$b" "$2"
-    #cat "$b.out"
-    rpm2cpio "$1"|pax -rw "$2" $b
-    cat "$b/$2"
+    rpm2cpio "$1"|cpio -i --quiet --rename-batch-file "$b" "$2"
+    cat "$b.out"
   elif cmd_exist rpmunpack && cmd_exist cpio; then
     # rpmunpack will write to stdout if it gets file from stdin
     # extract file $2 from archive $1, assume that cpio is sufficiently new
