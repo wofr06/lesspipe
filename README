@@ -330,7 +330,7 @@ less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/src/file.c > file.c
 
  Files with binary contents can be extracted as well:
 
-less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:: > file-3.27.tar.gz
+less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:: > file-4.26.tar.gz
 
  Here the two colons at the end of the argument are required to suppress the
  unzipping of the resulting file and to extract the tar file instead of

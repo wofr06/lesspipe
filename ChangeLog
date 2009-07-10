@@ -1,6 +1,15 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+trunk in SVN
+- fixing the call of mktemp on MacOS (reported by Peter Kostka and Martin Otte)
+- detect helper programs at runtime (suggested by David Leverton, Petr Uzel)
+- add support for xz compression (Mathieu Bouillaguet)
+- more stringent tests for gzip compression
+- changes in rpm processing to better support MacOSX and BSD based systems
+- introduce --fixed in configure to statically control lesspipe generation 
+- improved generation of Makefile
+- calling eval `./lesspipe.sh` will set the ENV variable LESSOPEN properly
 Version 1.60 Dec 01, 2008
 - major restructuring of code, support for even more file types (Jim Pryor)
   - using a temp dir and mktemp for creating temporary files
