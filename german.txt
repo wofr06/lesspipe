@@ -1,0 +1,287 @@
+Artikel in Linux-Magazin 1/2001 Seiten 172-174
+==============================================
+(nur die englische Übersetzung english.txt wird von mir aktualisiert) 
+
+Mehr betrachten mit less
+
+Wer kennt nicht das Problem: Soeben wurde ein File aus dem Internet
+heruntergeladen, das ein vielversprechendes Programm enthalten soll. Doch
+bevor man an das Auspacken und Installieren geht, möchte man vielleicht
+erst einmal das README lesen oder eine zugehörige Manpage betrachten. Doch
+wie war das gleich mit dem Extrahieren von Files? Das tar Kommando hat man
+ja meist im Griff, zip Dateien klappen auch noch mit Nachdenken. Doch wie
+in aller Welt bekomme ich ein einzelnes File aus einer RPM-Datei? Richtig,
+da gab es ja noch den Midnight Commander und ähnliche Programme, zumindest
+wenn man unter Linux arbeitet. Doch was macht man auf anderen UNIX-Plattformen?
+In der Regel ist dort nichts Vergleichbares installiert. Und wie betrachtet
+man eine Manpage, die nicht in MANPATH enthalten ist? Für all diese Fragen
+gibt es natürlich Lösungen, aber in vielen Fällen sind UNIX-Benutzer bei
+solchen Problemen überfordert. Unter UNIX fällt einem als Filebetrachter
+sofort less [1], die bessere Alternative zu more, ein. Und da less in Gestalt
+der Umgebungsvariablen LESSOPEN durch externe Filter erweitert werden kann,
+ist less als extrem flexibler Browser konfigurierbar. Einige
+Linux-Distributionen legen bereits ein Skript lesspipe.sh bei, das zur
+Leistungssteigerung von less beiträgt. 
+
+In diesem Artikel soll ein Inputfilter für less vorgestellt werden, der
+eine Vielzahl gängiger Fileformate beherrscht und relativ leicht
+erweiterbar ist. Als Skriptsprache wurde eine Korn-shell kompatible
+Sprache (ksh, bash, zsh) gewählt, da das Vorhandensein der Shell
+immer gewährleistet ist und in den meisten Fällen vergleichsweise wenige
+Systemressourcen in Anspruch genommen werden. Ansonsten wäre die
+Realisierung des gleichen Konzeptes etwa in perl an vielen Stellen
+einfacher. 
+
+Dem vorzustellenden Skript lesspipe.sh liegen zwei Ideen zugrunde. Die
+Erkennung des Fileformats erfolgt nicht über die Fileendung, diese
+Methode aus der DOS-Welt ist fehleranfällig und hat einen hohen
+Pflegeaufwand. Für die Fileformaterkennung unter UNIX ist der Befehl file
+gut geeignet, aktualisierte Formatbeschreibungen sind zudem jederzeit in
+der aktuellen file Version zu finden [2]. Die zweite Idee besteht darin, dem
+lesspipe eine Hierarchie von Filenamen übergeben zu können, um auch
+einzelne Files aus Archiven zu betrachten. Da lesspipe.sh aber nur ein
+Argument übergeben werden kann, wird die hierarchische Liste von Filenamen
+durch ein spezielles Trennzeichen verbunden. Als Zeichen wurde der Doppelpunkt
+gewählt, welcher selten genug in Filenamen vorkommt.  Auf jeder Stufe des
+File-Extrahierens wird der Filetyp bestimmt. Damit wird garantiert, daß auch
+auf dem untersten Niveau noch eine zum Filetyp passende Anzeige erfolgt. 
+
+Das Betrachten einer man-Page in einem tar Archiv, welches seinerseits in
+einem RPM Paket steckt, könnte in folgenden Schritten erfolgen:
+
+less file-3.27-43.i386.spm
+
+gibt folgenden Output:
+...
+SuSE series: a
+-rw-r--r--   1 root     root        12953 Feb  3 11:45 file-3.27.dif
+-rw-r--r--   1 root     root       123541 Jul  6  1999 file-3.27.tar.gz
+-rw-r--r--   1 root     root         3398 Mar 25 07:31 file.spec
+
+less file-3.27-43.i386.spm:file-3.27.tar.gz
+
+liefert u.a.:
+...
+-rw-rw-r-- christos/christos  8740 1999-02-14 18:16 file-3.27/file.c
+-rw-rw-r-- christos/christos  4886 1999-02-14 18:16 file-3.27/file.h
+-rw-rw-r-- christos/christos 13428 1999-02-14 18:16 file-3.27/file.man
+...
+
+less file-3.27-43.i386.spm:file-3.27.tar.gz:file-3.27/file.man
+
+liefert dann das gewünschte Resultat, die Anzeige von file.man als Manpage.
+Will man stattdessen die nroff Quelle sehen, hängt man einen Doppelpunkt an.
+
+less file-3.27-43.i386.spm:file-3.27.tar.gz:file-3.27/file.man:
+
+Auch das Extrahieren einzelner Files aus dem Archiv ist möglich, etwa mit
+
+less file-3.27-43.i386.spm:file-3.27.tar.gz:file-3.27/file.c > file.c
+
+Wollte man stattdessen file.man in ein File umlenken, macht es sicher mehr
+Sinn, die nroff Quelle als den formatierten Output abzuspeichern. Auch in
+diesem Fall sollte also ein Doppelpunkt angehängt werden.
+
+Wenn man mit dem tar File file-3.27.tar.gz gleichermaßen verfährt, erhält man
+ein unkomprimiertes tar File, da eine eventuell mögliche Dekompression immer
+erfolgt. Die Dekomprimierung ist im Normalfall auch wünschenswert. Wenn man 
+aber zum Beispiel das im RPM enthaltene File file-3.27.tar.gz extrahieren
+will, stört die Dekompression. Durch Anfügen eines weiteren Doppelpunktes
+bleibt auch die komprimierte Datei intakt, indem man z.B. schreibt:
+
+less file-3.27-43.i386.spm:file-3.27.tar.gz:: > file-3.27.tar.gz
+
+Das (etwas vereinfachte) Skript lesspipe.sh ist in Listing 1 abgedruckt,
+eine aktuelle und komplette Version, die bis zur Rekursionstiefe 6 geht
+und weitere Filetypen berücksichtigt, ist unter [3] zu finden. 
+
+In einigen wenigen Fällen erkennt der File-Befehl den falschen Typ
+(insbesondere nroff-Format), dann kann man eine ungefilterte Ansicht durch
+nachgestellten Doppelpunkt bei der Fileangabe erzwingen. Dann erfolgt die
+Ausgabe des Files mit dem Befehl cat.
+
+Eine Erweiterung des Skripts um zusätzliche Fileformate ist relativ leicht
+möglich, Im einfachsten Fall hat man für neue Formate in die Funktion isfinal
+nach dem Muster aus Zeilen 125-127 Befehle einzufügen, die auf STDOUT
+schreiben. Handelt es sich um ein neues Kompressionsformat, wird man in der
+Funktion get_cmd neue Befehle analog zu den Zeilen 64-65 einfügen müssen.
+
+Etwas aufwendiger wird es mit einem neuen Archivformat. Das Anzeigen des
+Archivinhaltes geschieht in der Funktion isfinal (siehe z.B. Zeilen 118-120),
+während die Extraktion von Files aus dem Archiv in get_cmd nach dem Muster
+in Zeilen 74-75 festzulegen ist. 
+
+Damit wäre eigentlich die Aufgabe erledigt, beliebige Fileformate
+zu erkennen und Informationen aus diesen Files gefiltert anzuzeigen. Wie
+man sowohl an der Benutzung von lesspipe.sh als auch an der häufigen
+Benutzung von Pipes in der Funktion show sieht, müssen die Filter von
+STDIN lesen und auf STDOUT schreiben können. Da einige Programme das aber
+von Haus aus nicht können, muß ein Umweg über temporäre Files gemacht
+werden. Wo das erforderlich war, wurden neue Funktionen definiert. Sollte
+ein solcher Fall neu implementiert werden müssen, kann man sich an der
+Funktion iszip (Zeilen 84-91) oder isrpm (Zeilen 93-103) orientieren.
+
+Die Funktion lesspipe.sh kann man z.B. nach /usr/local/bin kopieren. Um
+die damit erweiterte Funktionalität von less nutzen zu können, setzt man
+in sh-ähnlichen Shells (sh, ksh, zsh, bash)
+
+LESSOPEN ="|/usr/local/bin/lesspipe.sh %s"; export LESSOPEN
+
+In der csh und tcsh schreibt man stattdessen
+
+setenv LESSOPEN "|/usr/local/bin/lesspipe.sh %s"
+
+Dieses Skript lesspipe.sh als Erweiterung von less läuft beim Deutschen
+Elektronensynchrotron seit mehr als 3 Jahren auf einer Vielzahl
+verschiedener UNIX-Plattformen. 
+
+[1] http://www.greenwoodsoftware.com/less/
+[2] ftp://ftp.astron.com/pub/file
+[3] http://www.ifh.de/~friebel/unix/lesspipe.html
+
+Listing 1
+=========
+
+     1	#!/bin/bash
+     2	#==================================================================
+     3	# lesspipe.sh, a preprocessor for less
+     4	# Author:  Wolfgang Friebel, DESY
+     5	#==================================================================
+     6	tarcmd=gtar;
+     7	filecmd='file -L';		# file (recommended file-3.27 or better)
+     8	sep=:				# file name separator
+     9	altsep==			# alternate separator character
+    10	if [[ -f "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
+    11	  sep=$altsep
+    12	fi
+    13	tmp=/tmp/.lesspipe.$$		# temp file name
+    14	trap 'rm -f $tmp $tmp.fin $tmp. $tmp.. $tmp.1' 0
+    15	trap PIPE
+    16	
+    17	show () {
+    18	  file1=${1%%$sep*}
+    19	  rest1=${1#$file1}
+    20	  rest11=${rest1#$sep}
+    21	  file2=${rest11%%$sep*}
+    22	  rest2=${rest11#$file2}
+    23	  rest11=$rest1
+    24	  if [[ $# = 1 ]]; then
+    25	    type=`$filecmd "$file1" | cut -d : -f 2-`
+    26	    get_cmd "$type" "$file1" $rest1
+    27	    if [[ "$cmd" != "" ]]; then
+    28	      show "-$rest1" "$cmd"
+    29	    else
+    30	      isfinal "$type" "$file1" $rest11
+    31	    fi
+    32	  elif [[ $# = 2 ]]; then
+    33	    type=`$2 | $filecmd - | cut -d : -f 2-`
+    34	    get_cmd "$type" "$file1" $rest1
+    35	    if [[ "$cmd" != "" ]]; then
+    36	      show "-$rest1" "$2" "$cmd"
+    37	    else
+    38	      $2 | isfinal "$type" - $rest11
+    39	    fi
+    40	  elif [[ $# = 3 ]]; then
+    41	    type=`$2 | $3 | $filecmd - | cut -d : -f 2-`
+    42	    get_cmd "$type" "$file1" $rest1
+    43	    if [[ "$cmd" != "" ]]; then
+    44	      show "-$rest1" "$2" "$3" "$cmd"
+    45	    else
+    46	      $2 | $3 | isfinal "$type" - $rest11
+    47	    fi
+    48	  elif [[ $# = 4 ]]; then
+    49	    type=`$2 | $3 | $4 | $filecmd - | cut -d : -f 2-`
+    50	    get_cmd "$type" "$file1" $rest1
+    51	    if [[ "$cmd" != "" ]]; then
+    52	      echo "$0: Too many levels of encapsulation"
+    53	    else
+    54	      $2 | $3 | $4 | isfinal "$type" - $rest11
+    55	    fi
+    56	  fi
+    57	}
+    58	
+    59	get_cmd () {
+    60	  cmd=
+    61	  if [[ "$1" = *bzip* || "$1" = *compress* ]]; then
+    62	    if [[ "$3" = $sep$sep ]]; then
+    63	      return
+    64	    elif [[ "$1" = *bzip* ]]; then
+    65	      cmd="bzip2 -c -d $2"
+    66	    else
+    67	      cmd="gzip -c -d $2"
+    68	    fi
+    69	    return
+    70	  fi
+    71	    
+    72	  rest1=$rest2
+    73	  if [[ "$file2" != "" ]]; then
+    74	    if [[ "$1" = *tar* ]]; then
+    75	      cmd="$tarcmd Oxf $2 $file2"
+    76	    elif [[ "$1" = *RPM* ]]; then
+    77	      cmd="isrpm $2 $file2"
+    78	    elif [[ "$1" = *Zip* ]]; then
+    79	      cmd="iszip $2 $file2"
+    80	    fi
+    81	  fi
+    82	}
+    83	
+    84	iszip () {
+    85	  if [[ "$1" = - ]]; then
+    86	    rm -f $tmp
+    87	    cat > $tmp
+    88	    set $tmp "$2"
+    89	  fi
+    90	  unzip -avp "$1" "$2"
+    91	}
+    92	
+    93	isrpm () {
+    94	  if [[ "$1" = - ]]; then
+    95	    rm -f $tmp
+    96	    cat > $tmp
+    97	    set $tmp "$2"
+    98	  fi
+    99	  echo $tmp.1 > $tmp.
+   100	  rm -f $tmp.1
+   101	  rpm2cpio $1|cpio -i --quiet --rename-batch-file $tmp. ${2##/}
+   102	  cat $tmp.1
+   103	}
+   104	
+   105	isfinal() {
+   106	  if [[ "$3" = $sep || "$3" = $sep$sep ]]; then
+   107	    cat $2
+   108	    return
+   109	  elif [[ "$2" = - && ( "$1" = *RPM* || "$1" = *Zip* ) ]]; then
+   110	    cat > $tmp.fin
+   111	    set "$1" $tmp.fin
+   112	  fi
+   113	  if [[ "$1" = *No\ such* ]]; then
+   114	    return
+   115	  elif [[ "$1" = *directory* ]]; then
+   116	  echo "==> This is a directory, showing the output of ls -lAL"
+   117	    ls -lAL "$2"
+   118	  elif [[ "$1" = *tar* ]]; then
+   119	  echo "==> use tar_file${sep}contained_file to view a file in the archive"
+   120	    $tarcmd tvf "$2"
+   121	  elif [[ "$1" = *RPM* ]]; then
+   122	  echo "==> use RPM_file${sep}contained_file to view a file in the RPM"
+   123	    rpm -p "$2" -qiv
+   124	    rpm2cpio $2|cpio -i -tv --quiet
+   125	  elif [[ "$1" = *roff* ]]; then
+   126	  echo "==> append $sep to filename to view the nroff source"
+   127	    groff -s -p -t -e -Tascii -mandoc ${2#-}
+   128	  elif [[ "$1" = *executable* ]]; then
+   129	  echo "==> append $sep to filename to view the binary file"
+   130	    strings ${2#-}
+   131	  elif [[ "$1" = *Zip* ]]; then
+   132	  echo "==> use zip_file${sep}contained_file to view a file in the archive"
+   133	    unzip -lv "$2"
+   134	  elif [[ "$1" = *HTML* ]]; then
+   135	  echo "==> append $sep to filename to view the HTML source"
+   136	    LESSOPEN=
+   137	    w3m -dump -X -T text/html "$2"
+   138	  elif [[ "$2" = - ]]; then
+   139	    cat
+   140	  fi
+   141	}
+   142	
+   143	show "$a"

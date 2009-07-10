@@ -1,0 +1,156 @@
+# This is an experimental patch to add bsdtar support for lesspipe
+# code contributed by Jim Pryor
+# this patch is meant to cover cases where the relevant direct handlers are
+# not installed on the system. In these cases bsdtar provides that functionality
+
+--- lesspipe.sh.in	2008-12-01 10:14:36.000000000 +0100
++++ lesspipe.sh.in.bsdtar	2008-12-01 10:49:20.000000000 +0100
+@@ -30,10 +30,21 @@
+ #===============================================================================
+ setopt KSH_ARRAYS SH_WORD_SPLIT
+ set +o noclobber
++# BSD tar can extract cpio,zip,jar,and ISO 9660 cdrom images
++# TODO: check what minimum version is required for those features
++# TODO: find out what variants of tar are installed (tar could be
++#       a system tar with few features or the feature rich bsdtar)
++#ifdef tar
++bsdtarcmd=tar
++#endif
+ tarcmd=gtar
+ if [[ `tar --version 2>&1` = *GNU* ]]; then
+   tarcmd=tar
++  bsdtarcmd=
+ fi
++#ifdef bsdtar
++bsdtarcmd=bsdtar
++#endif
+ #ifdef file
+ filecmd='file';
+ #endif
+@@ -261,14 +272,26 @@
+ #elif rpmunpack,cpio
+     elif [[ "$1" = *RPM* ]]; then
+       set -A cmd isrpm "$2" "$file2"
++#elif rpm2cpio
++    elif [[ "$1" = *RPM* && -n "$bsdtarcmd" ]]; then
++      set -A cmd isrpm "$2" "$file2"
++#elif rpmunpack
++    elif [[ "$1" = *RPM* && -n "$bsdtarcmd" ]]; then
++      set -A cmd isrpm "$2" "$file2"
+ #endif 
+ #ifdef fastjar
+     elif [[ "$1" = *Jar\ archive* ]]; then
+       set -A cmd isjar "$2" "$file2"
++#else
++    elif [[ "$1" = *Jar\ archive* && -n "$bsdtarcmd" ]]; then
++      set -A cmd "$bsdtarcmd" -xOf "$2" "$file2"
+ #endif
+ #ifdef unzip
+     elif [[ "$1" = *Zip* || "$1" = *ZIP* ]]; then
+       set -A cmd istemp "unzip -avp" "$2" "$file2"
++#else
++    elif [[ ("$1" = *Zip* || "$1" = *ZIP*) && -n "$bsdtarcmd" ]]; then
++      set -A cmd "$bsdtarcmd" -xOf "$2" "$file2"
+ #endif 
+ #ifdef unrar
+     elif [[ "$1" = *RAR\ archive* ]]; then
+@@ -290,6 +313,9 @@
+ #ifdef isoinfo
+     elif [[ "$1" = *ISO\ 9660* ]]; then
+       set -A cmd isoinfo "-i$2" "-x$file2"
++#else
++    elif [[ "$1" = *ISO\ 9660* && -n "$bsdtarcmd" ]]; then
++      set -A cmd "$bsdtarcmd" -xOf "$2" "$file2"
+ #endif
+     fi
+     if [[ "$cmd" != "" ]]; then
+@@ -385,6 +411,22 @@
+   # (option --to-stdout existing) if rpmunpack is installed
+   cat "$1" | rpmunpack | gzip -cd | cpio -i --quiet --to-stdout "$2"
+ }
++#elif rpm2cpio
++isrpm () {
++  typeset t
++  if [[ "$1" = - ]]; then
++    t=$(nexttmp)
++    cat > "$t"
++    set "$t" "$2"
++  fi
++  rpm2cpio "$1" | $bsdtarcmd -xOf - "$2"
++}
++#elif rpmunpack
++isrpm () {
++  # rpmunpack will write to stdout if it gets file from stdin
++  # extract file $2 from archive $1
++  cat "$1" | rpmunpack | $bsdtarcmd -xOf - "$2"
++}
+ #endif
+ 
+ #ifdef fastjar
+@@ -490,6 +532,22 @@
+     echo "==> use RPM_file${sep}contained_file to view a file in the RPM"
+     echo "================================= Content ======================================"
+     cat "$2" | rpmunpack | gzip -cd | cpio -i -tv --quiet
++#elif rpm,rpm2cpio
++  elif [[ "$1" = *RPM* && -n "$bsdtarcmd" ]]; then
++    echo "==> use RPM_file${sep}contained_file to view a file in the RPM"
++    istemp "rpm -qivp" "$2"
++    echo "================================= Content ======================================"
++	istemp rpm2cpio "$2" | $bsdtarcmd -tf -
++#elif rpm2cpio
++  elif [[ "$1" = *RPM* && -n "$bsdtarcmd" ]]; then
++    echo "==> use RPM_file${sep}contained_file to view a file in the RPM"
++    echo "================================= Content ======================================"
++	istemp rpm2cpio "$2" | $bsdtarcmd -tf -
++#elif rpmunpack
++  elif [[ "$1" = *RPM* && -n "$bsdtarcmd" ]]; then
++    echo "==> use RPM_file${sep}contained_file to view a file in the RPM"
++    echo "================================= Content ======================================"
++    cat "$2" | rpmunpack | $bsdtarcmd -tf -
+ #endif
+ #ifdef groff
+   elif [[ "$1" = *roff* ]]; then
+@@ -562,11 +620,19 @@
+   elif [[ "$1" = *Jar\ archive* ]]; then
+     echo "==> use jar_file${sep}contained_file to view a file in the archive"
+     nodash "fastjar -tf" "$2"
++#else
++  elif [[ "$1" = *Jar\ archive* && -n "$bsdtarcmd" ]]; then
++    echo "==> use jar_file${sep}contained_file to view a file in the archive"
++    $bsdtarcmd -tf "$2"
+ #endif
+ #ifdef unzip
+   elif [[ "$1" = *Zip* || "$1" = *ZIP* ]]; then
+     echo "==> use zip_file${sep}contained_file to view a file in the archive"
+     istemp "unzip -lv" "$2"
++#else
++  elif [[ ("$1" = *Zip* || "$1" = *ZIP*) && -n "$bsdtarcmd" ]]; then
++    echo "==> use zip_file${sep}contained_file to view a file in the archive"
++    $bsdtarcmd -tf "$2"
+ #endif
+ #ifdef unrar
+   elif [[ "$1" = *RAR\ archive* ]]; then
+@@ -664,6 +730,10 @@
+   elif [[ "$1" = *OpenDocument\ [CHMPST]* || "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]* ]]; then
+     echo "==> append $sep to filename to view the OpenOffice or OpenDocument source"
+     istemp sxw2txt "$2"
++#elif o3tohtml
++  elif [[ "$PARSEHTML" = yes && -n "$bsdtarcmd" && ("$1" = *OpenDocument\ [CHMPST]* || "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]*) ]]; then
++    echo "==> append $sep to filename to view the OpenOffice or OpenDocument source"
++    $bsdtarcmd -xOf "$2" content.xml | o3tohtml | parsehtml -
+ #endif
+ #ifdef isoinfo
+   elif [[ "$1" = *ISO\ 9660* ]]; then
+@@ -674,6 +744,12 @@
+       echo "================================= Content ======================================"
+       isoinfo -lR$joliet -i "$2"
+     fi
++#else
++  elif [[ "$1" = *ISO\ 9660* && -n "$bsdtarcmd" ]]; then
++    if [[ "$2" != - ]]; then
++      echo "==> append $sep to filename to view the binary data"
++      $bsdtarcmd -tf "$2"
++    fi
+ #endif 
+ #ifdef identify
+   elif [[ "$1" = *image\ data*  || "$1" = *image\ text* || "$1" = *JPEG\ file* || "$1" = *JPG\ file* ]]; then

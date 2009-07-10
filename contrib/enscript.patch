@@ -1,0 +1,23 @@
+# code contributed by Jay Levitt
+# please see the README, why enscript might be less useful than it looks (W.F.)
+
+--- lesspipe.sh.in	2008-12-01 11:32:14.000000000 +0100
++++ lesspipe.sh.in.enscript	2008-12-01 11:34:41.000000000 +0100
+@@ -451,7 +451,7 @@
+       lang=${lang%%-l }
+       dir=${LESSOPEN#\|}
+       dir=${dir%%lesspipe.sh*\%s}
+-      ${dir}code2color $PPID ${in_file:+"$in_file"} $lang "$2"
++      echo enscript ${in_file:+"$in_file"} --color --language=ansi --pretty-print=$lang -o - "$2"
+       if [[ $? = 0 ]]; then
+         return
+       fi
+@@ -731,7 +731,7 @@
+   if [[ "$1" = *plain\ text* ]]; then
+     dir=${LESSOPEN#\|}
+     dir=${dir%%lesspipe.sh*\%s}
+-    ${dir}code2color $PPID ${in_file:+"$in_file"} "$2"
++    enscript ${in_file:+"$in_file"} --color --language=ansi --pretty-print -o -  "$2"
+     if [[ $? = 0 ]]; then
+       return
+     fi

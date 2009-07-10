@@ -1,0 +1,82 @@
+# code fragments that are not used any longer (floppy disk handling)
+# or that are somewhat exotic and therefore not in the distributed version
+
+--- lesspipe.sh.in	2008-12-01 10:14:36.000000000 +0100
++++ lesspipe.sh.in.unused	2008-12-01 09:56:54.000000000 +0100
+@@ -291,6 +291,11 @@
+     elif [[ "$1" = *ISO\ 9660* ]]; then
+       set -A cmd isoinfo "-i$2" "-x$file2"
+ #endif
++#ifdef mdir,mtype,mtoolstest
++#    elif [[ "$1" = *x86\ boot\ sector* ]]; then
++#      set -A cmd isfloppy "$2" "$file2"
++#      filen="$file2"
++#endif
+     fi
+     if [[ "$cmd" != "" ]]; then
+       filen="$file2"
+@@ -436,6 +441,27 @@
+ PARSEHTML=no
+ #endif
+ 
++#ifdef mdir,mtype,mtoolstest
++# isfloppy () {
++## get the device to drive mapping
++#  mtoolstest |
++#  while read i1 i2
++#  do
++#    if [[ "$i1" = *$1* ]]; then
++#      if [[ "$2" = "" ]]; then
++#	mdir $drive
++#      else
++#	mtype $drive"$2"
++#      fi
++#      return
++#    elif [[ "$i1" = drive ]]; then
++#      drive=$i2
++#    fi
++#  done
++# }
++#
++#endif
++
+ isfinal() {
+   typeset t
+   if [[ "$3" = $sep$sep ]]; then
+@@ -603,6 +629,11 @@
+     echo "==> use cab_file${sep}contained_file to view a file in the cabinet"
+     istemp "cabextract -l" "$2"
+ #endif
++#ifdef mdir,mtype,mtoolstest
++#  elif [[ "$1" = *x86\ boot\ sector* ]]; then
++#    echo "==> use $2${sep}contained_file to view a file on the floppy"
++#    isfloppy "$2"
++#endif
+ #ifdef dvi2tty
+   elif [[ "$1" = *\ DVI* ]]; then
+     echo "==> append $sep to filename to view the binary DVI file"
+@@ -680,6 +711,24 @@
+     echo "==> append $sep to filename to view the binary data"
+     identify -verbose "$2"
+ #endif 
++##ifdef jpeg2ascii,convert
++## get jpeg2ascii (CVS) from http://dyne.org/cgi-bin/cvsweb.cgi/jpeg2ascii/
++# very experimental attempt to display images using ASCII art (do not use)
++#  elif [[ "$1" = *image\ data*  || "$1" = *image\ text* || "$1" = *JPEG\ file* || "$1" = *JPG\ file* ]]; then
++#    convert -colorspace gray -geometry 100%x50% -contrast -geometry 320x1024 "$2" /tmp/.lesspipe1$$.jpg
++#    jpeg2ascii < /tmp/.lesspipe$$.jpg 2> /dev/null
++#    rm  /tmp/.lesspipe$$.jpg /tmp/.lesspipe1$$.jpg
++##elif pbmtoascii,convert
++# ASCII Art conversion using netbpm
++# elif [[ "$1" = *image\ data*  || "$1" = *image\ text* || "$1" = *JPEG\ file*  || "$1" = *JPG\ file* ]]; then
++#    convert -contrast -geometry 80x2048 "$2" /tmp/.lesspipe$$.pbm
++#    pbmtoascii  /tmp/.lesspipe$$.pbm 2> /dev/null
++#    rm  /tmp/.lesspipe$$.pbm
++##endif
++##ifdef mplayer
++#  elif [[ "$1" = *MPEG\ system\ stream*  || "$1" = *RIFF* || "$1" = *AVI* ]]; then
++#    mplayer -vo aa -aadriver slang -aanodim -aanobold -aacontrast 50 -aabright 1  "$2" 2> /dev/null
++##endif
+ #ifdef id3v2
+   elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]]; then
+     echo "==> append $sep to filename to view the binary data"

@@ -1,0 +1,44 @@
+# view a file with spaces in the name
+less    testok/a\ b
+less    testok/symlink
+# view the file testok/a\ b.gz contained in the gzipped tar archive
+less    testok/a\ b.tgz:testok/a\ text.gz
+# view testok/a\<b in testok/a\<b.zip which is also in the tar archive
+less    testok/a\ b.tgz:testok/a\<b.zip:testok/a\<b
+less    testok/a\ b.tgz:testok/a\>b.bz2
+# the same, try to switch on syntax highlighting (.ada)
+less -r testok/a\ b.tgz:testok/a\ text.gz:.ada
+# view the gzipped file testok/a::b::c::d.gz assuming it is an ada file 
+less -r testok/a\ b.tgz:testok/a::b::c::d.gz:ada
+less    testok/a\ b.tgz:testok/a\`data.gz
+less    testok/a\ b.tgz:testok/a=ar.gz:a=b
+less    testok/a\ b.tgz:testok/a\'html.gz     #ignore error
+less    testok/a\ b.tgz:testok/a\"doc.gz      #ignore error
+less    testok/a\#rtf                         #ignore error
+less    testok/a\ b.tgz:testok/a\&pdf.gz      #ignore error
+less    testok/a\ b.tgz:testok/a\;dvi.gz      #ignore error
+less    testok/a\ b.tgz:testok/a\(ps.gz       #ignore error
+less    testok/a\ b.tgz:testok/a\)nroff.gz
+# should not be tested, can make the file command hang
+#less    /dev/fd0:floppy.txt                   #ignore error
+less -f testok/perlstorable.gz                #ignore error
+less    testok/iso.image:/ISO.TXT\;1          #ignore error
+less    testok/test.rpm:test.txt              #ignore error
+less    testok/cabinet.cab:a\ text.gz         #ignore error
+less    testok/test.deb:./test.txt            #ignore error
+less    testok/a\ b.tgz:testok/a\#b.sxw       #ignore error
+less    testok/a\ b.tgz:testok/a\~b.odt       #ignore error
+less    testok/a\|b.7za:testok/a\|b.txt       #ignore error
+less    testok/onefile.7za                    #ignore error
+less    testok/a\ b.tgz:testok/onefile.7za    #ignore error
+less    testok/a\ b.tgz:testok/a\|b.7za:testok/a\|b.txt #ignore error
+less    testok/test.rar:testok/a\ b           #ignore error
+less -f testok/test.utf16                     #ignore error
+less -f testok/test.mp3                       #ignore error
+less -f testok/id3v2.mp3                      #ignore error
+less -f testok/a\?b.gz
+less -f testok/a\[b.gz
+less -f testok/a\]b.gz
+less    testok/azip.tlz:a\$b.lz               #ignore error
+less -f testok/a\\b.lz                        #ignore error
+

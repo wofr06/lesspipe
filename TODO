@@ -1,0 +1,16 @@
+Man page install location
+=========================
+
+At the moment the man page will be installed only in the directory
+$PREFIX/share/man/man1 if it is existing. Needs to be more sophisticated.
+
+Recognition of correct file type
+================================
+
+The correct file type is not always recognized by using the 'file' command.
+This may be due to old versions of 'file'. The support for Openoffice files
+e.g. is not contained in 'magic files' from file-4.16 or older.
+In addition there are ambiguities, so that an UTF-16 file may be reported as
+MPEG ADTS, layer I, v1 file. This could be corrected by supplying a magic file
+tailored to the needs of lesspipe. Such a file could be provided.
+

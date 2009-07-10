@@ -1,0 +1,312 @@
+#!/usr/bin/env perl
+
+# sxw2txt -- Converts OpenOffice.org Writer files to plain text.
+# Copyright (C) 2004 Liam Morland
+# Copyright (C) 2006 Vincent Lefevre
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+# USA.
+#
+# Liam Morland <Liam@Morland.ca> <http://Liam.Morland.ca/>
+# 86A McDougall Road, Waterloo, Ontario, N2L 5C5, CANADA
+#
+# Changes by Vincent Lefevre <vincent@vinc17.org>.
+# 2006-03-21: Better #! line, typos, error messages output to stderr,
+#             better whitespace removal, clean execution of unzip (for
+#             filenames with special characters).
+# 2006-03-22: Use Archive::Zip, otherwise fallback to the unzip command.
+# 2006-03-26: Conversions from Symbol aka "Standard Symbols L" characters
+#             (in the private Unicode area U+F020..U+F0FF) into standard
+#             Unicode characters. I don't know whether this private area
+#             is used in a consistent way by OpenOffice, but IMHO, this
+#             conversion is better than nothing.
+
+use strict;
+use warnings;
+
+my ($proc) = '$Id: sxw2txt 11666 2006-03-26 22:16:17Z lefevre $'
+  =~ /^.Id: (\S+) / or die;
+
+# First argument is taken to be the input file. All other args are ignored.
+my $input_file = shift;
+
+# If we have a filename, try to get the content.xml from it,
+# otherwise print usage information.
+defined $input_file or $! = 1, die <<EOF;
+$proc: Converts OpenOffice.org Writer files to plain text.
+Usage: $proc input-file
+EOF
+
+my $zip = eval {
+  require Archive::Zip;
+  Archive::Zip->new();
+};
+
+if (defined $zip)
+  {
+    $zip->read($input_file)
+      and die "$proc: $input_file is unreadable or has an incorrect format\n";
+    $_ = $zip->contents('content.xml')
+      or die "$proc: can't extract content.xml from $input_file\n";
+  }
+else
+  {
+    my $pid = open UNZIP, "-|";
+    defined $pid or die "$proc: can't fork: $!\n";
+    unless ($pid)  # child
+      {
+        # It's probably better to get the possible error message from unzip,
+        # to know the reason of the failure (e.g. "Permission denied").
+        #open STDERR, '/dev/null';
+        exec 'unzip', '-p', $input_file, 'content.xml';
+        die "$proc: exec unzip failed: $!\n";
+      }
+    $_ = do { local $/; <UNZIP> };
+    close UNZIP or die "$proc: can't extract content.xml from $input_file\n";
+  }
+
+# Convert the OOo XML to text with a series of regex substitutions.
+s,\n+, ,g;
+
+# Tables are wrapped with [begin-table] and [end-table].
+# Rows and cells begin with [table-row] and [table-cell] respectively.
+s,<table:table( [^>]*)?>,\n\n[begin-table],g;
+s,</table:table>,\n[end-table],g;
+s,<table:table-cell( [^>]*)?>(<[^>]+>)*<text:p[^>]*>,\n[table cell],g;
+s,<table:table-row( [^>]*)?>,\n\n[table row],g;
+
+# OOo tabs are made into tab characters.
+s,<text:tab-stop/>,\t,g;
+
+# Each list item is given a '*' as a bullet.
+# Sorry, no fancy support for nested lists yet.
+s,<text:list-item><text:p[^>]*>,\n\n* ,g;
+
+# Skip two lines before each new paragraph.
+s,<text:p[^>]*>,\n\n,g;
+
+# Get rid of any remaining tags. Want to add support for tags not
+# handled above? Do it above this line.
+s,<[^>]*>,,g;
+
+# Convert common entities into the appropriate character.
+s,&lt;,<,g;
+s,&gt;,>,g;
+s,&apos;,',g;
+s,&quot;,",g;
+s,&amp;,&,g;
+
+# Convert "Standard Symbols L" characters into standard Unicode
+# characters. Note: I could have written
+#   binmode UNZIP, ":utf8";
+# just before reading UNZIP to use Unicode code points directly,
+# but this makes the substitutions very slow.
+my %symbol =
+  (
+   "\x{80}\x{A1}" => "!",
+   "\x{80}\x{A2}" => "\x{E2}\x{88}\x{80}",
+   "\x{80}\x{A3}" => "#",
+   "\x{80}\x{A4}" => "\x{E2}\x{88}\x{83}",
+   "\x{80}\x{A5}" => "%",
+   "\x{80}\x{A6}" => "&",
+   "\x{80}\x{A7}" => "\x{C9}\x{9C}",
+   "\x{80}\x{A8}" => "(",
+   "\x{80}\x{A9}" => ")",
+   "\x{80}\x{AA}" => "*",
+   "\x{80}\x{AB}" => "+",
+   "\x{80}\x{AC}" => ",",
+   "\x{80}\x{AD}" => "-",
+   "\x{80}\x{AE}" => ".",
+   "\x{80}\x{AF}" => "/",
+   "\x{80}\x{B0}" => "0",
+   "\x{80}\x{B1}" => "1",
+   "\x{80}\x{B2}" => "2",
+   "\x{80}\x{B3}" => "3",
+   "\x{80}\x{B4}" => "4",
+   "\x{80}\x{B5}" => "5",
+   "\x{80}\x{B6}" => "6",
+   "\x{80}\x{B7}" => "7",
+   "\x{80}\x{B8}" => "8",
+   "\x{80}\x{B9}" => "9",
+   "\x{80}\x{BA}" => ":",
+   "\x{80}\x{BB}" => ";",
+   "\x{80}\x{BC}" => "<",
+   "\x{80}\x{BD}" => "=",
+   "\x{80}\x{BE}" => ">",
+   "\x{80}\x{BF}" => "?",
+   "\x{81}\x{80}" => "\x{E2}\x{89}\x{85}",
+   "\x{81}\x{81}" => "\x{CE}\x{91}",
+   "\x{81}\x{82}" => "\x{CE}\x{92}",
+   "\x{81}\x{83}" => "\x{CE}\x{A7}",
+   "\x{81}\x{84}" => "\x{CE}\x{94}",
+   "\x{81}\x{85}" => "\x{CE}\x{95}",
+   "\x{81}\x{86}" => "\x{CE}\x{A6}",
+   "\x{81}\x{87}" => "\x{CE}\x{93}",
+   "\x{81}\x{88}" => "\x{CE}\x{97}",
+   "\x{81}\x{89}" => "\x{CE}\x{99}",
+   "\x{81}\x{8A}" => "\x{CF}\x{91}",
+   "\x{81}\x{8B}" => "\x{CE}\x{9A}",
+   "\x{81}\x{8C}" => "\x{CE}\x{9B}",
+   "\x{81}\x{8D}" => "\x{CE}\x{9C}",
+   "\x{81}\x{8E}" => "\x{CE}\x{9D}",
+   "\x{81}\x{8F}" => "\x{CE}\x{9F}",
+   "\x{81}\x{90}" => "\x{CE}\x{A0}",
+   "\x{81}\x{91}" => "\x{CE}\x{98}",
+   "\x{81}\x{92}" => "\x{CE}\x{A1}",
+   "\x{81}\x{93}" => "\x{CE}\x{A3}",
+   "\x{81}\x{94}" => "\x{CE}\x{A4}",
+   "\x{81}\x{95}" => "\x{CE}\x{A5}",
+   "\x{81}\x{96}" => "\x{CF}\x{82}",
+   "\x{81}\x{97}" => "\x{CE}\x{A9}",
+   "\x{81}\x{98}" => "\x{CE}\x{9E}",
+   "\x{81}\x{99}" => "\x{CE}\x{A8}",
+   "\x{81}\x{9A}" => "\x{CE}\x{96}",
+   "\x{81}\x{9B}" => "[",
+   "\x{81}\x{9C}" => "\x{E2}\x{88}\x{B4}",
+   "\x{81}\x{9D}" => "]",
+   "\x{81}\x{9E}" => "\x{E2}\x{8A}\x{A5}",
+   "\x{81}\x{9F}" => "_",
+   "\x{81}\x{A0}" => "\x{C2}\x{AF}",
+   "\x{81}\x{A1}" => "\x{CE}\x{B1}",
+   "\x{81}\x{A2}" => "\x{CE}\x{B2}",
+   "\x{81}\x{A3}" => "\x{CF}\x{87}",
+   "\x{81}\x{A4}" => "\x{CE}\x{B4}",
+   "\x{81}\x{A5}" => "\x{CE}\x{B5}",
+   "\x{81}\x{A6}" => "\x{CF}\x{95}",
+   "\x{81}\x{A7}" => "\x{CE}\x{B3}",
+   "\x{81}\x{A8}" => "\x{CE}\x{B7}",
+   "\x{81}\x{A9}" => "\x{CE}\x{B9}",
+   "\x{81}\x{AA}" => "\x{CF}\x{86}",
+   "\x{81}\x{AB}" => "\x{CE}\x{BA}",
+   "\x{81}\x{AC}" => "\x{CE}\x{BB}",
+   "\x{81}\x{AD}" => "\x{CE}\x{BC}",
+   "\x{81}\x{AE}" => "\x{CE}\x{BD}",
+   "\x{81}\x{AF}" => "\x{CE}\x{BF}",
+   "\x{81}\x{B0}" => "\x{CF}\x{80}",
+   "\x{81}\x{B1}" => "\x{CE}\x{B8}",
+   "\x{81}\x{B2}" => "\x{CF}\x{81}",
+   "\x{81}\x{B3}" => "\x{CF}\x{83}",
+   "\x{81}\x{B4}" => "\x{CF}\x{84}",
+   "\x{81}\x{B5}" => "\x{CF}\x{85}",
+   "\x{81}\x{B6}" => "\x{CF}\x{96}",
+   "\x{81}\x{B7}" => "\x{CF}\x{89}",
+   "\x{81}\x{B8}" => "\x{CE}\x{BE}",
+   "\x{81}\x{B9}" => "\x{CF}\x{88}",
+   "\x{81}\x{BA}" => "\x{CE}\x{B6}",
+   "\x{81}\x{BB}" => "{",
+   "\x{81}\x{BC}" => "|",
+   "\x{81}\x{BD}" => "}",
+   "\x{81}\x{BE}" => "~",
+   "\x{82}\x{A1}" => "\x{CF}\x{92}",
+   "\x{82}\x{A2}" => "\x{E2}\x{80}\x{B2}",
+   "\x{82}\x{A3}" => "\x{E2}\x{89}\x{A4}",
+   "\x{82}\x{A4}" => "/",
+   "\x{82}\x{A5}" => "\x{E2}\x{88}\x{9E}",
+   "\x{82}\x{A6}" => "f",
+   "\x{82}\x{A7}" => "\x{E2}\x{99}\x{A3}",
+   "\x{82}\x{A8}" => "\x{E2}\x{99}\x{A6}",
+   "\x{82}\x{A9}" => "\x{E2}\x{99}\x{A5}",
+   "\x{82}\x{AA}" => "\x{E2}\x{99}\x{A0}",
+   "\x{82}\x{AB}" => "\x{E2}\x{86}\x{94}",
+   "\x{82}\x{AC}" => "\x{E2}\x{86}\x{90}",
+   "\x{82}\x{AD}" => "\x{E2}\x{86}\x{91}",
+   "\x{82}\x{AE}" => "\x{E2}\x{86}\x{92}",
+   "\x{82}\x{AF}" => "\x{E2}\x{86}\x{93}",
+   "\x{82}\x{B0}" => "\x{C2}\x{B0}",
+   "\x{82}\x{B1}" => "\x{C2}\x{B1}",
+   "\x{82}\x{B2}" => "\x{E2}\x{80}\x{B3}",
+   "\x{82}\x{B3}" => "\x{E2}\x{89}\x{A5}",
+   "\x{82}\x{B4}" => "\x{C3}\x{97}",
+   "\x{82}\x{B5}" => "\x{E2}\x{88}\x{9D}",
+   "\x{82}\x{B6}" => "\x{E2}\x{88}\x{82}",
+   "\x{82}\x{B7}" => "\x{E2}\x{80}\x{A2}",
+   "\x{82}\x{B8}" => "\x{C3}\x{B7}",
+   "\x{82}\x{B9}" => "\x{E2}\x{89}\x{A0}",
+   "\x{82}\x{BA}" => "\x{E2}\x{89}\x{A1}",
+   "\x{82}\x{BB}" => "\x{E2}\x{89}\x{88}",
+   "\x{82}\x{BC}" => "\x{E2}\x{80}\x{A6}",
+   "\x{82}\x{BD}" => "|",
+   "\x{82}\x{BE}" => "\x{E2}\x{80}\x{94}",
+   "\x{82}\x{BF}" => "\x{E2}\x{86}\x{B5}",
+   "\x{83}\x{80}" => "\x{E2}\x{84}\x{B5}",
+   "\x{83}\x{81}" => "\x{E2}\x{84}\x{91}",
+   "\x{83}\x{82}" => "\x{E2}\x{84}\x{9C}",
+   "\x{83}\x{83}" => "\x{E2}\x{84}\x{98}",
+   "\x{83}\x{84}" => "\x{E2}\x{8A}\x{97}",
+   "\x{83}\x{85}" => "\x{E2}\x{8A}\x{95}",
+   "\x{83}\x{86}" => "\x{E2}\x{88}\x{85}",
+   "\x{83}\x{87}" => "\x{E2}\x{88}\x{A9}",
+   "\x{83}\x{88}" => "\x{E2}\x{88}\x{AA}",
+   "\x{83}\x{89}" => "\x{E2}\x{8A}\x{83}",
+   "\x{83}\x{8A}" => "\x{E2}\x{8A}\x{87}",
+   "\x{83}\x{8B}" => "\x{E2}\x{8A}\x{84}",
+   "\x{83}\x{8C}" => "\x{E2}\x{8A}\x{82}",
+   "\x{83}\x{8D}" => "\x{E2}\x{8A}\x{86}",
+   "\x{83}\x{8E}" => "\x{E2}\x{88}\x{88}",
+   "\x{83}\x{8F}" => "\x{E2}\x{88}\x{89}",
+   "\x{83}\x{90}" => "\x{E2}\x{88}\x{A0}",
+   "\x{83}\x{91}" => "\x{E2}\x{88}\x{87}",
+   "\x{83}\x{92}" => "\x{C2}\x{AE}",
+   "\x{83}\x{93}" => "\x{C2}\x{A9}",
+   "\x{83}\x{94}" => "\x{E2}\x{84}\x{A2}",
+   "\x{83}\x{95}" => "\x{E2}\x{88}\x{8F}",
+   "\x{83}\x{96}" => "\x{E2}\x{88}\x{9A}",
+   "\x{83}\x{97}" => "\x{E2}\x{88}\x{99}",
+   "\x{83}\x{98}" => "\x{C2}\x{AC}",
+   "\x{83}\x{99}" => "\x{E2}\x{88}\x{A7}",
+   "\x{83}\x{9A}" => "\x{E2}\x{88}\x{A8}",
+   "\x{83}\x{9B}" => "\x{E2}\x{87}\x{94}",
+   "\x{83}\x{9C}" => "\x{E2}\x{87}\x{90}",
+   "\x{83}\x{9D}" => "\x{E2}\x{87}\x{91}",
+   "\x{83}\x{9E}" => "\x{E2}\x{87}\x{92}",
+   "\x{83}\x{9F}" => "\x{E2}\x{87}\x{93}",
+   "\x{83}\x{A0}" => "\x{E2}\x{8B}\x{84}",
+   "\x{83}\x{A1}" => "\x{E3}\x{80}\x{88}",
+   "\x{83}\x{A2}" => "\x{C2}\x{AE}",
+   "\x{83}\x{A3}" => "\x{C2}\x{A9}",
+   "\x{83}\x{A4}" => "\x{E2}\x{84}\x{A2}",
+   "\x{83}\x{A5}" => "\x{E2}\x{88}\x{91}",
+   "\x{83}\x{A6}" => "\x{E2}\x{8E}\x{9B}",
+   "\x{83}\x{A7}" => "\x{E2}\x{8E}\x{9C}",
+   "\x{83}\x{A8}" => "\x{E2}\x{8E}\x{9D}",
+   "\x{83}\x{A9}" => "\x{E2}\x{8E}\x{A1}",
+   "\x{83}\x{AA}" => "\x{E2}\x{8E}\x{A2}",
+   "\x{83}\x{AB}" => "\x{E2}\x{8E}\x{A3}",
+   "\x{83}\x{AC}" => "\x{E2}\x{8E}\x{A7}",
+   "\x{83}\x{AD}" => "\x{E2}\x{8E}\x{A8}",
+   "\x{83}\x{AE}" => "\x{E2}\x{8E}\x{A9}",
+   "\x{83}\x{AF}" => "\x{E2}\x{8E}\x{AA}",
+   "\x{83}\x{B1}" => "\x{E3}\x{80}\x{89}",
+   "\x{83}\x{B2}" => "\x{E2}\x{88}\x{AB}",
+   "\x{83}\x{B3}" => "\x{E2}\x{8C}\x{A0}",
+   "\x{83}\x{B4}" => "\x{E2}\x{8E}\x{AE}",
+   "\x{83}\x{B5}" => "\x{E2}\x{8C}\x{A1}",
+   "\x{83}\x{B6}" => "\x{E2}\x{8E}\x{9E}",
+   "\x{83}\x{B7}" => "\x{E2}\x{8E}\x{9F}",
+   "\x{83}\x{B8}" => "\x{E2}\x{8E}\x{A0}",
+   "\x{83}\x{B9}" => "\x{E2}\x{8E}\x{A4}",
+   "\x{83}\x{BA}" => "\x{E2}\x{8E}\x{A5}",
+   "\x{83}\x{BB}" => "\x{E2}\x{8E}\x{A6}",
+   "\x{83}\x{BC}" => "\x{E2}\x{8E}\x{AB}",
+   "\x{83}\x{BD}" => "\x{E2}\x{8E}\x{AC}",
+   "\x{83}\x{BE}" => "\x{E2}\x{8E}\x{AD}",
+  );
+s,\x{EF}(..),$symbol{$1},eg;
+
+# Remove extra whitespace and print the result, always ending with \n.
+s/\n{3,}/\n\n/sg;
+s/[^\S\n]*\n/\n/g;
+s,^\s*(.*?)\s*$,$1,s;
+print "$_\n";

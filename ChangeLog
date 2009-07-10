@@ -1,0 +1,224 @@
+****************************************************************************
+# ChangeLog for lesspipe.sh						   #
+****************************************************************************
+Version 1.60 Dec 01, 2008
+- major restructuring of code, support for even more file types (Jim Pryor)
+  - using a temp dir and mktemp for creating temporary files
+  - concentrate file type recognition in a function
+  - rewritten the recognition and processing of html files, added xhtml
+    recognition, add elinks and w3m as html parsers
+  - better support for jar files (recognized by extension jar and xpi)
+  - support for excel and powerpoint files (recognized by extension)
+  - support for perl pod files
+  - colored directory listings
+  - list and view the control parts of *.deb packages
+- added support for lzip compression (Antonio Diaz Diaz)
+- added support for DjVu files (Florian Cramer)
+- improved zip support for Solaris, bug fixes in configure (Paul Townsend)
+- code cleanup and bug fixes in lesspipe based on the restructured code
+- enhanced test suite
+- update of the documentation (merged english.txt and README)
+Version 1.55 Aug 13, 2008
+- cleanup documentation and code
+- remove support for unmounted media (floppy disks)
+- better UTF-8 support, add conversions between UTF-8 and ISO-8859-1
+- add preliminary support for lzma compressed files (suggested by Goetz Waschk)
+- better support for 7-zip files (suggestion by Stephan Hegel)
+- fix misspelled program name 'links'
+Version 1.54 Jul 25, 2008
+- improved support for mp3 files using id3v2 (hint from Markus Meyer)
+- added tests for mp3 files with id3 v1 and v2 tags
+- correctly recognize version of file command
+- prefer links over lynx for html display
+- add support for binary plist files (Mac OS X) (Peter D. Barnes Jr.)
+- add support for gpg encrypted files (Daniel Risacher)
+Version 1.53 Apr 11, 2006
+- support for Openoffice documents (Florian Cramer, Vincent Lefevre)
+- support for RAR archives (suggested by Cindy Leonhardt)
+- support for 7-zip archives, UTF-16 text (proposed by Vincent Lefevre)
+- support for image formats (png, gif, jpeg and others)
+- small shell syntax fix (reported by Andrew Barnert)
+- better test to recognize tar and dvi files
+- do not include the full path for commands if they are in the search PATH
+- avoid "file -" command, relax requirements for "file", Solaris now ok (Ken)
+- display debian files without dpkg (hint by Juergen Kahnert)
+- mention in BUGS that syntax highlighting is an experimental feature
+- require at least version 1.0 of bzip2
+- updated documentation
+Version 1.52 Jul 19, 2005
+- variable replacement pattern containing % causes hang in AIX, escape % char
+- the output of the file command can contain file names, make it harder to
+  mislead the file type recognition logic
+Version 1.51 May 26, 2005
+- fix typo in Makefile (PREFIX instead of prefix in configure)
+- change consistently test syntax to be compliant to more shells
+- display command to set LESSOPEN env variable when called without args
+- fix a few cases where filenames containing space were not treated properly
+- add a manpage for lesspipe.sh
+Version 1.50 Apr 12, 2005
+- major changes in the processing of file names, thus allowing the display
+  of files with white space in the name even if they are contained in archives
+- display of "perl storable" (see perldoc Storable) files by Slaven Rezic
+- many changes to get rid of minor bugs related to syntax highlighting and
+  the display of files contained in archives
+- lesspipe.sh successfully tested to also work with pdksh (tested with v. 5.2)
+- added test suite, commands listed in TESTCMDS, test files are in testok and
+  testnok. Can be started with make test
+- improved configure script and documentation enhancements
+
+Version 1.44 Dec 14, 2004
+-------------------------
+- fixes in configure script (Slaven Rezic)
+- fixes for ksh syntax by Jens Schleusener
+
+Version 1.43 Dec 09, 2004
+-------------------------
+- fixes for Cygwin by Slaven Rezic and for FreeBSD by Ben Kibbey
+- better recognition of perl files in code2color (Slaven Rezic)
+- treat Active State's PPD files as XML files (proposed by Soeren Adersen
+- syntax highlighting has to be enabled explicitly when calling configure
+- fixed bug in trap statement when using /bin/sh as shell
+
+Version 1.42 Apr 15, 2004
+-------------------------
+- add support for Microsoft cabinet files through cabextract (v1.0 required)
+- correct bug (less -F was not working if used with lesspipe)
+
+Version 1.41 Apr 01, 2004
+-------------------------
+- speed up lesspipe considerably for viewing large files (hint by Istvan Marko)
+- rework the syntax highlighting code (should now be compliant to more
+  OS flavors, patches by Remi Mommsen and by WF)
+- support for MacOS X archives and bom files (request by Remi Mommsen)
+
+Version 1.40 Mar 21, 2004
+-------------------------
+- introduce syntax highlighting (through 'syntax', a perl helper script)
+- ATTENTION: it will work only with less -r or less -R
+- deactivated perl support again, perldoc -m otherwise not working properly
+- display contents of iso images
+
+Version 1.37 Aug 08, 2003
+-------------------------
+- perl support was not working under all circumstances
+
+Version 1.36 Aug 08, 2003
+-------------------------
+- add new option --default in configure script
+- add support for perl files containing pod documentation
+
+Version 1.35 Jan 06, 2003
+-------------------------
+- prefer pstotext over ps2ascii if available
+- prefer html2text over lynx if available 
+- show the contents of mp3 files (with mp3 tags) using mp3info
+- for unknown (binary) data display the contained ASCII strings
+- support for ASCII-art (2nd version, very experimental, commented out)
+  most of the changes proposed by Florian Cramer
+- corrected minor bugs in the configure script
+
+Version 1.34 May 16, 2002
+-------------------------
+- forgotten #endif in configure
+- use /usr/bin/env perl to process the configure script
+
+Version 1.33 Mar 12, 2002
+-------------------------
+- enhanced output for .deb files (proposed by Carl Greco)
+- default script language is bash on linux systems, ksh on all other platforms
+- search GNU file also under the name gfile
+
+Version 1.32 Jan 17, 2002
+-------------------------
+- add support for Postscript and DVI format
+- enhance the processing of *roff files (.me and .ms files, respect LANG=jp)
+- added support for the files compressed with pack
+- minor change in RPM output
+  (changes inspired by lessopen.sh in SuSE Linux 7.3)
+- change in configure script to check more precisely for shell versions
+
+Version 1.31 Dec 12, 2001
+-------------------------
+- add option --yes to configure to allow for unattended installation
+- more generic Makefile (both by Philippe Defert)
+- corrected a bug that prevented HTML filtering for (t)csh users
+
+Version 1.30 Nov 21, 2001
+-------------------------
+- add support for Rich Text Format (RTF).
+- modify the highly experimental support for ASCII-art (still commented out)
+  both modifications proposed by Florian Cramer.
+- the configure script now checks for a working shell
+- added more extended english documentation (english.txt)
+
+Version 1.23 Oct 30, 2001
+------------------------
+- call ps -up to have a trailing blank after less in the ps output (case HTML)
+- generate a simple Makefile, rudimentary options for configure
+
+Version 1.22 Aug 10, 2001
+------------------------
+- w3m uses internally less, refuse to convert html unless called from less
+
+Version 1.21 Aug 8, 2001
+------------------------
+- recognize file type "... text executable" as text, not as binary
+
+Version 1.20 Aug 6, 2001
+------------------------
+- Add support for removable media via the /dev/xxx files (e.g. tar files on
+  tapes, floppies) example: less /dev/fd0
+- Add support for unmounted DOS Filesystems using the mtools command suite
+  via the /dev/xxx files. Example: less /dev/fd0
+- determine version of 'file' program and configure lesspipe.sh accordingly
+- some cleanup of configure script
+
+Version 1.10 Feb 19, 2001
+-------------------------
+- use Lynx instead of w3m as proposed by Heinrich Kuettler
+- Add support for PDF-Files via 'pdftotext' by Derek B. Noonburg
+- Change format of first line in output (replace '='s by '==>').
+- use configure to customize lesspipe.sh for local computer
+- add support for ASCII-art by Florian Cramer (very experimental, commented out)
+
+Version 1.05 Jan 24, 2001
+-------------------------
+- Add support for Debian packages by Michael Wiedmann
+- Add MS Word support via 'antiword' by Florian Cramer
+
+Version 1.04 Jun 18, 2000
+-------------------------
+-  Variable separator character, better colon handling.
+
+Version 1.03 May  2, 2000
+-------------------------
+- Bug in handling filenames with spaces corrected.
+
+Version 1.02 Apr 12, 2000
+-------------------------
+- Bugs in RPM handling corrected (relocatable RPM's).
+
+Version 1.01 Mar 14, 2000
+-------------------------
+- First attempt to handle filenames with spaces.
+
+Version 1.0 Feb 16, 2000
+------------------------
+- Complete rewrite to allow recursive unpacking.
+
+Version 0.4 Jan 16, 2000
+------------------------
+- Add RPM support, better documentation.
+
+Version 0.3 Aug  6, 1999
+------------------------
+- Add bzip2 support.
+
+Version 0.2 Nov 20, 1998
+------------------------
+- Be more verbose for special files.
+
+Version 0.1 May 25, 1997
+------------------------
+- First public release.
+
