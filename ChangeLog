@@ -9,7 +9,8 @@ trunk in SVN
 - changes in rpm processing to better support MacOSX and BSD based systems
 - introduce --fixed in configure to statically control lesspipe generation 
 - improved generation of Makefile
-- calling eval `./lesspipe.sh` will set the ENV variable LESSOPEN properly
+- calling eval `.../lesspipe.sh` will set the ENV variable LESSOPEN properly
+- fixing jar processing if not using fastjar (was a bug in 1.60 only)
 Version 1.60 Dec 01, 2008
 - major restructuring of code, support for even more file types (Jim Pryor)
   - using a temp dir and mktemp for creating temporary files

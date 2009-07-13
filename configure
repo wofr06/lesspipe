@@ -208,11 +208,23 @@ sub inpath {
       }
       $have{$prog} = "$which_one$prog", last if -x "$_/$prog";
     }
-    if ( $have{$prog} ) {
-      print "using $have{$prog}\n";
-      $rep{$prog} = $have{$prog};
+    if ( $opt_fixed and exists $answer{$prog} ) {
+        my $yesno = "\L$answer{$prog}";
+        my $found = $have{$prog} ? "found" : "not found";
+        my $useit = $yesno eq 'n' ? "not using it" :
+                    $yesno eq 'y' ? "include code for $prog" :
+                    "using $answer{$prog}";
+        print "$found, $useit (fixed)\n";
+        $have{$prog} = $answer{$prog};
+        return 0 if $yesno eq 'n';
     } else {
-      print "not found\n";
+        print "using $have{$prog}\n" if $have{$prog} and $opt_fixed;
+    }
+    if ( $have{$prog} ) {
+      print "using $have{$prog}\n" if ! $opt_fixed;
+      $rep{$prog} = $have{$prog} if ! $opt_fixed;
+    } else {
+      print "not found\n" if ! $opt_fixed or ! exists $answer{$prog};
       my $yesno = get_answer($string, $prog);
       $have{$prog} = $yesno if ! $have{$prog} and $yesno =~ /^[yn]$/i;
       if (exists $optstr{$prog} and $have{$prog} =~ /^\//) {
@@ -231,11 +243,15 @@ sub inpath {
 }
 
 sub get_answer {
+  my ($string, $prog) = @_;
+  # automatically recognize if we are using GNU cpio or BSD cpio
+  if ( $prog eq 'bsd_cpio' ) {
+    my $rc = system "cpio --help >/dev/null 2>&1";
+    return $rc ? 'y' : 'N';
+  }
   return 'y' if $opt_yes;
   return 'N' if $opt_default;
-  my ($string, $prog) = @_;
   return $answer{$prog} || 'N' if $opt_fixed;
-print "get_answer: $prog:\n";
   my $yesno;
   while ( ! $yesno or $yesno !~ /^[yn]/i ) {
     print "$string [y/N or <full_path_to_$prog>] ? ";
@@ -365,17 +381,57 @@ __END__
 #skip_prog	N
 #take_prog	Y
 
-HILITE		n	# we do not want syntax highlighting for --fixed
-antiword	Y       # one of antiword or catdoc should be installed
-catdoc		Y 
-lsbom		N	# we are not on MacOSX
-bzip2		Y       # include bzip2 and unzip code, it is fairly essential
+#file		/usr/bin/file	# it is better to let configure do the checks
+HILITE		N	# we do not want syntax highlighting for --fixed
+# compression programs
+bzip2		Y	# include bzip2 and unzip code, it is fairly essential
+rar		Y
+unrar		Y
 unzip		Y
-lzma		N       # include code for lzma, lzip, xz, 7za only if installed
-lzip		N
+lzip		N	# do not include code for lzma, lzip, xz, 7za
+lzma		N
 xz		N
 7za		N
+# essential utilities
+cpio		Y
+elinks		Y	# only one of html2text, elinks, links, lynx, w3m needed
+groff		Y
+html2text	Y	# rarely found but is a good alternative to elinks
+iconv		Y
+links		Y
+lynx		Y
+nm		Y
+rpm		Y
+rpmunpack	N	# fallback for rpm2cpio only, code inserted anyway
+rpm2cpio	Y
+w3m		Y
+# code for these programs should be included in lesspipe.sh
+antiword	Y	# one of antiword or catdoc should be installed
+catdoc		Y
+dvi2tty		Y	# nice to have
 pstotext	Y	# pstotext is better than the fallback ps2ascii
-### please change to Y on MacOSX (and other BSD systems?)
-broken_cpio	N       # this seems to be needed on MacOSX for rpm inspection
+ps2ascii	N	# ps2ascii code is already in the pstotext part
+iconv		Y
+gpg		Y
+pdftohtml	Y
+pdftotext	Y
+# other helper programs
+cabextract	Y
+djvutxt		Y
+fastjar		N	# I do prefer unzip
+gpg		Y
+id3v2		Y	# id3v2 is preferred over mp3info if both selected
+identify	Y
+isoinfo		N	# I do not want to see that
+mp3info		Y
+o3tohtml	Y
+perldoc		Y
+ppthtml		Y
+unrtf		Y
+xlhtml		Y
+# for specific operating systems
+dpkg		Y	# for debian systems, fallback is tar+g(un)zip
+### please change to Y on MacOSX
+lsbom		N	# we are not on MacOSX
+plutil		N	# we are not on MacOSX
 
