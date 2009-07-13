@@ -395,7 +395,7 @@ isrpm () {
 # nasty hack to make rpm inspection work on MacOSX (and other BSD based systems)
 #ifdef bsd_cpio
     b=$(nexttmp -d)
-    rpm2cpio "$1"|pax -rw "$2" $b
+    rpm2cpio "$1"|(cd $b; pax -r "$2" 2>/dev/null)
     cat "$b/$2"
 #else
     b=$(nexttmp)
@@ -407,7 +407,7 @@ isrpm () {
   elif cmd_exist rpmunpack && cmd_exist cpio; then
 #ifdef bsd_cpio
     b=$(nexttmp -d)
-    cat "$1" | rpmunpack | gzip -cd |pax -rw "$2" $b
+    cat "$1" | rpmunpack | gzip -cd |(cd $b; pax -r "$2" 2>/dev/null)
     cat "$b/$2"
 #else
     # rpmunpack will write to stdout if it gets file from stdin
