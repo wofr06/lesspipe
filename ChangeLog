@@ -1,7 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-trunk in SVN
+Version 1.70 Jul 16 2009
 - fixing the call of mktemp on MacOS (reported by Peter Kostka and Martin Otte)
 - detect helper programs at runtime (suggested by David Leverton, Petr Uzel)
 - add support for xz compression (Mathieu Bouillaguet)
@@ -11,6 +11,9 @@ trunk in SVN
 - improved generation of Makefile
 - calling eval `.../lesspipe.sh` will set the ENV variable LESSOPEN properly
 - fixing jar processing if not using fastjar (was a bug in 1.60 only)
+- control amount of preprocessing by the ENV var LESS_ADVANCED_PREPROCESSOR
+  if the related configure question is answered with y (default n) (Petr Uzel)
+- updated documentation to reflect recent changes
 Version 1.60 Dec 01, 2008
 - major restructuring of code, support for even more file types (Jim Pryor)
   - using a temp dir and mktemp for creating temporary files

@@ -1,5 +1,5 @@
 #!/bin/bash
-# lesspipe.sh, a preprocessor for less (version 1.60)
+# lesspipe.sh, a preprocessor for less (version 1.70)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### ftp://ftp.ifh.de/pub/unix/utility/lesspipe.tar.gz
@@ -39,7 +39,6 @@ fi
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
 }
-
 filecmd='file -L -s';
 sep=:						# file name separator
 altsep==					# alternate separator character
@@ -131,19 +130,6 @@ show () {
   rest11="$rest1"
   if [[ "$cmd" = "" ]]; then
     type=$(filetype "$file1") || exit 1
-    if cmd_exist lsbom; then
-      if [[ ! -f "$file1" ]]; then
-        if [[ "$type" = *directory* ]]; then
-	  if [[ "$file1" = *.pkg ]]; then
-	    if [[ -f "$file1/Contents/Archive.bom" ]]; then
-	      type="bill of materials"
-	      file1="$file1/Contents/Archive.bom"
-	      echo "==> This is a Mac OS X archive directory, showing its contents (bom file)"
-	    fi
-	  fi
-        fi
-      fi
-    fi
     get_cmd "$type" "$file1" "$rest1"
     if [[ "$cmd" != "" ]]; then
       show "-$rest1"
@@ -260,8 +246,6 @@ get_cmd () {
       cmd=(istar "$t" "$file2")
     elif [[ "$1" = *RPM* ]] && cmd_exist cpio && ( cmd_exist rpm2cpio || cmd_exist rpmunpack ); then
       cmd=(isrpm "$2" "$file2")
-    elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
-      cmd=(isjar "$2" "$file2")
     elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
       cmd=(istemp "unzip -avp" "$2" "$file2")
     elif [[ "$1" = *RAR\ archive* ]]; then
@@ -366,26 +350,6 @@ isrpm () {
   fi
 }
 
-isjar () {
-  case "$2" in
-    /*) echo "lesspipe can't unjar files with absolute paths" >&2
-      exit 1
-      ;;
-    ../*) echo "lesspipe can't unjar files with ../ paths" >&2
-      exit 1
-      ;;
-  esac
-  typeset d
-  d=$(nexttmp -d)
-  [[ -d "$d" ]] || exit 1
-  cat "$1" | (
-    cd "$d"
-    fastjar -x "$2"
-    if [[ -f "$2" ]]; then
-      cat "$2"
-    fi
-  )
-}
 
 if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
   PARSEHTML=yes
@@ -418,19 +382,6 @@ isfinal() {
     cat "$2"
     return
   elif [[ "$3" = $sep* ]]; then
-    if [[ "$3" = $sep ]]; then
-      echo "==> append :. or :<filetype> to activate syntax highlighting"
-    else
-      lang=${3#$sep}
-      lang="-l ${lang#.}"
-      lang=${lang%%-l }
-      dir=${LESSOPEN#\|}
-      dir=${dir%%lesspipe.sh*\%s}
-      ${dir}code2color $PPID ${in_file:+"$in_file"} $lang "$2"
-      if [[ $? = 0 ]]; then
-        return
-      fi
-    fi
     cat "$2"
     return
   fi
@@ -521,9 +472,6 @@ isfinal() {
   elif [[ "$1" = *shared* ]] && cmd_exist nm; then
     echo "==> This is a dynamic library, showing the output of nm"
     istemp nm "$2"
-  elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
-    echo "==> use jar_file${sep}contained_file to view a file in the archive"
-    nodash "fastjar -tf" "$2"
   elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
     echo "==> use zip_file${sep}contained_file to view a file in the archive"
     istemp "unzip -lv" "$2"
@@ -619,46 +567,37 @@ isfinal() {
   elif [[ "$1" = *image\ data*  || "$1" = *image\ text* || "$1" = *JPEG\ file* || "$1" = *JPG\ file* ]] && cmd_exist identify; then
     echo "==> append $sep to filename to view the binary data"
     identify -verbose "$2"
-  elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]] && cmd_exist id3v2; then
-    echo "==> append $sep to filename to view the binary data"
-    istemp "id3v2 -l" "$2"
-  elif [[ "$1" = *bill\ of\ materials* ]] && cmd_exist lsbom; then
-    echo "==> append $sep to filename to view the binary data"
-    lsbom -p MUGsf "$2"
+  elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]]; then
+    if cmd_exist id3v2; then
+      echo "==> append $sep to filename to view the binary data"
+      istemp "id3v2 -l" "$2"
+    elif cmd_exist mp3info; then
+      echo "==> append $sep to filename to view the binary data"
+      mp3info "$2"
+    fi
   elif [[ "$1" = *perl\ Storable* ]]; then
     echo "==> append $sep to filename to view the binary data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-8* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-8 encoded data"
-    iconv -c -f UTF-8 -t ISO-8859-1 "$2"
-  elif [[ "$1" = *ISO-8859* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv -c; then
+    iconv -f UTF-8 -t ISO-8859-1 "$2"
+  elif [[ "$1" = *ISO-8859* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the ISO-8859 encoded data"
-    iconv -c -f ISO-8859-1 -t UTF-8 "$2"
-  elif [[ "$1" = *UTF-16* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv -c; then
+    iconv -f ISO-8859-1 -t UTF-8 "$2"
+  elif [[ "$1" = *UTF-16* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-16 encoded data"
-    iconv -c -f UTF-16 -t ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv -c; then
+    iconv -f UTF-16 -t ISO-8859-1 "$2"
+  elif [[ "$1" = *UTF-16* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-16 encoded data"
-    iconv -c -f UTF-16 -t UTF-8 "$2"
+    iconv -f UTF-16 -t UTF-8 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
     echo "==> append $sep to filename to view the encrypted file"
     gpg -d "$2"
-  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
-    echo "==> append $sep to filename to view the binary data"
-    plutil -convert xml1 -o - "$2"
   elif [[ "$1" = *data* ]]; then
     echo "==> append $sep to filename to view the $1 source"
     nodash strings "$2"
   else
     set "plain text" "$2"
-  fi
-  if [[ "$1" = *plain\ text* ]]; then
-    dir=${LESSOPEN#\|}
-    dir=${dir%%lesspipe.sh*\%s}
-    ${dir}code2color $PPID ${in_file:+"$in_file"} "$2"
-    if [[ $? = 0 ]]; then
-      return
-    fi
   fi
   if [[ "$2" = - ]]; then
     cat

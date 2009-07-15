@@ -1,4 +1,4 @@
-# lesspipe.sh, a preprocessor for less (version 1.60)
+# lesspipe.sh, a preprocessor for less (version 1.70)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### ftp://ftp.ifh.de/pub/unix/utility/lesspipe.tar.gz
@@ -38,7 +38,9 @@ fi
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
 }
-
+if [[ "$LESS_ADVANCED_PREPROCESSOR" != yes ]]; then
+   NOL_A_P=_NO_L_A_P
+fi
 #ifdef file
 filecmd='file';
 #endif
@@ -558,7 +560,7 @@ isfinal() {
     fi
 #endif
 #ifdef groff
-  elif [[ "$1" = *roff* ]] && cmd_exist groff; then
+  elif [[ "$1" = *roff$NOL_A_P* ]] && cmd_exist groff; then
     DEV=utf8
     if [[ $LANG != *UTF*8* && $LANG != *utf*8* ]]; then
       if [[ "$LANG" = ja* ]]; then
@@ -594,7 +596,7 @@ isfinal() {
 #ifdef perldoc
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then
-  elif [[ "$1" = *Perl\ POD\ document\ text* ]] && cmd_exist perldoc; then
+  elif [[ "$1" = *Perl\ POD\ document\ text$NOL_A_P* ]] && cmd_exist perldoc; then
     echo "==> append $sep to filename to view the perl source"
     istemp perldoc "$2"
 #endif
@@ -603,7 +605,7 @@ isfinal() {
   elif [[ "$1" = *text\ executable* ]]; then
     set "plain text" "$2"
 #ifdef pstotext
-  elif [[ "$1" = *PostScript* ]]; then
+  elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
     if cmd_exist pstotext; then
       echo "==> append $sep to filename to view the postscript file"
       nodash pstotext "$2"
@@ -614,7 +616,7 @@ isfinal() {
       echo "==> install pstotext or ps2ascii to view a textual representation of the file contents"
     fi
 #elif ps2ascii
-  elif [[ "$1" = *PostScript* ]]; then
+  elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
     if cmd_exist ps2ascii; then
       echo "==> append $sep to filename to view the postscript file"
       istemp ps2ascii "$2"
@@ -688,7 +690,7 @@ isfinal() {
     echo "==> append $sep to filename to view the binary DVI file"
     isdvi "$2"
 #endif 
-  elif [[ "$PARSEHTML" = yes && "$1" = *HTML* ]]; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
     echo "==> append $sep to filename to view the HTML source"
     parsehtml "$2"
 #ifdef pdftohtml
@@ -734,7 +736,7 @@ isfinal() {
     fi
 #endif
 #ifdef unrtf
-  elif [[ "$1" = *Rich\ Text\ Format* ]]  && cmd_exist unrtf; then
+  elif [[ "$1" = *Rich\ Text\ Format$NOL_A_P* ]]  && cmd_exist unrtf; then
     if [[ "$PARSEHTML" = yes ]]; then
       echo "==> append $sep to filename to view the RTF source"
       istemp "unrtf --html" "$2" | parsehtml -
@@ -789,9 +791,14 @@ isfinal() {
     identify -verbose "$2"
 #endif 
 #ifdef id3v2
-  elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]] && cmd_exist id3v2; then
-    echo "==> append $sep to filename to view the binary data"
-    istemp "id3v2 -l" "$2"
+  elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]]; then
+    if cmd_exist id3v2; then
+      echo "==> append $sep to filename to view the binary data"
+      istemp "id3v2 -l" "$2"
+    elif cmd_exist mp3info; then
+      echo "==> append $sep to filename to view the binary data"
+      mp3info "$2"
+    fi
 #elif mp3info
   elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]] && cmd_exist mp3info; then
     echo "==> append $sep to filename to view the binary data"
@@ -802,20 +809,20 @@ isfinal() {
     echo "==> append $sep to filename to view the binary data"
     lsbom -p MUGsf "$2"
 #endif
-  elif [[ "$1" = *perl\ Storable* ]]; then
+  elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
     echo "==> append $sep to filename to view the binary data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
 #ifdef iconv
-  elif [[ "$1" = *UTF-8* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *UTF-8$NOL_A_P* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-8 encoded data"
     iconv -f UTF-8 -t ISO-8859-1 "$2"
-  elif [[ "$1" = *ISO-8859* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv; then
+  elif [[ "$1" = *ISO-8859$NOL_A_P* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the ISO-8859 encoded data"
     iconv -f ISO-8859-1 -t UTF-8 "$2"
-  elif [[ "$1" = *UTF-16* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *UTF-16$NOL_A_P* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-16 encoded data"
     iconv -f UTF-16 -t ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv; then
+  elif [[ "$1" = *UTF-16$NOL_A_P* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-16 encoded data"
     iconv -f UTF-16 -t UTF-8 "$2"
 #endif
@@ -829,7 +836,7 @@ isfinal() {
     echo "==> append $sep to filename to view the binary data"
     plutil -convert xml1 -o - "$2"
 #endif
-  elif [[ "$1" = *data* ]]; then
+  elif [[ "$1" = *data$NOL_A_P* ]]; then
     echo "==> append $sep to filename to view the $1 source"
     nodash strings "$2"
   else
