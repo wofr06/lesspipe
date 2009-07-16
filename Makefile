@@ -1,11 +1,11 @@
 # This is a generated file, do not edit it. Use configure to modify it
 PREFIX = /usr/local
-MODE = default
+MODE = --fixed
 
 .PHONY: install
 
 all:
-	./configure --prefix=$(PREFIX) --nomake --$(MODE)
+	./configure --prefix=$(PREFIX) --nomake $(MODE)
 test:
 	./test.pl
 install:

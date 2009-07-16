@@ -1,13 +1,16 @@
 lesspipe.sh, a preprocessor for less
 ====================================
 
-Version: 1.60
+Version: 1.70
 Author : Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 License: GPL
 
 Latest version available from:
  http://freshmeat.net/projects/lesspipe/	or
  http://sourceforge.net/projects/lesspipe/
+
+The development version in svn can be found at
+ https://lesspipe.svn.sourceforge.net/svnroot/lesspipe/trunk
 
 To report bugs or make proposals to improve lesspipe please contact
 the author by email.
@@ -113,6 +116,13 @@ Contents
  Syntax highlighting (see below) is only tried if less is called with -r or -R
  and highlighting support was requested when generating lesspipe.sh !!!
 
+ If lesspipe.sh depends on the environment variable LESS_ADVANCED_PREPROCESSOR
+ (then lesspipe.sh contains that variable, this is defined at configure time) 
+ then the amount of preprocessing is controlled by the contents of this var.
+ If it is set and contains yes, then all files get preprocessed, otherwise html,
+ rtf, ps, nroff files and files with alternate character encodings are displayed
+ unmodified.
+
 3. Required programs
 ====================
 
@@ -138,6 +148,7 @@ Contents
  7-zip			requires 7za
  lzip			requires lzip
  lzma			requires lzma (limited support only)
+ xz			requires xz
 
 4.2 List of preprocessed file types
 -----------------------------------
@@ -153,12 +164,15 @@ Contents
  directory	displayed using ls -lA
  RPM		requires GNU cpio and rpm2cpio or rpmunpack, optionally rpm
  Microsoft Word	requires antiword or catdoc
+ MS Powerpoint	requires ppthtml
+ MS Excel	requires xlhtml
  Debian 	requires ar, gzip and tar, shows more info if dpkg is installed
  html		requires html2text or elinks or links or lynx or w3m
  pdf		requires pdftotext or pdftohtml
  perl		requires pod2text
  rtf		requires unrtf
  dvi		requires dvi2tty
+ djvu		requires djvutxt
  ps		requires pstotext or ps2ascii (from the gs package)
  mp3		requires id3v2 or mp3info
  jpg, png, gif	requires identify
@@ -330,7 +344,7 @@ less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/src/file.c > file.c
 
  Files with binary contents can be extracted as well:
 
-less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:: > file-3.27.tar.gz
+less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:: > file-4.26.tar.gz
 
  Here the two colons at the end of the argument are required to suppress the
  unzipping of the resulting file and to extract the tar file instead of

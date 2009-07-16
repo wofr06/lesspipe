@@ -1,4 +1,7 @@
 #!/usr/bin/env perl
+# the above line will use any perl that is in your PATH. You might want to
+# replace it by #!/usr/bin/perl or similar if this does not work for you.
+
 #use strict;
 #use warnings;
 
@@ -6,14 +9,13 @@
 $SIG{INT} = sub  { unlink "lesspipe.sh.tmp"; print "\n"; exit 1 };
 
 use vars qw($opt_help $opt_prefix $opt_yes $opt_default $opt_ask $opt_nomake
-            $opt_shell $ifsyntax %have %rep $recursion);
-
-# the above line will use any perl that is in your PATH. You might want to
-# replace it by #!/usr/bin/perl or similar if this does not work for you.
+            $opt_shell $opt_fixed $ifsyntax $ifadvanced %have %rep $recursion
+            %answer);
 
 use Getopt::Long;
 Getopt::Long::Configure("prefix_pattern=--");
-my $result = GetOptions qw(help+ prefix=s shell=s yes+ default+ ask+ nomake+);
+my $result = GetOptions
+    qw(help+ prefix=s shell=s yes+ default+ ask+ nomake+ fixed+);
 ### still missing: check proper version of tar, cpio, gzip, bzip2
 if ( $ARGV[0] or ! $result or $opt_help) {
   print << 'EOF';
@@ -24,6 +26,7 @@ Options:
                           for configure but without --ask it is not for make)
   --default               do not ask questions, try to guess correct answer
   --yes                   like --default but assume 'yes' to all questions
+  --fixed                 like --yes but use preconfigured answer (see below)
   --shell=<filename>      specify full path to an alternative shell to use
   --nomake                do not generate a Makefile
 Directory and file names:
@@ -35,6 +38,8 @@ If optional programs are not found, then you can choose between
   - giving the correct location of the program if installed
   - including the code in lesspipe.sh without having the program
   - or skipping the code for the missing program.
+Answers to the questions can be preconfigured by modifying the data section
+in configure after the __END__ line. For missing data use the default answer
 EOF
   exit !$opt_help ? 1 : 0;
 }
@@ -48,7 +53,17 @@ if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
   print "unuseable shell $opt_shell: not executable or no absolute path\n";
   exit 1;
 }
-my $mode = $opt_ask ? "" : $opt_yes ? "yes" : "default";
+
+# get preconfigured answers into %answer hash
+while (<DATA>) {
+    next if /^\s*$|^\s*#/;
+    $answer{$1} = $2 if /^(\S+)\s+(\S+)/;
+}
+
+my $mode = $opt_ask ? "" : 
+           $opt_yes ? "--yes" :
+           $opt_fixed ? "--fixed" :
+           "--default";
 if ( ! $opt_nomake ) {
   open OUT, ">Makefile";
   print OUT << "EOF";
@@ -59,7 +74,7 @@ MODE = $mode
 .PHONY: install
 
 all:
-	./configure --prefix=\$(PREFIX) --nomake --\$(MODE)
+	./configure --prefix=\$(PREFIX) --nomake \$(MODE)
 test:
 	./test.pl
 install:
@@ -90,15 +105,36 @@ if ($opt_yes) {
   $ifsyntax = 'y';
 } elsif ($opt_default) {
   $ifsyntax = 'n';
+} elsif ($opt_fixed) {
+  $ifsyntax = $answer{HILITE} || 'n' ;
 } else {
   while ( $ifsyntax !~ /^[yn]/i ) {
     print "Activate syntax highlighting code [y/N] ? ";
     $ifsyntax = <STDIN>;
-    $ifsyntax = "\L$ifsyntax";
     chomp $ifsyntax;
     $ifsyntax ||= 'n';
   }
 }
+$ifsyntax = "\L$ifsyntax";
+
+# ask if the ENV variable LESS_ADVANCED_PREPROCESSOR should be respected
+$ifadvanced = '';
+if ($opt_yes) {
+  $ifadvanced = 'y';
+} elsif ($opt_default) {
+  $ifadvanced = 'n';
+} elsif ($opt_fixed) {
+  $ifadvanced = $answer{LESS_ADVANCED_PREPROCESSOR} || 'n' ;
+} else {
+  while ( $ifadvanced !~ /^[yn]/i ) {
+    print "interpret html, ps and other mostly ASCII files only if the\n",
+      "ENV variable LESS_ADVANCED_PREPROCESSOR is set to 'yes' [y/N] ? ";
+    $ifadvanced = <STDIN>;
+    chomp $ifadvanced;
+    $ifadvanced ||= 'n';
+  }
+}
+$ifadvanced = "\L$ifadvanced" eq 'y' ? 'y' : '';
 
 my $skip_comment = 0;
 while (<IN>) {
@@ -109,6 +145,11 @@ while (<IN>) {
     s/$/)/;
     s/set -A (c\w+) /$1=(/;
   }
+  if ( /LESS_ADVANCED_PREPROCESSOR/ and ! $ifadvanced ) {
+    # skip 3 lines code for LESS_ADVANCED_PREPROCESSOR check
+    $_=<IN>; $_=<IN>; next;
+  }
+  s/\$NOL_A_P// if ! $ifadvanced;
   # line #ifdef prog1, prog2, ... encountered, store prog1, prog2, ... in @progs
   if ( /^#ifdef\s+(.*)/ ) {
     %rep = ();
@@ -192,11 +233,23 @@ sub inpath {
       }
       $have{$prog} = "$which_one$prog", last if -x "$_/$prog";
     }
-    if ( $have{$prog} ) {
-      print "using $have{$prog}\n";
-      $rep{$prog} = $have{$prog};
+    if ( $opt_fixed and exists $answer{$prog} ) {
+        my $yesno = "\L$answer{$prog}";
+        my $found = $have{$prog} ? "found" : "not found";
+        my $useit = $yesno eq 'n' ? "not using it" :
+                    $yesno eq 'y' ? "include code for $prog" :
+                    "using $answer{$prog}";
+        print "$found, $useit (fixed)\n";
+        $have{$prog} = $answer{$prog};
+        return 0 if $yesno eq 'n';
     } else {
-      print "not found\n";
+        print "using $have{$prog}\n" if $have{$prog} and $opt_fixed;
+    }
+    if ( $have{$prog} ) {
+      print "using $have{$prog}\n" if ! $opt_fixed;
+      $rep{$prog} = $have{$prog} if ! $opt_fixed;
+    } else {
+      print "not found\n" if ! $opt_fixed or ! exists $answer{$prog};
       my $yesno = get_answer($string, $prog);
       $have{$prog} = $yesno if ! $have{$prog} and $yesno =~ /^[yn]$/i;
       if (exists $optstr{$prog} and $have{$prog} =~ /^\//) {
@@ -215,9 +268,15 @@ sub inpath {
 }
 
 sub get_answer {
+  my ($string, $prog) = @_;
+  # automatically recognize if we are using GNU cpio or BSD cpio
+  if ( $prog eq 'bsd_cpio' ) {
+    my $rc = system "cpio --help >/dev/null 2>&1";
+    return $rc ? 'y' : 'N';
+  }
   return 'y' if $opt_yes;
   return 'N' if $opt_default;
-  my ($string, $prog) = @_;
+  return $answer{$prog} || 'N' if $opt_fixed;
   my $yesno;
   while ( ! $yesno or $yesno !~ /^[yn]/i ) {
     print "$string [y/N or <full_path_to_$prog>] ? ";
@@ -340,3 +399,66 @@ sub check_shell_vers {
   }
   return $selected_shell;
 }
+__END__
+# the answers configured here do only apply when ./configure --fixed is used
+#sample lines (without the comment sign #):
+#sample_prog	/opt/apps/bin/sample_prog
+#skip_prog	N
+#take_prog	Y
+
+#file		/usr/bin/file	# it is better to let configure do the checks
+HILITE		N		# we do not want syntax highlighting for --fixed
+LESS_ADVANCED_PREPROCESSOR N	# always interpret textlike files (html, ...)
+
+# compression programs
+bzip2		Y	# include bzip2 and unzip code, it is fairly essential
+unzip		Y
+rar		Y
+unrar		Y
+lzip		Y	# default for lzma, lzip, xz, 7za should probably be N
+lzma		Y
+xz		Y
+7za		Y
+# essential utilities
+cpio		Y
+elinks		Y	# only one of html2text, elinks, links, lynx, w3m needed
+groff		Y
+html2text	Y	# rarely found but is a good alternative to elinks
+iconv		Y
+links		Y
+lynx		Y
+nm		Y
+rpm		Y
+rpmunpack	N	# fallback for rpm2cpio only, code inserted anyway
+rpm2cpio	Y
+w3m		Y
+# code for these programs should be included in lesspipe.sh
+antiword	Y	# one of antiword or catdoc should be installed
+catdoc		Y
+dvi2tty		Y	# nice to have
+pstotext	Y	# pstotext is better than the fallback ps2ascii
+ps2ascii	N	# ps2ascii code is already in the pstotext part
+iconv		Y
+gpg		Y
+pdftohtml	Y
+pdftotext	Y
+# other helper programs
+cabextract	Y
+djvutxt		Y
+fastjar		N	# I do prefer unzip
+gpg		Y
+id3v2		Y	# id3v2 is preferred over mp3info if both selected
+mp3info		N	# code for mp3info is included anyway if id3v2 selected
+identify	Y
+isoinfo		Y	# I would not want to see that
+o3tohtml	Y
+perldoc		Y
+ppthtml		Y
+unrtf		Y
+xlhtml		Y
+# for specific operating systems
+dpkg		Y	# for debian systems, fallback is tar+g(un)zip
+### please change to Y on MacOSX
+lsbom		N	# we are not on MacOSX
+plutil		N	# we are not on MacOSX
+

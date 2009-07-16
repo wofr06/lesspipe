@@ -33,7 +33,7 @@ Step 1: recreate lesspipe.sh and Makefile (optional)
 To verify a working system and to customize lesspipe.sh to your needs
 recreate lesspipe.sh from lesspipe.sh.in (and Makefile) by the command
 
- ./configure [--help] [--ask|--default|--yes] [--prefix=<path>] [--shell=<file>]
+ ./configure [--help] [--ask|--default|--fixed|--yes] [--prefix=<path>] [--shell=<file>]
 
 For an explanation of the options do execute
   ./configure --help
@@ -41,6 +41,9 @@ To create a lesspipe.sh assuming all helper applications are in place do execute
   ./configure --yes
 To accept the defaults searching the helper apps in $PATH please use
   ./configure --default
+To use preconfigured defaults (last lines in configure) for answering the
+questions (no matter whether helper applications are installed) do execute
+  ./configure --fixed
 To create a Makefile that does ask questions by default do use
   ./configure --ask
 To install lesspipe.sh and code2color in <path>/bin (with make install) use
@@ -51,7 +54,7 @@ To create lesspipe.sh for a specific shell ((k)sh like shells only) do say
 The recreation of lesspipe.sh can also be achieved by using the supplied or
 regenerated Makefile with the command
 
-  make [MODE=ask|default|yes] [PREFIX=<path>]
+  make [MODE=--ask|--default|--fixed|--yes] [PREFIX=<path>]
 
 where the optional parameters MODE and PREFIX correspond to the configure
 options described above. Forcing the use of a specific shell is not possible.
@@ -66,8 +69,9 @@ Step 2: verify that lesspipe.sh is working correctly (optional)
 A test suite has been added that does cover complicated use cases of less
 where bugs have been fixed recently. Attempts are made to add normal use
 cases as well. If the test suite reports "NOT ok" lines then lesspipe.sh
-is probably not fully functional in your environment.
-To execute the test suite the command
+is probably not fully functional in your environment. If the message is
+"NOT ok (ignored)" it is usually an indication that some helper programs are
+not installed. To execute the test suite the command
 
   make test
 or
@@ -111,9 +115,15 @@ scripts of the same name or with a changed search PATH:
 If syntax highlighting is activated in the script then to actually see
 highlighted or colored code less has to be called with option -r or -R!
 
+If lesspipe.sh was generated respecting the ENV var LESS_ADVANCED_PREPROCESSOR
+then html, ps, rtf, nroff files as well as files with foreign charsets get
+only preprocessed if that variable is set to yes. This way the user can
+control the amount of file filtering himself.
+
 Generated lesspipe.sh and Makefile in the package
 =================================================
-the supplied files were generated on a Redhat system with a sufficient number
-of helper programs installed to pass all tests from the test suite with
+the supplied files were generated with the settings from configure
+(after the __END__ line), that is everything enabled except synyax highlighting
+and no support for the LESS_ADVANCED_PREPROCESSOR variable.
 
-  ./configure --default
+  ./configure --fixed
