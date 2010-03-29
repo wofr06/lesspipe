@@ -128,7 +128,7 @@ if ($opt_yes) {
 } else {
   while ( $ifadvanced !~ /^[yn]/i ) {
     print "interpret html, ps and other mostly ASCII files only if the\n",
-      "ENV variable LESS_ADVANCED_PREPROCESSOR is set to 'yes' [y/N] ? ";
+      "ENV variable LESS_ADVANCED_PREPROCESSOR is set [y/N] ? ";
     $ifadvanced = <STDIN>;
     chomp $ifadvanced;
     $ifadvanced ||= 'n';
@@ -323,10 +323,11 @@ sub check_tar_vers {
 sub check_file_vers {
   $recursion++;
   # special treatment for file program
-  inpath("Look for GNU gfile", 'file', 'gfile');
+  inpath("Look for GNU gfile", 'file');
   my $rc = system "$have{file} -L ./configure >/dev/null 2>&1";
   if ( $rc ) {
     print "  found system version of file, looking for GNU file\n";
+    inpath("Look for GNU gfile", 'gfile');
     $have{file} = $have{gfile} if $have{gfile};
   }
   $rc = system "$have{file} -L ./configure >/dev/null 2>&1";
@@ -390,15 +391,10 @@ sub check_shell_vers {
     if ( $name eq 'bash' or $name eq 'sh' ) {
       my $tst = `$file -c \'if [[ \"a\" = \"a\" ]];then true;fi 2>&1\'`;
       if ( $tst ) {
-	print "skipping $shell $v, need at least 2.03\n" if $v < 2.03;
-	print "skipping $shell $v, need at least 2.04\n" if $v == 2.03;
+	print "skipping unuseable shell $shell, error msg was $tst";
 	push @bad, $shell;
 	next;
       }
-    # pdksh seems to work properly now
-    #} elsif ( $v =~ /PD KSH/ ) {
-    #  print "only $shell $v available, reduced functionality!\n"
-    #        if $#bad == 1;
     }
     $selected_shell = $name if ! $selected_shell;
     $shellcmd = "$file$opt" if ! $shellcmd;
