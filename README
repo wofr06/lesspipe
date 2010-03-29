@@ -1,7 +1,7 @@
 lesspipe.sh, a preprocessor for less
 ====================================
 
-Version: 1.70
+Version: 1.71
 Author : Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 License: GPL
 
@@ -119,9 +119,8 @@ Contents
  If lesspipe.sh depends on the environment variable LESS_ADVANCED_PREPROCESSOR
  (then lesspipe.sh contains that variable, this is defined at configure time) 
  then the amount of preprocessing is controlled by the contents of this var.
- If it is set and contains yes, then all files get preprocessed, otherwise html,
- rtf, ps, nroff files and files with alternate character encodings are displayed
- unmodified.
+ If it is set, then all files get preprocessed, otherwise html, rtf, ps, files
+ and files with alternate character encodings are displayed unmodified.
 
 3. Required programs
 ====================

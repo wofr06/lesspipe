@@ -1,6 +1,12 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 1.71 Mar 29 2010
+- detect a good version of tar, try to avoid /usr/bin/tar on Solaris
+- do more preprocessing if LESS_ADVANCED_PREPROCESSOR is set
+- always try to interpret (g)roff formatted text (man pages)
+- better detection of lzip compressed files
+- do not rely on contents of LANG variable for calling iconv 
 Version 1.70 Jul 16 2009
 - fixing the call of mktemp on MacOS (reported by Peter Kostka and Martin Otte)
 - detect helper programs at runtime (suggested by David Leverton, Petr Uzel)

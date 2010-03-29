@@ -1,5 +1,5 @@
 #!/bin/bash
-# lesspipe.sh, a preprocessor for less (version 1.70)
+# lesspipe.sh, a preprocessor for less (version 1.71)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### ftp://ftp.ifh.de/pub/unix/utility/lesspipe.tar.gz
@@ -31,10 +31,7 @@
 #===============================================================================
 #setopt KSH_ARRAYS SH_WORD_SPLIT
 set +o noclobber
-tarcmd=gtar
-if [[ `tar --version 2>&1` = *GNU* ]]; then
-  tarcmd=tar
-fi
+tarcmd='tar'
 
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
@@ -85,7 +82,7 @@ filetype () {
     exit 1
   elif [[ "$type" = *XML* && "$name" = *html ]]; then
     type=" HTML document text"
-  elif [[ "$type" != *lzip*compress* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
+  elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
     type=" LZMA compressed data"
   elif [[ ("$type" = *Zip* || "$type" = *ZIP*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
     type=" Zip compressed Jar archive"
@@ -187,7 +184,7 @@ show () {
 get_cmd () {
   cmd=
   typeset t
-  if [[ "$1" = *[blg]zip*compress* || "$1" = *compress\'d\ * || "$1" = *packed\ data* || "$1" = *LZMA*compress* || "$1" = *xz*compress* ]]; then ## added '#..then' to fix vim's syntax parsing
+  if [[ "$1" = *[blg]zip*compress* || "$1" = *compress\'d\ * || "$1" = *packed\ data* || "$1" = *LZMA\ compressed* || "$1" = *xz\ compressed* ]]; then ## added '#..then' to fix vim's syntax parsing
     if [[ "$3" = $sep$sep ]]; then
       return
     elif [[ "$1" = *bzip*compress* ]] && cmd_exist bzip2; then
@@ -198,14 +195,14 @@ get_cmd () {
         *.tbz) filen="${filen%.tbz}.tar";;
       esac
       return
-    elif [[ "$1" = *lzip*compress* ]] && cmd_exist lzip; then
+    elif [[ "$1" = *lzip\ compressed* ]] && cmd_exist lzip; then
       cmd=(lzip -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
         *.lz) filen="${filen%.lz}";;
         *.tlz) filen="${filen%.tlz}.tar";;
       esac
-    elif [[ "$1" = *LZMA*compress* ]] && cmd_exist lzma; then
+    elif [[ "$1" = *LZMA\ compressed* ]] && cmd_exist lzma; then
       cmd=(lzma -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
@@ -219,7 +216,7 @@ get_cmd () {
         *.gz) filen="${filen%.gz}";;
         *.tgz) filen="${filen%.tgz}.tar";;
       esac
-    elif [[ "$1" = *xz*compress* ]] && cmd_exist xz; then
+    elif [[ "$1" = *xz\ compressed* ]] && cmd_exist xz; then
       cmd=(xz -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
@@ -578,18 +575,15 @@ isfinal() {
   elif [[ "$1" = *perl\ Storable* ]]; then
     echo "==> append $sep to filename to view the binary data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *UTF-8* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-8 encoded data"
-    iconv -f UTF-8 -t ISO-8859-1 "$2"
-  elif [[ "$1" = *ISO-8859* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv; then
+    iconv -f UTF-8 "$2"
+  elif [[ "$1" = *ISO-8859* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the ISO-8859 encoded data"
-    iconv -f ISO-8859-1 -t UTF-8 "$2"
-  elif [[ "$1" = *UTF-16* && $LANG != *UTF*8* && $LANG != *utf*8* ]] && cmd_exist iconv; then
+    iconv -f ISO-8859-1 "$2"
+  elif [[ "$1" = *UTF-16* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-16 encoded data"
-    iconv -f UTF-16 -t ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16* && ($LANG = *UTF*8* || $LANG = *utf*8*) ]] && cmd_exist iconv; then
-    echo "==> append $sep to filename to view the UTF-16 encoded data"
-    iconv -f UTF-16 -t UTF-8 "$2"
+    iconv -f UTF-16 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
     echo "==> append $sep to filename to view the encrypted file"
     gpg -d "$2"

@@ -16,7 +16,6 @@ use Getopt::Long;
 Getopt::Long::Configure("prefix_pattern=--");
 my $result = GetOptions
     qw(help+ prefix=s shell=s yes+ default+ ask+ nomake+ fixed+);
-### still missing: check proper version of tar, cpio, gzip, bzip2
 if ( $ARGV[0] or ! $result or $opt_help) {
   print << 'EOF';
 Usage: configure [options]
@@ -92,8 +91,9 @@ EOF
 }
 
 $|=1;
-# Check version of file command even before trying to create lesspipe.sh
+# Check version of tar and file commands even before trying to create lesspipe.sh
 check_file_vers();
+check_tar_vers();
 open IN, "lesspipe.sh.in";
 open OUT, ">lesspipe.sh.tmp";
 my $in = 1;
@@ -208,6 +208,8 @@ sub inpath {
     $rep{$prog} = $have{$prog} if $have{$prog} and $have{$prog} =~ /^\//;
     $rep{file} = $have{file} if $prog eq 'file';
     $rep{file} = $have{gfile} if $prog eq 'gfile';
+    $rep{tar} = $have{tar} if $prog eq 'tar';
+    $rep{tar} = $have{gtar} if $prog eq 'gtar';
     # conditionally activate syntax highlighting code
     # 'perl' will always be the last (or only) entry on an #ifdef
     return $ifsyntax ne 'n' if $prog eq 'perl';
@@ -302,6 +304,20 @@ sub check_iconv {
   my $rc = system "echo hi|$iconv -c -f utf-8 -t utf-8 >/dev/null 2>&1";
   return ' -c' if ! $rc;
   return '';
+}
+
+sub check_tar_vers {
+  inpath("Look for GNU tar", 'tar', 'gtar');
+  my $vers = `$have{tar} --version 2>&1`;
+  # /usr/bin/tar on Solaris does not have the tar -O option
+  if ( $vers =~ /unknown function modifier/ ) {
+    if ( $have{gtar} ) {
+      $have{tar} = $have{gtar};
+    } else {
+      print "  found system version of tar only, consider using GNU tar\n";
+    }
+  }
+  $rep{tar} = $have{tar};
 }
 
 sub check_file_vers {
