@@ -184,7 +184,7 @@ show () {
 get_cmd () {
   cmd=
   typeset t
-  if [[ "$1" = *[blg]zip*compress* || "$1" = *compress\'d\ * || "$1" = *packed\ data* || "$1" = *LZMA\ compressed* || "$1" = *xz\ compressed* ]]; then ## added '#..then' to fix vim's syntax parsing
+  if [[ "$1" = *[bg]zip*compress* || "$1" = *compress\'d\ * || "$1" = *packed\ data* || "$1" = *LZMA\ compressed* || "$1" = *lzip\ compressed* || "$1" = *[Xx][Zz]\ compressed* ]]; then ## added '#..then' to fix vim's syntax parsing
     if [[ "$3" = $sep$sep ]]; then
       return
     elif [[ "$1" = *bzip*compress* ]] && cmd_exist bzip2; then
@@ -216,7 +216,7 @@ get_cmd () {
         *.gz) filen="${filen%.gz}";;
         *.tgz) filen="${filen%.tgz}.tar";;
       esac
-    elif [[ "$1" = *xz\ compressed* ]] && cmd_exist xz; then
+    elif [[ "$1" = *[Xx][Zz]\ compressed* ]] && cmd_exist xz; then
       cmd=(xz -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
@@ -561,7 +561,7 @@ isfinal() {
       echo "================================= Content ======================================"
       isoinfo -lR$joliet -i "$2"
     fi
-  elif [[ "$1" = *image\ data*  || "$1" = *image\ text* || "$1" = *JPEG\ file* || "$1" = *JPG\ file* ]] && cmd_exist identify; then
+  elif [[ "$1" = *image\ data*  || "$1" = *JPEG\ file* || "$1" = *JPG\ file* ]] && cmd_exist identify; then
     echo "==> append $sep to filename to view the binary data"
     identify -verbose "$2"
   elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]]; then
