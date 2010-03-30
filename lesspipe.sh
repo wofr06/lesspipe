@@ -29,6 +29,7 @@
 # Author:  Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 #
 #===============================================================================
+( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 #setopt KSH_ARRAYS SH_WORD_SPLIT
 set +o noclobber
 tarcmd='tar'

@@ -140,7 +140,15 @@ my $skip_comment = 0;
 while (<IN>) {
   $skip_comment = 1 if /^setopt /;
   next if $skip_comment and ! /^#\w/ and /^#/;
-  s/^/#/ if /^setopt / and $shell ne 'zsh';
+  # try to be flexible and allow a switch of the shell at run time
+  if ( /^setopt / ) {
+    if ( $shell eq 'zsh' ) {
+      print OUT '( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec bash -- "$0" ${1+"$@"} )', "\n";
+    } else {
+      s/^/#/;
+      print OUT '( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}', "\n" if $shell ne 'ksh';
+    }
+  }
   if (/set -A c/ and $shell ne 'ksh') {
     s/$/)/;
     s/set -A (c\w+) /$1=(/;
@@ -389,7 +397,7 @@ sub check_shell_vers {
     chomp $v;
     ###    print "$file $v found in the PATH\n";
     if ( $name eq 'bash' or $name eq 'sh' ) {
-      my $tst = `$file -c \'if [[ \"a\" = \"a\" ]];then true;fi 2>&1\'`;
+      my $tst = `$file -c \'if [[ -n 1 && -n 2 ]];then true;fi 2>&1\'`;
       if ( $tst ) {
 	print "skipping unuseable shell $shell, error msg was $tst";
 	push @bad, $shell;
