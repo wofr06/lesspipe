@@ -315,10 +315,12 @@ sub check_iconv {
 }
 
 sub check_tar_vers {
-  inpath("Look for GNU tar", 'tar', 'gtar');
+  inpath("Look for GNU tar", 'tar');
   my $vers = `$have{tar} --version 2>&1`;
   # /usr/bin/tar on Solaris does not have the tar -O option
   if ( $vers =~ /unknown function modifier/ ) {
+    print "  system version of tar is lacking functionality\n";
+    inpath("Look for GNU tar", 'gtar');
     if ( $have{gtar} ) {
       $have{tar} = $have{gtar};
     } else {
@@ -365,7 +367,7 @@ sub check_shell_vers {
   @shells = ( $opt_shell ) if $opt_shell;
   my @bad = ();
   # reorder list of shells depending on OS
-  if ( $^O ne 'linux' ) {
+  if ( $^O eq 'solaris' ) {
     my @tmp = reverse @shells;
     @shells = @tmp;
   } elsif ( defined $shells[1] ) {
@@ -428,7 +430,7 @@ __END__
 
 #file		/usr/bin/file	# it is better to let configure do the checks
 HILITE		N		# we do not want syntax highlighting for --fixed
-LESS_ADVANCED_PREPROCESSOR N	# always interpret textlike files (html, ...)
+LESS_ADVANCED_PREPROCESSOR Y	# always interpret textlike files (html, ...)
 
 # compression programs
 bzip2		Y	# include bzip2 and unzip code, it is fairly essential

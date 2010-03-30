@@ -37,6 +37,9 @@ tarcmd='tar'
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
 }
+if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
+   NOL_A_P=_NO_L_A_P
+fi
 filecmd='file -L -s';
 sep=:						# file name separator
 altsep==					# alternate separator character
@@ -444,14 +447,14 @@ isfinal() {
     istemp "ar p" "$2" data.tar.gz | gzip -dc - | $tarcmd tvf -
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then
-  elif [[ "$1" = *Perl\ POD\ document\ text* ]] && cmd_exist perldoc; then
+  elif [[ "$1" = *Perl\ POD\ document\ text$NOL_A_P* ]] && cmd_exist perldoc; then
     echo "==> append $sep to filename to view the perl source"
     istemp perldoc "$2"
   elif [[ "$1" = *\ script* ]]; then
     set "plain text" "$2"
   elif [[ "$1" = *text\ executable* ]]; then
     set "plain text" "$2"
-  elif [[ "$1" = *PostScript* ]]; then
+  elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
     if cmd_exist pstotext; then
       echo "==> append $sep to filename to view the postscript file"
       nodash pstotext "$2"
@@ -506,7 +509,7 @@ isfinal() {
   elif [[ "$1" = *\ DVI* ]] && cmd_exist dvi2tty; then
     echo "==> append $sep to filename to view the binary DVI file"
     isdvi "$2"
-  elif [[ "$PARSEHTML" = yes && "$1" = *HTML* ]]; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
     echo "==> append $sep to filename to view the HTML source"
     parsehtml "$2"
   elif [[ "$PARSEHTML" = yes && "$1" = *PDF* ]] && cmd_exist pdftohtml; then
@@ -530,7 +533,7 @@ isfinal() {
       echo "==> install antiword or catdoc to view human readable text"
       cat "$2"
     fi
-  elif [[ "$1" = *Rich\ Text\ Format* ]]  && cmd_exist unrtf; then
+  elif [[ "$1" = *Rich\ Text\ Format$NOL_A_P* ]]  && cmd_exist unrtf; then
     if [[ "$PARSEHTML" = yes ]]; then
       echo "==> append $sep to filename to view the RTF source"
       istemp "unrtf --html" "$2" | parsehtml -
@@ -573,22 +576,22 @@ isfinal() {
       echo "==> append $sep to filename to view the binary data"
       mp3info "$2"
     fi
-  elif [[ "$1" = *perl\ Storable* ]]; then
+  elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
     echo "==> append $sep to filename to view the binary data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *UTF-8$NOL_A_P* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-8 encoded data"
     iconv -f UTF-8 "$2"
-  elif [[ "$1" = *ISO-8859* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *ISO-8859$NOL_A_P* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the ISO-8859 encoded data"
     iconv -f ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *UTF-16$NOL_A_P* ]] && cmd_exist iconv; then
     echo "==> append $sep to filename to view the UTF-16 encoded data"
     iconv -f UTF-16 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
     echo "==> append $sep to filename to view the encrypted file"
     gpg -d "$2"
-  elif [[ "$1" = *data* ]]; then
+  elif [[ "$1" = *data$NOL_A_P* ]]; then
     echo "==> append $sep to filename to view the $1 source"
     nodash strings "$2"
   else
