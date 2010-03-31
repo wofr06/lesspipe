@@ -28,7 +28,7 @@
 # Author:  Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 #
 #===============================================================================
-setopt KSH_ARRAYS SH_WORD_SPLIT
+setopt KSH_ARRAYS SH_WORD_SPLIT 2>/dev/null
 set +o noclobber
 #ifdef tar
 tarcmd='tar'
