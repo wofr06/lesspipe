@@ -63,6 +63,9 @@ options described above. Forcing the use of a specific shell is not possible.
 ##  the display of files noticeably. I do therefore recommend not using it.
 ##  You can watch the difference when running the test suite (make test)
 ##  with and without syntax highlighting.
+##  An alternative to using less with syntax highlighting is the use of vim
+##  with the macro less.vim. A script less.sh is usually coming with vim
+##  that does emulate less and has syntax highlighting. 
 
 Step 2: verify that lesspipe.sh is working correctly (optional)
 ---------------------------------------------------------------
@@ -110,20 +113,20 @@ I recommend to use the fully qualified path to avoid problems with other
 scripts of the same name or with a changed search PATH:
 
   LESSOPEN="|/usr/local/bin/lesspipe.sh %s"; export LESSOPEN  #(sh like shells)
-  setenv LESSOPEN "|/usr/local/bin/lesspipe.sh %s"	    #(csh, tcsh)
+  setenv LESSOPEN "|/usr/local/bin/lesspipe.sh %s"	      #(csh, tcsh)
 
 If syntax highlighting is activated in the script then to actually see
 highlighted or colored code less has to be called with option -r or -R!
 
 If lesspipe.sh was generated respecting the ENV var LESS_ADVANCED_PREPROCESSOR
-then html, ps, rtf, nroff files as well as files with foreign charsets get
-only preprocessed if that variable is set to yes. This way the user can
-control the amount of file filtering himself.
+then html, ps, rtf files as well as files with foreign charsets get only
+preprocessed if that variable is set. This way the user can control the amount
+of file filtering himself.
 
 Generated lesspipe.sh and Makefile in the package
 =================================================
 the supplied files were generated with the settings from configure
 (after the __END__ line), that is everything enabled except synyax highlighting
-and no support for the LESS_ADVANCED_PREPROCESSOR variable.
+and with support for the LESS_ADVANCED_PREPROCESSOR variable.
 
   ./configure --fixed

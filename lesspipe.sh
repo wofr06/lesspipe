@@ -2,7 +2,7 @@
 # lesspipe.sh, a preprocessor for less (version 1.71)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
-### ftp://ftp.ifh.de/pub/unix/utility/lesspipe.tar.gz
+### from http://sourceforge.net/projects/lesspipe/
 ### AND RUN configure TO GENERATE A lesspipe.sh THAT WORKS IN YOUR ENVIRONMENT
 #===============================================================================
 #
@@ -30,7 +30,7 @@
 #
 #===============================================================================
 ( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
-#setopt KSH_ARRAYS SH_WORD_SPLIT
+#setopt KSH_ARRAYS SH_WORD_SPLIT 2>/dev/null
 set +o noclobber
 tarcmd='tar'
 

@@ -1,7 +1,7 @@
 .\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .\" make the file command recognize this file as a roff text
 .\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-.TH LESSPIPE.SH "1" "Jul 2009" "lesspipe.sh" "User Commands"
+.TH LESSPIPE.SH "1" "Apr 2010" "lesspipe.sh" "User Commands"
 .SH NAME
 lesspipe.sh \- a filter for less
 .SH SYNOPSIS
@@ -27,7 +27,7 @@ This does require additional helper programs being installed.
 .PP
 If at configure
 time support for the ENV variable LESS_ADVANCED_PREPROCESSOR was included then
-files with mostly ASCII text such as html, ps, rtf, nroff and files with
+files with mostly ASCII text such as html, ps, rtf and files with
 alternate character encodings remain normally unprocessed (see below)
 .PP
 The filter does not only display the above mentioned file formats,
@@ -39,11 +39,10 @@ file command does not recognize the correct format (especially with nroff).
 In such cases filtering can be suppressed by a trailing colon on the file
 name.
 .PP
-Some converting between UTF-8, ISO-8859-1 and UTF-16 character encodings
-is done.
-If text in the "wrong" encoding is detected then the text is transformed
-into the native encoding used by the system. This does make assumptions
-concerning the encodings and may not in all cases improve the display
+If the file command reports text with UTF-8, ISO-8859-1 or UTF-16 encoded
+characters then the text will be transformed using iconv into the default
+encoding. This does assume iconv has the right default which can be wrong
+in some situations.
 .SH FILTER ACTIVATION
 The filter is called from
 .B less
@@ -109,10 +108,7 @@ If the ENV variable LESS_ADVANCED_PREPROCESSOR is respected by lesspipe.sh
 then files containing mostly ASCII text get displayed as is. To activate
 filtering for such formats the contents of
 .B LESS_ADVANCED_PREPROCESSOR
-has to be set to
-.B yes
-.
-.
+has to be set.
 .SH SYNTAX HIGHLIGHTING (experimental)
 The filter is able to do syntax highlighting for
 the languages ada, asm, awk, c, c++, groff, html, xml, java, javascript, lisp,
