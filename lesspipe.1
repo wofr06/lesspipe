@@ -1,7 +1,7 @@
 .\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .\" make the file command recognize this file as a roff text
 .\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-.TH LESSPIPE.SH "1" "Aug 2008" "lesspipe.sh" "User Commands"
+.TH LESSPIPE.SH "1" "Apr 2010" "lesspipe.sh" "User Commands"
 .SH NAME
 lesspipe.sh \- a filter for less
 .SH SYNOPSIS
@@ -16,7 +16,7 @@ is called as an input filter to
 With the help of that filter
 .B less
 will display the uncompressed contents of compressed (gzip, bzip2, compress,
-rar, 7-zip, lzip or lzma) files.
+rar, 7-zip, lzip, xz or lzma) files.
 For files containing archives and directories, a table of contents
 will be displayed (e.g tar, ar rar, jar, rpm and deb formats). Other supported
 formats include nroff, pdf, ps, dvi, shared library, MS word, Openoffice, 
@@ -24,6 +24,11 @@ debian package,
 html, mp3, jpg, png, iso images, MacOSX bom, plist and archive formats, perl
 storable data and gpg encrypted files.
 This does require additional helper programs being installed.
+.PP
+If at configure
+time support for the ENV variable LESS_ADVANCED_PREPROCESSOR was included then
+files with mostly ASCII text such as html, ps, rtf and files with
+alternate character encodings remain normally unprocessed (see below)
 .PP
 The filter does not only display the above mentioned file formats,
 but can also be applied recursively up to a depth of 6 where applying a
@@ -34,11 +39,10 @@ file command does not recognize the correct format (especially with nroff).
 In such cases filtering can be suppressed by a trailing colon on the file
 name.
 .PP
-Some converting between UTF-8, ISO-8859-1 and UTF-16 character encodings
-is done.
-If text in the "wrong" encoding is detected then the text is transformed
-into the native encoding used by the system. This does make assumptions
-concerning the encodings and may not in all cases improve the display
+If the file command reports text with UTF-8, ISO-8859-1 or UTF-16 encoded
+characters then the text will be transformed using iconv into the default
+encoding. This does assume iconv has the right default which can be wrong
+in some situations.
 .SH FILTER ACTIVATION
 The filter is called from
 .B less
@@ -99,7 +103,12 @@ temporarily, the command
 .PP
 can be used instead of unsetting the environment variable
 .B LESSOPEN
-.
+.PP
+If the ENV variable LESS_ADVANCED_PREPROCESSOR is respected by lesspipe.sh
+then files containing mostly ASCII text get displayed as is. To activate
+filtering for such formats the contents of
+.B LESS_ADVANCED_PREPROCESSOR
+has to be set.
 .SH SYNTAX HIGHLIGHTING (experimental)
 The filter is able to do syntax highlighting for
 the languages ada, asm, awk, c, c++, groff, html, xml, java, javascript, lisp,
@@ -139,7 +148,7 @@ Written by Wolfgang Friebel
 .SH "REPORTING BUGS"
 Report bugs to <Wolfgang.Friebel AT desy.de>.
 .SH COPYRIGHT
-Copyright \(co 2005-2008 Wolfgang Friebel
+Copyright \(co 2005-2009 Wolfgang Friebel
 .br
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

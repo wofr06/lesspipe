@@ -1,6 +1,27 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 1.71 Apr 06 2010
+- detect a good version of tar, try to avoid /usr/bin/tar on Solaris (Jim Pryor)
+- do more preprocessing if LESS_ADVANCED_PREPROCESSOR is set
+- always try to interpret (g)roff formatted text (man pages)
+- better detection of lzip and xz compressed files (Vincent Lefèvre)
+- do not call identify for 'image text' tagged files (Vincent Lefèvre)
+- do not rely on contents of LANG variable for calling iconv (Vincent Lefèvre)
+- have a fallback to bash or zsh for the shell used at runtime (Vincent Lefèvre)
+Version 1.70 Jul 16 2009
+- fixing the call of mktemp on MacOS (reported by Peter Kostka and Martin Otte)
+- detect helper programs at runtime (suggested by David Leverton, Petr Uzel)
+- add support for xz compression (Mathieu Bouillaguet)
+- more stringent tests for gzip compression
+- changes in rpm processing to better support MacOSX and BSD based systems
+- introduce --fixed in configure to statically control lesspipe generation 
+- improved generation of Makefile
+- calling eval `.../lesspipe.sh` will set the ENV variable LESSOPEN properly
+- fixing jar processing if not using fastjar (was a bug in 1.60 only)
+- control amount of preprocessing by the ENV var LESS_ADVANCED_PREPROCESSOR
+  if the related configure question is answered with y (default n) (Petr Uzel)
+- updated documentation to reflect recent changes
 Version 1.60 Dec 01, 2008
 - major restructuring of code, support for even more file types (Jim Pryor)
   - using a temp dir and mktemp for creating temporary files
