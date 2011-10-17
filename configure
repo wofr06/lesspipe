@@ -92,7 +92,6 @@ EOF
 
 $|=1;
 # Check version of tar and file commands even before trying to create lesspipe.sh
-check_file_vers();
 check_tar_vers();
 open IN, "lesspipe.sh.in";
 open OUT, ">lesspipe.sh.tmp";
@@ -214,8 +213,6 @@ sub inpath {
   my %optstr = ( cabextract => '-v', bzip2 => '-h' );
   for my $prog ( @_ ) {
     $rep{$prog} = $have{$prog} if $have{$prog} and $have{$prog} =~ /^\//;
-    $rep{file} = $have{file} if $prog eq 'file';
-    $rep{file} = $have{gfile} if $prog eq 'gfile';
     $rep{tar} = $have{tar} if $prog eq 'tar';
     $rep{tar} = $have{gtar} if $prog eq 'gtar';
     # conditionally activate syntax highlighting code
@@ -328,37 +325,6 @@ sub check_tar_vers {
     }
   }
   $rep{tar} = $have{tar};
-}
-
-sub check_file_vers {
-  $recursion++;
-  # special treatment for file program
-  inpath("Look for GNU gfile", 'file');
-  my $rc = system "$have{file} -L ./configure >/dev/null 2>&1";
-  if ( $rc ) {
-    print "  found system version of file, looking for GNU file\n";
-    inpath("Look for GNU gfile", 'gfile');
-    $have{file} = $have{gfile} if $have{gfile};
-  }
-  $rc = system "$have{file} -L ./configure >/dev/null 2>&1";
-  if ( $rc ) {
-    print "  found system version of file only, consider using GNU file\n";
-    return if $recursion > 1;
-    if ($rep{file} =~ m|^/|) {
-      $have{file} = $rep{file};
-      check_file_vers();
-    }
-  } else {
-    my $vers = `$have{file} -v 2>&1`;
-    $vers = $1 if $vers =~ /(\d+\.\d+)/;
-    if ( $vers < 3.27 ) {
-      $have{file} .= ' -L';
-      print "  found GNU file $vers (very old), using '$have{file}'\n";
-    } else {
-      $have{file} .= ' -L -s';
-      print "  found GNU file $vers (ok), using '$have{file}'\n";
-    }
-  }
 }
 
 sub check_shell_vers {

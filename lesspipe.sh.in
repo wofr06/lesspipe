@@ -1,4 +1,4 @@
-# lesspipe.sh, a preprocessor for less (version 1.71)
+# lesspipe.sh, a preprocessor for less (version 1.72)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### from http://sourceforge.net/projects/lesspipe/
@@ -40,9 +40,12 @@ cmd_exist () {
 if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
    NOL_A_P=_NO_L_A_P
 fi
-#ifdef file
-filecmd='file';
-#endif
+
+filecmd() {
+  file -L -s "$@"
+  file -L -s -i "$@" 2> /dev/null | sed -n 's/.*charset=/;/p' | tr a-z A-Z
+}
+
 sep=:						# file name separator
 altsep==					# alternate separator character
 # if the alternate separator char is used it is repeated at the end of the line
@@ -72,6 +75,16 @@ fi
 trap "rm -rf '$tmpdir'" 0
 trap - PIPE
 
+unset iconv
+iconv() {
+  if [[ -z "$iconv" ]]; then
+    iconv="command iconv $(printf "%s$(command iconv --help | sed -n \
+      's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
+      tr \\n ' ')") -t //TRANSLIT"
+  fi
+  $iconv "$@"
+}
+
 filetype () {
   # wrapper for 'file' command
   typeset name
@@ -82,13 +95,15 @@ filetype () {
     name="$filen"
   fi
   typeset type
-  # type=" $($filecmd -b "$1")" # not supported by all versions of 'file'
-  type=$($filecmd "$1" | cut -d : -f 2-)
+  # type=" $(filecmd -b "$1")" # not supported by all versions of 'file'
+  type=$(filecmd "$1" | cut -d : -f 2-)
   if [[ "$type" = " empty" ]]; then
     # exit if file returns "empty" (e.g., with "less archive:nonexisting_file")
     exit 1
   elif [[ "$type" = *XML* && "$name" = *html ]]; then
     type=" HTML document text"
+  elif [[ ("$type" = *HTML* || "$type" = *ASCII*) && "$name" = *.xml ]]; then
+    type=" XML document text"
   elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
     type=" LZMA compressed data"
   elif [[ ("$type" = *Zip* || "$type" = *ZIP*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
@@ -456,15 +471,6 @@ parsehtml () {
 #ifdef html2text
   elif cmd_exist html2text; then
     html2text -style pretty "$1"
-#ifdef elinks
-  elif cmd_exist elinks; then
-    nodash "elinks -dump -force-html" "$1"
-#endif
-#ifdef links
-  elif cmd_exist links; then
-    if [[ "$1" = - ]]; then set - -stdin; fi
-    links -dump -force_html "$1"
-#endif
 #ifdef lynx
   elif cmd_exist lynx; then
     if [[ "$1" = - ]]; then set - -stdin; fi
@@ -473,6 +479,15 @@ parsehtml () {
 #ifdef w3m
   elif cmd_exist w3m; then
     nodash "w3m -dump -T text/html" "$1"
+#endif
+#ifdef elinks
+  elif cmd_exist elinks; then
+    nodash "elinks -dump -force-html" "$1"
+#endif
+#ifdef links
+  elif cmd_exist links; then
+    if [[ "$1" = - ]]; then set - -stdin; fi
+    links -dump -force_html "$1"
 #endif
   fi
 }
@@ -505,14 +520,21 @@ isfinal() {
   if [[ "$1" = *No\ such* ]]; then
     exit 1
   elif [[ "$1" = *directory* ]]; then
-    echo "==> This is a directory, showing the output of"
-    echo "ls -lA $2"
     # color requires -r or -R when calling less, not recommended
     typeset COLOR
     if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
       COLOR="--color=always"
     fi
-    ls -lA $COLOR "$2"
+    cmd="ls -lA $COLOR $2"
+    if ! ls $COLOR > /dev/null 2>&1; then
+      cmd="CLICOLOR_FORCE=1 ls -lA -G $2"
+      if ! ls -lA -G > /dev/null 2>&1; then
+        cmd="ls -lA $2"
+      fi
+    fi
+    echo "==> This is a directory, showing the output of"
+    echo $cmd
+    eval $cmd
   elif [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
     echo "==> use tar_file${sep}contained_file to view a file in the archive"
     $tarcmd tvf "$2"

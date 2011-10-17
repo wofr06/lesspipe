@@ -1,6 +1,11 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 1.72 Oct 17 2011
+- detect proper options for the file command at runtime (Vincent Lefèvre)
+- guess the character encoding and optionally do a char conversion (VL)
+- make colored ls output working for different OS flavours (Marc Abramowitz)
+- do not interpret files with an extension .xml as html files (James Ahlborn)
 Version 1.71 Apr 06 2010
 - detect a good version of tar, try to avoid /usr/bin/tar on Solaris (Jim Pryor)
 - do more preprocessing if LESS_ADVANCED_PREPROCESSOR is set

@@ -1,7 +1,7 @@
 lesspipe.sh, a preprocessor for less
 ====================================
 
-Version: 1.71
+Version: 1.72
 Author : Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 License: GPL
 
@@ -183,8 +183,8 @@ Contents
  gpg encrypted	requires gpg
  perl storable	requires perl (and the perl modules Storable and Data::Dumper)
  perl pod       requires perldoc
- Openoffice.org	1.x and Opendocument (OASIS) text documents
-		requires unzip and o3tohtml or sxw2txt (distributed together
+ OpenOffice or	1.x and Opendocument (OASIS) text documents
+ LibreOffice	requires unzip and o3tohtml or sxw2txt (distributed together
 		with lesspipe)
 
 4.3 Conversion of files with alternate character encodings
@@ -414,6 +414,8 @@ less diagram.png
  or to decode MacOS X formats.
 
  Thanks to (in alphabetical order):
+ Marc Abramowitz: allow for color ls output on more operating systems
+ James Ahlborn: do not interpret .xml files as html
  Sören Andersen: PPD files colorization requested
  Andrew Barnert: shell syntax fix
  Peter D. Barnes, Jr.: plist files for Mac OS X
@@ -429,7 +431,8 @@ less diagram.png
  Ben Kibbey: works on FreeBSD
  Peter Kostka: mktemp on MacOS fixes
  Heinrich Kuettler: formatting, html via lynx
- Vincent Lefèvre: runtime checks for shell, many enhancements, provided sxw2txt
+ Vincent Lefèvre: runtime checks for shell, many enhancements, provided sxw2txt,
+   determine options for 'file' at runtime, display text in the proper encoding
  David Leverton: detect helper programs at runtime
  Jay Levitt: suggested to use enscript for highlighting support (see 4.2 above)
  Vladimir Linek: inspired me to add ps and dvi support
