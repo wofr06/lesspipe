@@ -432,6 +432,7 @@ less diagram.png
  Carl Greco: enhanced output for .deb files
  Stephan Hegel: suggested better 7za support
  Jürgen Kahnert: display debian files without dpkg
+ Sebastian Kayser: suggested a less wrapper to display URLs
  Ben Kibbey: works on FreeBSD
  Peter Kostka: mktemp on MacOS fixes
  Heinrich Kuettler: formatting, html via lynx
