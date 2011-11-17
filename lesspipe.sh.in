@@ -885,9 +885,15 @@ if [[ "$a" = "" ]]; then
   fi
   if [[ "$SHELL" = *csh ]]; then
     echo "setenv LESSOPEN \"|$pat$0 %s\""
+    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
+      echo "setenv LESS_ADVANCED_PREPROCESSOR 1"
+    fi
   else
     echo "LESSOPEN=\"|$pat$0 %s\""
     echo "export LESSOPEN"
+    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
+      echo "LESS_ADVANCED_PREPROCESSOR=1; export LESS_ADVANCED_PREPROCESSOR"
+    fi
   fi
 else
   # check for pipes so that "less -f ... <(cmd) ..." works properly

@@ -369,6 +369,10 @@ less diagram.png
  package contents without unpacking the files and even without having java
  installed or without working neccessarily on a Debian system.
 
+ The contrib directory does contain a less wrapper (a bash/zsh function) that can be
+ used to display URLs using less. This allows to pass the URL contents through lesspipe
+ as if it would be a local file.
+
 8. Other documentation about lesspipe
 =====================================
 	http://ref.cern.ch/CERN/CNL/2002/001/unix-less/

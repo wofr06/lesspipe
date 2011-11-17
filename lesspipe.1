@@ -105,10 +105,10 @@ can be used instead of unsetting the environment variable
 .B LESSOPEN
 .PP
 If the ENV variable LESS_ADVANCED_PREPROCESSOR is respected by lesspipe.sh
-then files containing mostly ASCII text get displayed as is. To activate
+then files containing mostly ASCII text get displayed unmodified. To activate
 filtering for such formats the contents of
 .B LESS_ADVANCED_PREPROCESSOR
-has to be set.
+has to be set to an non empty value.
 .SH SYNTAX HIGHLIGHTING (experimental)
 The filter is able to do syntax highlighting for
 the languages ada, asm, awk, c, c++, groff, html, xml, java, javascript, lisp,

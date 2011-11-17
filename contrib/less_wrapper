@@ -1,0 +1,24 @@
+# Contributed by Sebastian Kayser
+# Quick ~/.bashrc (./zshrc) hack to directly open URLs with less
+# (instead of "wget -qO- <url> | less")
+
+function fetch_url_tmppath() {
+    local __tmpfile=`mktemp -t less_urlcontent.XXXX` && \
+        wget -q -O ${__tmpfile} "$1" && \
+        echo ${__tmpfile}
+}
+
+function less() {
+    local __therealthing="$(type -P less 2>|/dev/null || type -p less | sed 's/.* //')"
+    if [ -n "${__therealthing}" ]; then
+        case "$1" in
+            http://*|https://*) local __fn=`fetch_url_tmppath "$1" 2>/dev/null`
+                   [ -z "${__fn}" ] && { echo "Couldn't download $1"; return; }
+                   ${__therealthing} "${__fn}"
+                   ;;
+            *) ${__therealthing} "$@";;
+        esac
+else
+echo "Couldn't find less in your \$PATH"
+    fi
+}
