@@ -1,13 +1,16 @@
 lesspipe.sh, a preprocessor for less
 ====================================
 
-Version: 1.60
+Version: 1.72
 Author : Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 License: GPL
 
 Latest version available from:
  http://freshmeat.net/projects/lesspipe/	or
  http://sourceforge.net/projects/lesspipe/
+
+The development version in svn can be found at
+ https://lesspipe.svn.sourceforge.net/svnroot/lesspipe/trunk
 
 To report bugs or make proposals to improve lesspipe please contact
 the author by email.
@@ -55,8 +58,8 @@ Contents
  The input filter lesspipe.sh is based on two main ideas. The recognition of
  the file format is not based on the file suffix. This method from the Windows
  world is error prone and keeping the suffix list up to date is a tedious job.
- UNIX comes with the "file" command [2] that recognizes lots of formats. Up to
- date file descriptions are included in the tarball, maintaining a list of
+ UNIX comes with the "file" command [2], [6] that recognizes lots of formats.
+ Up to date file descriptions are included in the tarball, maintaining a list of
  file formats is therefore only a matter of obtaining a current version of the
  "file" package.
 
@@ -113,11 +116,17 @@ Contents
  Syntax highlighting (see below) is only tried if less is called with -r or -R
  and highlighting support was requested when generating lesspipe.sh !!!
 
+ If lesspipe.sh respects the environment variable LESS_ADVANCED_PREPROCESSOR
+ (lesspipe.sh contains that variable name, this is defined at configure time) 
+ then the amount of preprocessing depends on whether this variable is set or
+ not. If it is set, then all files get preprocessed, otherwise html, rtf, ps
+ files and files with alternate character encodings are displayed unmodified.
+
 3. Required programs
 ====================
 
- bash	(at least version 2.03) or zsh or ksh (also pdksh, tested with
- version 5.2). Configure puts an appropriate first line in the script
+ bash	or zsh or ksh (also pdksh, tested with version 5.2). Configure puts an
+        appropriate first line in the script
  file	(a version with an up to date magic file) (GNU file 4.xx recommended)
  perl	(for configure and code2color, lesspipe.sh can work without it)
  Standard UNIX programs like ar, cat, cut, dd, egrep, gzip, ln, ls, mkdir,
@@ -138,6 +147,7 @@ Contents
  7-zip			requires 7za
  lzip			requires lzip
  lzma			requires lzma (limited support only)
+ xz			requires xz
 
 4.2 List of preprocessed file types
 -----------------------------------
@@ -153,12 +163,15 @@ Contents
  directory	displayed using ls -lA
  RPM		requires GNU cpio and rpm2cpio or rpmunpack, optionally rpm
  Microsoft Word	requires antiword or catdoc
+ MS Powerpoint	requires ppthtml
+ MS Excel	requires xlhtml
  Debian 	requires ar, gzip and tar, shows more info if dpkg is installed
  html		requires html2text or elinks or links or lynx or w3m
  pdf		requires pdftotext or pdftohtml
  perl		requires pod2text
  rtf		requires unrtf
  dvi		requires dvi2tty
+ djvu		requires djvutxt
  ps		requires pstotext or ps2ascii (from the gs package)
  mp3		requires id3v2 or mp3info
  jpg, png, gif	requires identify
@@ -170,20 +183,16 @@ Contents
  gpg encrypted	requires gpg
  perl storable	requires perl (and the perl modules Storable and Data::Dumper)
  perl pod       requires perldoc
- Openoffice.org	1.x and Opendocument (OASIS) text documents
-		requires unzip and o3tohtml or sxw2txt (distributed together
+ OpenOffice or	1.x and Opendocument (OASIS) text documents
+ LibreOffice	requires unzip and o3tohtml or sxw2txt (distributed together
 		with lesspipe)
 
 4.3 Conversion of files with alternate character encodings
 ----------------------------------------------------------
- If the file utility reports a file containing ISO-8859, UTF-8 or UTF-16
- characters and the LANG variable indicates that the display should be in
- a different encoding (UTF-8 or ISO-8859) then the assumption is made that
- the text can be converted (for ISO-8859 ISO-8859-1 is selected).
- If the LANG variable gives no hint that UTF-8 is required, then text
- with UTF-8 encoding is converted to ISO-8859-1. This is not always correct
- but gives at least for some file contents a better display.
- The conversion requires the 'iconv' program.
+ If the file utility reports text containing ISO-8859, UTF-8 or UTF-16 encoded
+ characters then the text will be transformed using iconv into the default
+ encoding. This does assume iconv has the right default which can be wrong
+ in some situations.
 
 4.4 File formats currently not supported
 ----------------------------------------
@@ -256,16 +265,16 @@ Contents
 
  Much better syntax highlighting is obtained using the less emulation of vim:
  The editor vim comes with a file less.sh, in my case located in
- /usr/share/vim/vim71/macros. Assuming this file location do then define
+ /usr/share/vim/vim72/macros. Assuming that file location 
  a function lessc (bash, zsh, ksh users)
 
-	lessc () { /usr/share/vim/vim71/macros/less.sh "$@"}
+	lessc () { /usr/share/vim/vim72/macros/less.sh "$@"}
 
  or an alias lessc (csh, tcsh users)
 
-	alias lessc /usr/share/vim/vim71/macros/less.sh
-
- and use "lessc filename" to view the colorful file contents.
+	alias lessc /usr/share/vim/vim72/macros/less.sh
+ 
+ is defined and "lessc filename" is used to view the colorful file contents.
 
 6. Displaying files with special characters in the file name
 ============================================================
@@ -330,7 +339,7 @@ less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/src/file.c > file.c
 
  Files with binary contents can be extracted as well:
 
-less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:: > file-3.27.tar.gz
+less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:: > file-4.26.tar.gz
 
  Here the two colons at the end of the argument are required to suppress the
  unzipping of the resulting file and to extract the tar file instead of
@@ -360,6 +369,10 @@ less diagram.png
  package contents without unpacking the files and even without having java
  installed or without working neccessarily on a Debian system.
 
+ The contrib directory does contain a less wrapper (a bash/zsh function) that can be
+ used to display URLs using less. This allows to pass the URL contents through lesspipe
+ as if it would be a local file.
+
 8. Other documentation about lesspipe
 =====================================
 	http://ref.cern.ch/CERN/CNL/2002/001/unix-less/
@@ -368,13 +381,13 @@ less diagram.png
         http://carloscosta.org/2008/07/05/how-to-get-more-from-less/
  Documentation in german:
 	german.txt (distributed with lesspipe, not updated)
-	http://www.linux-magazin.de/ausgabe/2001/01/lesspipe/lesspipe.html
+	http://www.linux-magazin.de/Heft-Abo/Ausgaben/2001/01/Bessere-Sicht
 	http://www.linux-user.de/ausgabe/2002/04/060-ootb/lesspipe-1.html
 
 9. External links
 =================
 
-(last checked: Nov 28 2008):
+(last checked: Apr 06 2010):
 
 9.1 URLs to some utilities
 -------------------------------------
@@ -390,10 +403,11 @@ less diagram.png
 9.2 References
 --------------
  [1] http://www.greenwoodsoftware.com/less/	(less)
- [2] ftp://ftp.gw.com/pub/unix/file/		(file)
+ [2] ftp://ftp.astron.com/pub/file/		(file)
  [3] http://freshmeat.net/projects/lesspipe/
  [4] http://sourceforge.net/projects/lesspipe/
  [5] http://www.palfrader.org/code2html/	(code2html)
+ [6] http://www.darwinsys.com/file/		(file)
 
 10. Contributors
 ===============
@@ -404,10 +418,13 @@ less diagram.png
  or to decode MacOS X formats.
 
  Thanks to (in alphabetical order):
+ Marc Abramowitz: allow for color ls output on more operating systems
+ James Ahlborn: do not interpret .xml files as html
  Sören Andersen: PPD files colorization requested
  Andrew Barnert: shell syntax fix
  Peter D. Barnes, Jr.: plist files for Mac OS X
  Eduard Bloch: proposed support for ISO images
+ Mathieu Bouillaguet: add support for xz compression
  Florian Cramer: MS Word, Openoffice support (o3read), ASCIIart, DjVu support
  Philippe Defert: unattended installation
  Antonio Diaz Diaz: proposed support for lzip
@@ -416,21 +433,25 @@ less diagram.png
  Stephan Hegel: suggested better 7za support
  Jürgen Kahnert: display debian files without dpkg
  Ben Kibbey: works on FreeBSD
+ Peter Kostka: mktemp on MacOS fixes
  Heinrich Kuettler: formatting, html via lynx
- Vincent Lefevre: Openoffice support (sxw2txt)
+ Vincent Lefèvre: runtime checks for shell, many enhancements, provided sxw2txt,
+   determine options for 'file' at runtime, display text in the proper encoding
+ David Leverton: detect helper programs at runtime
  Jay Levitt: suggested to use enscript for highlighting support (see 4.2 above)
  Vladimir Linek: inspired me to add ps and dvi support
  Istvan Marko: speedup of the procedure
  Markus Meyer: improved mp3 handling
  Remi Mommsen: Mac OS X support
  Derek B. Noonburg: PDF files support
- Jim Pryor: many enhancements, bug fixes, restructuring of code
+ Martin Otte: mktemp on MacOS fixes
+ Jim Pryor: many enhancements, bug fixes, restructuring of code, tar detection
  Slaven Rezic: Cygwin support, bug fixes
  Daniel Risacher: gpg support
  Jens Schleusener: ksh syntax fixes
  Ken Teague?: support more versions of file command
  Paul Townsend: improved zip support for Solaris, bug fixes in configure
+ Petr Uzel: detect helper programs at runtime
  Chelban Vasile: trap command not working under /bin/sh
  Götz Waschk: suggested lzma support
  Michael Wiedmann: Debian packages support
-~

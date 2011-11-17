@@ -29,7 +29,7 @@ less    testok/test.deb:./test.txt            #ignore error
 less    testok/a\ b.tgz:testok/a\#b.sxw       #ignore error
 less    testok/a\ b.tgz:testok/a\~b.odt       #ignore error
 less    testok/a\|b.7za:testok/a\|b.txt       #ignore error
-less    testok/onefile.7za                    #ignore error
+less -f testok/onefile.7za                    #ignore error
 less    testok/a\ b.tgz:testok/onefile.7za    #ignore error
 less    testok/a\ b.tgz:testok/a\|b.7za:testok/a\|b.txt #ignore error
 less    testok/test.rar:testok/a\ b           #ignore error
