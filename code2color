@@ -2,10 +2,14 @@
 
 #use strict;
 use Getopt::Long;
+use File::Basename;
 use POSIX;
 
-my $VERSION = "0.1";
-my $vernr = "0.9.1"; # this is the underlying version of Peter Palfrader's script
+my $VERSION = "0.2";
+my $vernr = "0.9.1"; # this is the underlying version of Peter Palfraders script
+##########################################################################
+# allow only a limited set of known (external) colorizers
+my @colorizers = qw(code2color pygmentize);
 ##########################################################################
 #
 # very early check whether this routine is called from less -R or less -r
@@ -446,7 +450,8 @@ sub get_input_file
       
       $_[2] = $langmode;
       $_[3] = $alt_langmode;
-      print "==> append : to filename to switch off syntax highlighting\n";
+      print "==> append : to filename to switch off syntax highlighting\n"
+        if ! $ENV{LESSQUIET};
       return \$code;
   };
 
@@ -3240,6 +3245,19 @@ return \%LANGUAGE;
 };
 use Getopt::Std;
 getopts('i:l:') || exit 2;
+  # external colorizer ?
+  if ( $ENV{LESSCOLORIZER} and $ENV{LESSCOLORIZER} ne 'code2color' ) {
+    # for security reasons do accept only a limited set of colorizers
+    die "$ENV{LESSCOLORIZER} is not an allowed colorizer, use one of ",
+      join(', ',@colorizers), " instead\n"
+      if ! grep {basename($ENV{LESSCOLORIZER}) eq $_} @colorizers;
+    die "$ENV{LESSCOLORIZER} not found or not an executable\n"
+      if ! -x $ENV{LESSCOLORIZER}
+      and ! grep { -x "$_/$ENV{LESSCOLORIZER}" } split /:/, $ENV{PATH};
+    # call external colorizer
+    `$ENV{LESSCOLORIZER} @ARGV`;
+    exit;
+  }
   $str = main(parse_passed_params( infile        => $ARGV[0] || '-',
              outfile       => '-',
 #             linenumbers   => 1 ,

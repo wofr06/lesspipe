@@ -39,6 +39,7 @@ less -f testok/id3v2.mp3                      #ignore error
 less -f testok/a\?b.gz
 less -f testok/a\[b.gz
 less -f testok/a\]b.gz
-less    testok/azip.tlz:a\$b.lz               #ignore error
-less -f testok/a\\b.lz                        #ignore error
-
+# the lzip format became less popular, not testing it any longer
+#less    testok/azip.tlz:a\$b.lz               #ignore error
+#less -f testok/a\\b.lz                        #ignore error
+less    testok/a\ test

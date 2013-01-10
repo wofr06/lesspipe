@@ -3,7 +3,7 @@ INSTALL
 Execute the following commands (for a more detailed description see below):
 
   ./configure
-  cp lesspipe.sh sxw2txt code2color /usr/local/bin
+  cp lesspipe.sh sxw2txt code2color tarcolor /usr/local/bin
 
 or if you prefer make:
 
@@ -33,23 +33,29 @@ Step 1: recreate lesspipe.sh and Makefile (optional)
 To verify a working system and to customize lesspipe.sh to your needs
 recreate lesspipe.sh from lesspipe.sh.in (and Makefile) by the command
 
- ./configure [--help] [--ask|--default|--fixed|--yes] [--prefix=<path>] [--shell=<file>]
+ ./configure [--help] [--ask|--default|--fixed|--yes] [--nomake]
+	[--prefix=<path>] [--shell=<file>]
 
-For an explanation of the options do execute
-  ./configure --help
-To create a lesspipe.sh assuming all helper applications are in place do execute
-  ./configure --yes
-To accept the defaults searching the helper apps in $PATH please use
-  ./configure --default
-To use preconfigured defaults (last lines in configure) for answering the
-questions (no matter whether helper applications are installed) do execute
-  ./configure --fixed
-To create a Makefile that does ask questions by default do use
-  ./configure --ask
-To install lesspipe.sh and code2color in <path>/bin (with make install) use
-  ./configure --prefix=<path>
-To create lesspipe.sh for a specific shell ((k)sh like shells only) do say
-  ./configure --shell=<file>
+Options:
+  --help                  print this message
+  --ask                   ask questions when running make (this is the default
+                          for configure but without --ask it is not for make)
+  --default               do not ask questions, try to guess correct answer
+  --yes                   like --default but assume 'yes' to all questions
+  --fixed                 like --yes but use preconfigured answer (see below)
+  --shell=<filename>      specify full path to an alternative shell to use
+  --nomake                do not generate a Makefile
+Directory and file names:
+  --prefix=PREFIX         install lesspipe.sh in PREFIX/bin (/usr/local)
+
+configure generates by default both lesspipe.sh and Makefile
+configure tries to find required and optional programs for lesspipe.sh
+If optional programs are not found, then you can choose between
+  - giving the correct location of the program if installed
+  - including the code in lesspipe.sh without having the program
+  - or skipping the code for the missing program.
+Answers to the questions can be preconfigured by modifying the data section
+in configure after the __END__ line. For missing data use the default answer
 
 The recreation of lesspipe.sh can also be achieved by using the supplied or
 regenerated Makefile with the command
@@ -92,15 +98,16 @@ magic file and your personal one. Example:
   MAGIC='/usr/share/file/magic:/Users/myaccount/.magic'
   export MAGIC
 
-Step 3: install lesspipe.sh, code2color and sxw2txt
----------------------------------------------------
+Step 3: install lesspipe.sh, code2color, sxw2txt and tarcolor
+-------------------------------------------------------------
 You can copy lesspipe.sh to any appropriate place.
 Suggested location: /usr/local/bin/lesspipe.sh
 For syntax highlighting to work you have to copy the perl script code2color
 to the same directory. The program sxw2txt is required for decoding Openoffice
-and OpenDocument (OASIS) documents, if o3tohtml is not installed.
+and OpenDocument (OASIS) documents, if o3tohtml is not installed. The program
+tarcolor allows to colorize tar listings.
 
-  cp lesspipe.sh code2color sxw2txt /usr/local/bin
+  cp lesspipe.sh code2color sxw2txt tarcolor /usr/local/bin
 
 This can be achieved also with make:
 
@@ -126,7 +133,7 @@ of file filtering himself.
 Generated lesspipe.sh and Makefile in the package
 =================================================
 the supplied files were generated with the settings from configure
-(after the __END__ line), that is everything enabled except synyax highlighting
+(after the __END__ line), that is everything enabled except syntax highlighting
 and with support for the LESS_ADVANCED_PREPROCESSOR variable.
 
   ./configure --fixed

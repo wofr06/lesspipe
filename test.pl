@@ -13,6 +13,7 @@ open F, "TESTCMDS" or die "Could not read TESTCMDS:$!\n";
 my $retcode = 0;
 my $duration = time();
 my $sumok = 0;
+my $sumignore = 0;
 my $sumnok = 0;
 while (<F>) {
   next if /^#/;
@@ -42,6 +43,8 @@ while (<F>) {
     print "result:$res" if $debug;
     my @res = split /\n/, $res;
     shift @res if $res[0] =~ /^==>/;
+    # directory listing
+    $res[0] = $1 if $res[0] =~ /total 0$/ and $res[1] =~ /(test)(\e\[\d\dm)?$/; 
     shift @res while @res and $res[0] =~ /^\s*$/;
     $ok = $res[0] =~ /^\s*(\e\[36m)?test(\e\[0m)?\s*$/ if $res[0];
     # special case for nroff
@@ -65,11 +68,12 @@ while (<F>) {
     $retcode++ if ! $ok and ! $ignore;
     $res = "NOT ok";
     $res .= " (ignored)" if $ignore;
-    $sumnok++;
+    $sumnok++ if ! $ignore;
+    $sumignore++ if $ignore;
   }
   printf "%-56s %s\n", $_, $res;
 }
 close F;
 $duration = time() - $duration;
-print "$sumok tests passed and $sumnok tests failed in $duration seconds\n";
+print "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $duration seconds\n";
 exit $retcode;

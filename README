@@ -1,7 +1,7 @@
 lesspipe.sh, a preprocessor for less
 ====================================
 
-Version: 1.72
+Version: 1.80
 Author : Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 License: GPL
 
@@ -9,9 +9,8 @@ Latest version available from:
  http://freshmeat.net/projects/lesspipe/	or
  http://sourceforge.net/projects/lesspipe/
 
-The development version in svn can be found at
- https://lesspipe.svn.sourceforge.net/svnroot/lesspipe/trunk
-
+The development version can be checked out using svn:
+ svn co svn://svn.code.sf.net/p/lesspipe/code/trunk
 To report bugs or make proposals to improve lesspipe please contact
 the author by email.
 
@@ -24,10 +23,12 @@ Contents
  4.  Supported file formats
  4.1   Supported compression methods
  4.2   List of preprocessed file types
- 4.3   Conversion of files with alternate character encodings
+ 4.3   Conversion of files with alternate character encoding
  5.  Syntax highlighting
- 5.1   List of supported languages
- 5.2   Syntax highlighting alternatives
+ 5.1.1   List of supported languages
+ 5.1.2   Syntax highlighting alternatives
+ 5.2   Colored directory listing
+ 5.3   Colored listing of tar file contents
  6.  Displaying files with special characters in the file name
  7.  Examples
  8.  Other documentation about lesspipe
@@ -42,11 +43,15 @@ Contents
  To browse files under UNIX the excellent viewer less [1] can be used. By
  setting the environment variable LESSOPEN, less can be enhanced by external
  filters to become even more powerful. Most Linux distributions come already
- preconfigured with a "lesspipe.sh" that covers the most common situations.
+ with a "lesspipe.sh" that covers the most common situations.
 
- The input filter for less found in this package is understanding a lot
- more file formats and even allows to view textual representation of files
- contatined in archives. It is easily extendable for new formats.
+ The input filter for less described here is called "lesspipe.sh". It is able
+ to process a wide variety of file formats. It enables users to deeply inspect
+ archives and to display the contents of files in archives without having to
+ unpack them before. That means file contents can be properly interpreted even
+ if the files are compressed and contained in a hierarchy of archives (often
+ found in RPM or DEB archives containing source tarballs). The filter is easily
+ extensible for new formats.
 
  The input filter which is also called "lesspipe.sh" is written in a ksh
  compatible language (ksh, bash, zsh) as one of these is nearly always installed
@@ -55,18 +60,12 @@ Contents
  less clean than it could as it was tried to make the script compatible with
  a number of old shells and applications especially found on non Linux systems.
 
- The input filter lesspipe.sh is based on two main ideas. The recognition of
- the file format is not based on the file suffix. This method from the Windows
- world is error prone and keeping the suffix list up to date is a tedious job.
- UNIX comes with the "file" command [2], [6] that recognizes lots of formats.
- Up to date file descriptions are included in the tarball, maintaining a list of
- file formats is therefore only a matter of obtaining a current version of the
- "file" package.
-
- The second idea is to being able to call lesspipe.sh with a hierarchy of file
- names and to pull out and interpret finally the file at the bottom of the
- hierarchy. This would allow to look at individual files contained in an
- archive which itself could be part of a still bigger archive.
+ The filter does different things depending on the file format. In most cases
+ it is determined on the output of the "file" command [2], [6], that recognizes
+ lots of formats. Only in a few cases the file suffix is used to determine what
+ to display. Up to date file descriptions are included in the "file" package.
+ Maintaining a list of file formats is therefore only a matter of keeping that
+ package up to date.
 
 2. Usage
 ========
@@ -84,7 +83,7 @@ Contents
  in the above commands.
 
  As lesspipe.sh is accepting only a single argument, a hierarchical list of file
- names has to be separated by a nonblank character. A colon is rarely found
+ names has to be separated by a non blank character. A colon is rarely found
  in file names, therefore it has been chosen as the separator character. If a
  file name does however contain at least one isolated colon, the equal sign =
  can be used as an alternate separator character. In that case the = character
@@ -93,7 +92,8 @@ Contents
  guarantees a correct processing and display at each stage of the filtering.
 
  To view files in multifile archives the following command can be used:
-	less archive_file:contained_file
+	less archive_file:contained_file      or
+        less archive_file=contained_file=     (with = as separator)
  This can be used to extract single files from a multifile archive:
 	less archive_file:contained_file > extracted_file
  For extracting files less is not required, that can be done also using:
@@ -110,25 +110,36 @@ Contents
 
  Display the last file in the file1:..:fileN chain in raw format:
  Suppress input filtering:	less file1:..:fileN:  (append 1 colon)
- Suppress decompression:		less file1:..:fileN:: (append 2 colons)
+ Suppress decompression:	less file1:..:fileN:: (append 2 colons)
 
  Suppress syntax highlighting:	less file1:..:fileN:  (append 1 colon)
  Syntax highlighting (see below) is only tried if less is called with -r or -R
  and highlighting support was requested when generating lesspipe.sh !!!
 
- If lesspipe.sh respects the environment variable LESS_ADVANCED_PREPROCESSOR
- (lesspipe.sh contains that variable name, this is defined at configure time) 
- then the amount of preprocessing depends on whether this variable is set or
- not. If it is set, then all files get preprocessed, otherwise html, rtf, ps
- files and files with alternate character encodings are displayed unmodified.
+ Several environment variables can influence the behavior of lesspipe.sh.
 
+ LESSQUIET will suppress additional output not belonging to the file contents
+ if set to a non empty value.
+
+ LESS can be used to switch on colored less output (has to contain -r or -R).
+
+ LESSCOLORIZER can contain a syntax highlighting program different from
+ the code2color used by default (currently only pygmentize allowed).
+
+ Code for using LESS_ADVANCED_PREPROCESSOR is optionally generated (configure).
+ LESS_ADVANCED_PREPROCESSOR will switch on filtering methods for html, rtf, ps
+ files and files with alternate character encoding, if this variable is set. 
+ Filtering these formats is also done if there is no LESS_ADVANCED_PREPROCESSOR
+ support (then this string is not contained in lesspipe.sh). Otherwise these
+ types of files will be shown unmodified.
+ 
 3. Required programs
 ====================
 
  bash	or zsh or ksh (also pdksh, tested with version 5.2). Configure puts an
         appropriate first line in the script
  file	(a version with an up to date magic file) (GNU file 4.xx recommended)
- perl	(for configure and code2color, lesspipe.sh can work without it)
+ perl	(for configure, code2color and tarcolor, lesspipe.sh works without it)
  Standard UNIX programs like ar, cat, cut, dd, egrep, gzip, ln, ls, mkdir,
  rm, sed, strings, tar, tput and further programs for special formats.
 
@@ -151,7 +162,7 @@ Contents
 
 4.2 List of preprocessed file types
 -----------------------------------
- tar		requires GNU tar
+ tar		requires GNU tar and optionally tarcolor for coloring
  nroff(mandoc)	requires groff
  ar library	requires ar
  jar archive	requires fastjar or unzip
@@ -173,7 +184,7 @@ Contents
  dvi		requires dvi2tty
  djvu		requires djvutxt
  ps		requires pstotext or ps2ascii (from the gs package)
- mp3		requires id3v2 or mp3info
+ mp3		requires id3v2 or mp3info or mp3info2
  jpg, png, gif	requires identify
  iso images	requires isoinfo
  MacOSX archive	requires lsbom
@@ -187,8 +198,8 @@ Contents
  LibreOffice	requires unzip and o3tohtml or sxw2txt (distributed together
 		with lesspipe)
 
-4.3 Conversion of files with alternate character encodings
-----------------------------------------------------------
+4.3 Conversion of files with alternate character encoding
+---------------------------------------------------------
  If the file utility reports text containing ISO-8859, UTF-8 or UTF-16 encoded
  characters then the text will be transformed using iconv into the default
  encoding. This does assume iconv has the right default which can be wrong
@@ -198,29 +209,37 @@ Contents
 ----------------------------------------
 (code contributed but commented out)
 
- jpeg and pbm graphics files to be displayed in ascii art. The ascii art
+ jpeg and pbm graphics files to be displayed in ASCII art. The ASCII art
  library works with overprinting that does not work properly within less.
  Therefore the resulting quality of the converted picture is not satisfactory.
 
- Display of video streams using mplayer with -aadriver (again ascii art) is
+ Display of video streams using mplayer with -aadriver (again ASCII art) is
  considered abuse of less and also commented out.
 
  looking at contents of DOS formatted disks by accessing the proper device file
 
-5. Syntax highlighting
-======================
+5. Colorizing the output
+========================
 
- Experimental support for syntax highlighting was added through a perl script
- 'code2color' which is derived from code2html [5].
+ ATTENTION: Syntax highlighting and other methods of colorizing the output
+ is only activated if the environment variable LESS is existing and contains
+ the option -R or -r or less is called with one of these options.
 
- ATTENTION: Syntax highlighting is only activated if the environment variable
- LESS is existing and contains the option -R or -r or less is called with one
- of these options. This guarantees, that instead of literal escape sequences
- colors are displayed. The detection of the -r/-R presence at runtime is
- rather dependent on the operating system and may not work in all cases.
- Putting the option in the LESS environment variable is guaranteed to work.
- By installing the perl module Proc::ProcessTable the OS dependence can be
- reduced as well.
+ This guarantees, that instead of literal escape sequences colors are
+ displayed. The detection of the -r/-R presence at run time is rather
+ dependent on the operating system and may not work in all cases.
+ Putting the option in the LESS environment variable is guaranteed to
+ work. By installing the perl module Proc::ProcessTable the OS dependence
+ can be reduced as well.
+
+ The display of wrapped long lines and moving backward in a file using the
+ options -r/-R can give weird output. For an explanation see
+ http://www.greenwoodsoftware.com/less/faq.html#dashr
+
+5.1 Syntax highlighting
+-----------------------
+ Experimental support for syntax highlighting was added through a perl
+ script 'code2color' which is derived from code2html [5].
 
  As syntax highlighting is rather resource intense it can be switched off by
  appending a colon after the file name if the output was colorful. If the
@@ -232,54 +251,59 @@ Contents
 
  That works as well to force the call of code2color for a given language.
 
-5.1 List of supported languages
--------------------------------
- Text files for the following languages can be highlighted:
+5.1.1 List of supported languages (code2color)
+----------------------------------------------
+ Text files for the following languages can be highlighted using code2color:
  ada, asm, awk, c, c++, groff, html, xml, java, javascript, lisp, m4,
  make, pascal, patch, perl, povray, python, ruby, shellscript, sql
  The corresponding suffixes recognized by code2color are:
  .ada .asm .inc .awk .c .h .cpp .cxx .groff .html .php .xml .java .js .lsp .m4
  Makefile .pas .patch .diff .pm .pl .pod .pov .py .rb .sh .sql
 
-5.2 Syntax highlighting alternatives
-------------------------------------
+5.1.2 Syntax highlighting alternatives
+--------------------------------------
  The enabling of syntax highlighting contains OS dependent code and is not
  guaranteed to work (it was tested on Linux, Solaris, IRIX, HPUX, AIX,
  MacOS X, Cygwin and FreeBSD). It is deactivated by default and not
- reccommended by me. It can be activated using "configure" or "make MODE=ask".
+ recommended by me. It can be activated using "configure" or "make MODE=ask".
 
  The function code2color contains code to guarantee that color codes are only
- sent if less is called with one of the options -r or -R. If this is not
- checked then the display can get garbled by escape sequences that are
- displayed by less instead of showing colorful output.
-
- Therefore the replacement of the lines
-
-	${dir}code2color $PPID ${in_file:+"$in_file"} $lang "$2" and
-	${dir}code2color $PPID ${in_file:+"$in_file"} "$2" respectively
-
- by lines containing calls to other syntax colorizers such as pygmentize
- or enscript would not in all cases lead to the desired result. In addition
- the display of wrapped long lines and moving backward in a file can give
- weird output. See also http://www.greenwoodsoftware.com/less/faq.html#dashr
+ sent if less is called with one of the options -r or -R. To ensure that these
+ checks are always performed, alternate syntax colorizers will be called 
+ from within code2color by setting the environment variable LESSCOLORIZER
+ to the name of another program. Currently only pygmentize (and code2color as
+ the default) is allowed. This can be changed in the first lines of code2color.
 
  Much better syntax highlighting is obtained using the less emulation of vim:
  The editor vim comes with a file less.sh, in my case located in
- /usr/share/vim/vim72/macros. Assuming that file location 
+ /usr/share/vim/vim73/macros. Assuming that file location 
  a function lessc (bash, zsh, ksh users)
 
-	lessc () { /usr/share/vim/vim72/macros/less.sh "$@"}
+	lessc () { /usr/share/vim/vim73/macros/less.sh "$@"}
 
  or an alias lessc (csh, tcsh users)
 
-	alias lessc /usr/share/vim/vim72/macros/less.sh
+	alias lessc /usr/share/vim/vim73/macros/less.sh
  
  is defined and "lessc filename" is used to view the colorful file contents.
+
+5.2 Colored Directory listing
+-----------------------------
+The conditions to display a colored listing are described above. Depending
+on the operating system ls is then called with appropriate options to
+produce colored output.
+
+5.3 Colored listing of tar file contents
+----------------------------------------
+As above less has to be called with -r or -R. If also the executable tarcolor
+(contained in the lesspipe tar file, see also [7]) is installed, then the
+listing of tar file contents is colored in a similar fashion as directory
+contents.
 
 6. Displaying files with special characters in the file name
 ============================================================
 
- Shell metacharacters in file names: space (frequently used in windows
+ Shell meta characters in file names: space (frequently used in windows
  file names), the characters | & ; ( ) ` < > " ' # ~ = $ * ? [ ] or \
  must be escaped by a \ when used in the shell, e.g. less a\ b.tar.gz:a\"b
  will display the file a"b contained in the gzipped tar archive a b.tar.gz.
@@ -324,12 +348,14 @@ less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/doc/file.man
 
  The subcomponents of the argument to less were easily obtained by cut and
  paste using information contained in the previous lines of output.
+ Care has been taken to display the subcomponents already in the way
+ required by lesspipe, so that in most cases double clicking will select it. 
  If the nroff sources should have been displayed instead, appending
  another colon at the end of the argument would have done the job:
 
 less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/doc/file.man:
 
- If the man page was even compressed (e.g. as file.man.gz) it would have been
+ If the man page was compressed (e.g. as file.man.gz) it would have been
  uncompressed anyway. To also disallow uncompressing the source file.man.gz
  a second colon would have to be appended to the argument.
 
@@ -367,11 +393,11 @@ less diagram.png
 
  Other interesting examples are the inspection of Java's .jar files or Debian
  package contents without unpacking the files and even without having java
- installed or without working neccessarily on a Debian system.
+ installed or without working necessarily on a Debian system.
 
- The contrib directory does contain a less wrapper (a bash/zsh function) that can be
- used to display URLs using less. This allows to pass the URL contents through lesspipe
- as if it would be a local file.
+ The contrib directory does contain a less wrapper (a bash/zsh function) that
+ can be used to display URLs using less. This allows to pass the URL contents
+ through lesspipe as if it would be a local file.
 
 8. Other documentation about lesspipe
 =====================================
@@ -387,10 +413,10 @@ less diagram.png
 9. External links
 =================
 
-(last checked: Apr 06 2010):
+(last checked: Jan 10 2013):
 
 9.1 URLs to some utilities
--------------------------------------
+--------------------------
  antiword   http://www.winfield.demon.nl/
  html2text  http://www.mbayer.de/html2text/
  cabextract http://www.cabextract.org.uk/
@@ -408,9 +434,10 @@ less diagram.png
  [4] http://sourceforge.net/projects/lesspipe/
  [5] http://www.palfrader.org/code2html/	(code2html)
  [6] http://www.darwinsys.com/file/		(file)
+ [7] https://github.com/msabramo/tarcolor	(tarcolor)
 
 10. Contributors
-===============
+================
 
  The script lesspipe.sh is constantly enhanced thanks to suggestions from
  users. Among the additions to lesspipe.sh is the code to browse the ASCII
@@ -418,7 +445,7 @@ less diagram.png
  or to decode MacOS X formats.
 
  Thanks to (in alphabetical order):
- Marc Abramowitz: allow for color ls output on more operating systems
+ Marc Abramowitz: allow for color output when ls or tar commands are used
  James Ahlborn: do not interpret .xml files as html
  Sören Andersen: PPD files colorization requested
  Andrew Barnert: shell syntax fix
@@ -431,6 +458,9 @@ less diagram.png
  Bastian Fuchs: Issues using bash vs. sh
  Carl Greco: enhanced output for .deb files
  Stephan Hegel: suggested better 7za support
+ Michel Hermier: support for DESTDIR in the Makefile
+ Tobias Hoffmann: bug fix introduced in v 1.72
+ Christian Höltje: suggested to use LESSCOLORIZER like in the Gentoo distro
  Jürgen Kahnert: display debian files without dpkg
  Sebastian Kayser: suggested a less wrapper to display URLs
  Ben Kibbey: works on FreeBSD
@@ -456,3 +486,4 @@ less diagram.png
  Chelban Vasile: trap command not working under /bin/sh
  Götz Waschk: suggested lzma support
  Michael Wiedmann: Debian packages support
+ Dale Wijnand: Proposed the suppression of informal output
