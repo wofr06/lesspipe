@@ -89,7 +89,7 @@ msg () {
   if [[ "$LESSQUIET" ]]; then
     return
   fi
-  echo $1
+  echo "==> $1"
 }
 
 filetype () {

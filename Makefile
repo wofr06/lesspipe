@@ -1,6 +1,6 @@
 # This is a generated file, do not edit it. Use configure to modify it
 PREFIX = /usr/local
-MODE = --default
+MODE = --fixed
 
 .PHONY: install
 
