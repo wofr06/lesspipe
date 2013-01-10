@@ -397,7 +397,7 @@ __END__
 #take_prog	Y
 
 #file		/usr/bin/file	# it is better to let configure do the checks
-HILITE		N		# we do not want syntax highlighting for --fixed
+HILITE		Y		# we do want syntax highlighting for --fixed
 LESS_ADVANCED_PREPROCESSOR Y	# always interpret textlike files (html, ...)
 
 # compression programs

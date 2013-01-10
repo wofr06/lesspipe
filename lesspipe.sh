@@ -432,7 +432,6 @@ isfinal() {
   elif [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
     if [[ $COLOR ]] && cmd_exist tarcolor; then
-      msg "using tarcolor to color output"
       $tarcmd tvf "$2" | tarcolor
     else
       $tarcmd tvf "$2"

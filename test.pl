@@ -43,9 +43,9 @@ while (<F>) {
     print "result:$res" if $debug;
     my @res = split /\n/, $res;
     shift @res if $res[0] =~ /^==>/;
-    # directory listing
-    $res[0] = $1 if $res[0] =~ /total 0$/ and $res[1] =~ /(test)(\e\[\d\dm)?$/; 
     shift @res while @res and $res[0] =~ /^\s*$/;
+    # special case for directory listing
+    $res[0] = 'test' if $res =~ /total \d+\b.*r--r--.*test/s;
     $ok = $res[0] =~ /^\s*(\e\[36m)?test(\e\[0m)?\s*$/ if $res[0];
     # special case for nroff
     $ok = $res[0] =~ s/^test \(1\)\s+.*/test/ if $res[0] and ! $ok;
@@ -62,7 +62,7 @@ while (<F>) {
   if ( $ok ) {
     $res =~ s/test/ok/ if $ok;
     $res =~ s/^\s+// if $ok;
-    $res .= " ($lines trailing lines)" if $lines;
+    #$res .= " ($lines trailing lines)" if $lines;
     $sumok++;
   } else {
     $retcode++ if ! $ok and ! $ignore;

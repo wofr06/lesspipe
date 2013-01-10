@@ -10,6 +10,7 @@ Version 1.80 Jan 10 2013
 - use alternate syntax highlighting program given by LESSCOLORIZER, currently
   only pygmentizer and code2color are allowed (proposed by Christian Höltje)
 - Introduce DESTDIR support in Makefile (requested by Michel Hermier) 
+- the generated lesspipe.sh in the tar file has syntax highlighting enabled
 Version 1.72 Nov 17 2011
 - detect proper options for the file command at runtime (Vincent Lefèvre)
 - guess the character encoding and optionally do a char conversion (VL)

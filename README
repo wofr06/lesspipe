@@ -194,8 +194,8 @@ Contents
  gpg encrypted	requires gpg
  perl storable	requires perl (and the perl modules Storable and Data::Dumper)
  perl pod       requires perldoc
- OpenOffice or	1.x and Opendocument (OASIS) text documents
- LibreOffice	requires unzip and o3tohtml or sxw2txt (distributed together
+ OASIS		Opendocument text documents (used for Openoffice, Libreoffice)
+ 		requires unzip and o3tohtml or sxw2txt (distributed together
 		with lesspipe)
 
 4.3 Conversion of files with alternate character encoding

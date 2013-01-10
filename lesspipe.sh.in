@@ -547,7 +547,6 @@ isfinal() {
     msg "use tar_file${sep}contained_file to view a file in the archive"
 #ifdef tarcolor
     if [[ $COLOR ]] && cmd_exist tarcolor; then
-      msg "using tarcolor to color output"
       $tarcmd tvf "$2" | tarcolor
     else
       $tarcmd tvf "$2"

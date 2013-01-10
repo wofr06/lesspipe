@@ -3246,7 +3246,7 @@ return \%LANGUAGE;
 use Getopt::Std;
 getopts('i:l:') || exit 2;
   # external colorizer ?
-  if ( $ENV{LESSCOLORIZER} and $ENV{LESSCOLORIZER} ne 'code2color' ) {
+  if ( $ENV{LESSCOLORIZER} and basename($ENV{LESSCOLORIZER}) ne 'code2color' ) {
     # for security reasons do accept only a limited set of colorizers
     die "$ENV{LESSCOLORIZER} is not an allowed colorizer, use one of ",
       join(', ',@colorizers), " instead\n"

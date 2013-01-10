@@ -65,10 +65,8 @@ regenerated Makefile with the command
 where the optional parameters MODE and PREFIX correspond to the configure
 options described above. Forcing the use of a specific shell is not possible.
 
-##  Please note that the activation of syntax highlighting does slow down
-##  the display of files noticeably. I do therefore recommend not using it.
-##  You can watch the difference when running the test suite (make test)
-##  with and without syntax highlighting.
+##  Please note that the activation of syntax highlighting can slow down
+##  the display of plain files noticeably.
 ##  An alternative to using less with syntax highlighting is the use of vim
 ##  with the macro less.vim. A script less.sh is usually coming with vim
 ##  that does emulate less and has syntax highlighting. 
@@ -133,7 +131,7 @@ of file filtering himself.
 Generated lesspipe.sh and Makefile in the package
 =================================================
 the supplied files were generated with the settings from configure
-(after the __END__ line), that is everything enabled except syntax highlighting
-and with support for the LESS_ADVANCED_PREPROCESSOR variable.
+(after the __END__ line), that is everything enabled i.e. syntax highlighting
+and the LESS_ADVANCED_PREPROCESSOR code is included.
 
   ./configure --fixed
