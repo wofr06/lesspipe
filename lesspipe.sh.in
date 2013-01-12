@@ -1,4 +1,4 @@
-# lesspipe.sh, a preprocessor for less (version 1.72)
+# lesspipe.sh, a preprocessor for less (version 1.80)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### from http://sourceforge.net/projects/lesspipe/
@@ -33,6 +33,12 @@ set +o noclobber
 #ifdef tar
 tarcmd='tar'
 #endif
+
+dir=${LESSOPEN#\|}
+dir=${dir%%lesspipe.sh*\%s}
+dir=${dir%%/}
+# look for commands also where lesspipe.sh is stored
+PATH=$PATH:$dir
 
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
@@ -78,18 +84,25 @@ trap - PIPE
 unset iconv
 iconv() {
   if [[ -z "$iconv" ]]; then
-    iconv="command iconv $(printf "%s$(command iconv --help | sed -n \
-      's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
-      tr \\n ' ')") -t //TRANSLIT"
+    iconv="command iconv"
+    arg=$(printf "%s$(command iconv --help 2>/dev/null | \
+      sed -n 's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
+      tr \\n ' ')")
+    if [[ -n "$arg" ]]; then
+      iconv="command iconv $arg  -t //TRANSLIT"
+    fi
+    #iconv="command iconv $(printf "%s$(command iconv --help | sed -n \
+    #  's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
+    #  tr \\n ' ')") -t //TRANSLIT"
   fi
   $iconv "$@"
 }
 
 msg () {
-  if [[ "$LESSQUIET" ]]; then
+  if [[ -n "$LESSQUIET" ]]; then
     return
   fi
-  echo "==> $1"
+  echo "==> $@"
 }
 
 filetype () {
@@ -321,7 +334,7 @@ get_cmd () {
       set -A cmd istemp "rar p -inul" "$2" "$file2"
 #endif 
 #ifdef 7za
-    elif [[ "$1" = *7-zip\ archive* ]] && cmd_exist 7za; then
+    elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
       set -A cmd istemp "7za e -so" "$2" "$file2"
 #endif
 #ifdef cabextract
@@ -418,13 +431,13 @@ isrpm () {
 # nasty hack to make rpm inspection work on MacOSX (and other BSD based systems)
 #ifdef bsd_cpio
     b=$(nexttmp -d)
-    rpm2cpio "$1"|(cd $b; pax -r "$2" 2>/dev/null)
+    rpm2cpio "$1" 2>/dev/null|(cd $b; pax -r "$2" 2>/dev/null)
     cat "$b/$2"
 #else
     b=$(nexttmp)
     echo "$b.out" > "$b"
     # to support older versions of cpio the --to-stdout option is not used here
-    rpm2cpio "$1"|cpio -i --quiet --rename-batch-file "$b" "$2"
+    rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --rename-batch-file "$b" "$2"
     cat "$b.out"
 #endif
   elif cmd_exist rpmunpack && cmd_exist cpio; then
@@ -513,11 +526,11 @@ isfinal() {
       lang=${3#$sep}
       lang="-l ${lang#.}"
       lang=${lang%%-l }
-      dir=${LESSOPEN#\|}
-      dir=${dir%%lesspipe.sh*\%s}
-      ${dir}code2color $PPID ${in_file:+"$in_file"} $lang "$2"
-      if [[ $? = 0 ]]; then
-        return
+      if cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} $lang "$2"
+        if [[ $? = 0 ]]; then
+          return
+        fi
       fi
     fi
 #endif
@@ -525,7 +538,7 @@ isfinal() {
     return
   fi
 
-  # color requires -r or -R when calling less, not recommended
+  # color requires -r or -R when calling less
   typeset COLOR
   if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
     COLOR="--color=always"
@@ -536,17 +549,21 @@ isfinal() {
   elif [[ "$1" = *directory* ]]; then
     set -A cmd ls -lA $COLOR "$2"
     if ! ls $COLOR > /dev/null 2>&1; then
-      set -A cmd "CLICOLOR_FORCE=1" ls -lA -G "$2"
+      set -A cmd ls -lA -G "$2"
       if ! ls -lA -G > /dev/null 2>&1; then
         set -A cmd ls -lA "$2"
       fi
     fi
     msg "This is a directory, showing the output of ${cmd[@]}"
-    "${cmd[@]}"
+    if [[ ${cmd[2]} = '-G' ]]; then
+      CLICOLOR_FORCE=1 "${cmd[@]}"
+    else
+      "${cmd[@]}"
+    fi
   elif [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
 #ifdef tarcolor
-    if [[ $COLOR ]] && cmd_exist tarcolor; then
+    if [[ -n $COLOR ]] && cmd_exist tarcolor; then
       $tarcmd tvf "$2" | tarcolor
     else
       $tarcmd tvf "$2"
@@ -565,7 +582,7 @@ isfinal() {
     if cmd_exist cpio && cmd_exist rpm2cpio; then
       echo $header
       echo "================================= Content ======================================"
-      istemp rpm2cpio "$2"|cpio -i -tv 2>/dev/null
+      istemp rpm2cpio "$2" 2>/dev/null|cpio -i -tv 2>/dev/null
     elif cmd_exist cpio && cmd_exist rpmunpack; then
       echo $header
       echo "================================= Content ======================================"
@@ -578,7 +595,7 @@ isfinal() {
     if cmd_exist cpio && cmd_exist rpm2cpio; then
       msg "use RPM_file${sep}contained_file to view a file in the RPM"
       echo "================================= Content ======================================"
-      istemp rpm2cpio "$2"|cpio -i -tv --quiet
+      istemp rpm2cpio "$2" 2>/dev/null|cpio -i -tv --quiet
     elif cmd_exist cpio && cmd_exist rpmunpack; then
       msg "use RPM_file${sep}contained_file to view a file in the RPM"
       echo "================================= Content ======================================"
@@ -697,7 +714,7 @@ isfinal() {
     istemp "rar v" "$2"
 #endif
 #ifdef 7za
-  elif [[ "$1" = *7-zip\ archive* ]] && cmd_exist 7za; then
+  elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
     typeset res
     res=$(istemp "7za l" "$2")
     if [[ "$res" = *\ 1\ file* ]]; then
@@ -883,11 +900,11 @@ isfinal() {
 # the next conditional is only there to remove syntax highlighting code
 #ifdef perl
   if [[ "$1" = *plain\ text* ]]; then
-    dir=${LESSOPEN#\|}
-    dir=${dir%%lesspipe.sh*\%s}
-    ${dir}code2color $PPID ${in_file:+"$in_file"} "$2"
-    if [[ $? = 0 ]]; then
-      return
+    if cmd_exist code2color; then
+      code2color $PPID ${in_file:+"$in_file"} "$2"
+      if [[ $? = 0 ]]; then
+        return
+      fi
     fi
   fi
 #endif

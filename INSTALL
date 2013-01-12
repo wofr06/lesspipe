@@ -100,10 +100,10 @@ Step 3: install lesspipe.sh, code2color, sxw2txt and tarcolor
 -------------------------------------------------------------
 You can copy lesspipe.sh to any appropriate place.
 Suggested location: /usr/local/bin/lesspipe.sh
-For syntax highlighting to work you have to copy the perl script code2color
-to the same directory. The program sxw2txt is required for decoding Openoffice
-and OpenDocument (OASIS) documents, if o3tohtml is not installed. The program
-tarcolor allows to colorize tar listings.
+The helper programs can be copied to the same directory as lesspipe.sh or any
+directory listed in the PATH environment variable. The program sxw2txt is
+required for decoding Openoffice and OpenDocument (OASIS) documents, if
+o3tohtml is not installed. The tarcolor script allows to colorize tar listings.
 
   cp lesspipe.sh code2color sxw2txt tarcolor /usr/local/bin
 

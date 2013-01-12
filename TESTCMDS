@@ -12,34 +12,32 @@ less -r testok/a\ b.tgz:testok/a\ text.gz:.ada
 less -r testok/a\ b.tgz:testok/a::b::c::d.gz:ada
 less    testok/a\ b.tgz:testok/a\`data.gz
 less    testok/a\ b.tgz:testok/a=ar.gz:a=b
-less    testok/a\ b.tgz:testok/a\'html.gz     #ignore error
-less    testok/a\ b.tgz:testok/a\"doc.gz      #ignore error
-less    testok/a\#rtf                         #ignore error
-less    testok/a\ b.tgz:testok/a\&pdf.gz      #ignore error
-less    testok/a\ b.tgz:testok/a\;dvi.gz      #ignore error
-less    testok/a\ b.tgz:testok/a\(ps.gz       #ignore error
+less    testok/a\ b.tgz:testok/a\'html.gz     #needs html2text elinks links lynx w3m
+less    testok/a\ b.tgz:testok/a\"doc.gz      #needs antiword catdoc
+less    testok/a\#rtf                         #needs unrtf
+less    testok/a\ b.tgz:testok/a\&pdf.gz      #needs pdftohtml pdftotext
+less    testok/a\ b.tgz:testok/a\;dvi.gz      #needs dvi2tty
+less    testok/a\ b.tgz:testok/a\(ps.gz       #needs pstotext ps2ascii
 less    testok/a\ b.tgz:testok/a\)nroff.gz
-# should not be tested, can make the file command hang
-#less    /dev/fd0:floppy.txt                   #ignore error
-less -f testok/perlstorable.gz                #ignore error
-less    testok/iso.image:/ISO.TXT\;1          #ignore error
-less    testok/test.rpm:test.txt              #ignore error
-less    testok/cabinet.cab:a\ text.gz         #ignore error
-less    testok/test.deb:./test.txt            #ignore error
-less    testok/a\ b.tgz:testok/a\#b.sxw       #ignore error
-less    testok/a\ b.tgz:testok/a\~b.odt       #ignore error
-less    testok/a\|b.7za:testok/a\|b.txt       #ignore error
-less -f testok/onefile.7za                    #ignore error
-less    testok/a\ b.tgz:testok/onefile.7za    #ignore error
-less    testok/a\ b.tgz:testok/a\|b.7za:testok/a\|b.txt #ignore error
-less    testok/test.rar:testok/a\ b           #ignore error
-less -f testok/test.utf16                     #ignore error
-less -f testok/test.mp3                       #ignore error
-less -f testok/id3v2.mp3                      #ignore error
+less -f testok/perlstorable.gz                #needs perlpackage Data::Dumper
+less    testok/iso.image:/ISO.TXT\;1          #needs isoinfo
+less    testok/test.rpm:test.txt              #needs rpm2cpio
+less    testok/cabinet.cab:a\ text.gz         #needs cabextract
+less    testok/test.deb:./test.txt            
+less    testok/a\ b.tgz:testok/a\#b.sxw       #needs sxw2txt o3tohtml
+less    testok/a\ b.tgz:testok/a\~b.odt       #needs sxw2txt o3tohtml
+less    testok/a\|b.7za:testok/a\|b.txt       #needs 7za
+less -f testok/onefile.7za                    #needs 7za
+less    testok/a\ b.tgz:testok/onefile.7za    #needs 7za
+less    testok/a\ b.tgz:testok/a\|b.7za:testok/a\|b.txt #needs 7za
+less    testok/test.rar:testok/a\ b           #needs unrar rar
+less -f testok/test.utf16                     #needs iconv
+less -f testok/test.mp3                       #needs id3v2 mp3info mp3info2
+less -f testok/id3v2.mp3                      #needs id3v2 mp3info mp3info2
 less -f testok/a\?b.gz
 less -f testok/a\[b.gz
 less -f testok/a\]b.gz
 # the lzip format became less popular, not testing it any longer
-#less    testok/azip.tlz:a\$b.lz               #ignore error
-#less -f testok/a\\b.lz                        #ignore error
+#less    testok/azip.tlz:a\$b.lz               #needs lzip
+#less -f testok/a\\b.lz                        #needs lzip
 less    testok/a\ test

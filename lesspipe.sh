@@ -1,5 +1,5 @@
 #!/bin/bash
-# lesspipe.sh, a preprocessor for less (version 1.72)
+# lesspipe.sh, a preprocessor for less (version 1.80)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### from http://sourceforge.net/projects/lesspipe/
@@ -34,12 +34,14 @@
 set +o noclobber
 tarcmd='tar'
 
+dir=${LESSOPEN#\|}
+dir=${dir%%lesspipe.sh*\%s}
+dir=${dir%%/}
+PATH=$PATH:$dir
+
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
 }
-if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-   NOL_A_P=_NO_L_A_P
-fi
 
 filecmd() {
   file -L -s "$@"
@@ -77,18 +79,25 @@ trap - PIPE
 unset iconv
 iconv() {
   if [[ -z "$iconv" ]]; then
-    iconv="command iconv $(printf "%s$(command iconv --help | sed -n \
-      's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
-      tr \\n ' ')") -t //TRANSLIT"
+    iconv="command iconv"
+    arg=$(printf "%s$(command iconv --help 2>/dev/null | \
+      sed -n 's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
+      tr \\n ' ')")
+    if [[ -n "$arg" ]]; then
+      iconv="command iconv $arg  -t //TRANSLIT"
+    fi
+    #iconv="command iconv $(printf "%s$(command iconv --help | sed -n \
+    #  's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
+    #  tr \\n ' ')") -t //TRANSLIT"
   fi
   $iconv "$@"
 }
 
 msg () {
-  if [[ "$LESSQUIET" ]]; then
+  if [[ -n "$LESSQUIET" ]]; then
     return
   fi
-  echo "==> $1"
+  echo "==> $@"
 }
 
 filetype () {
@@ -279,7 +288,7 @@ get_cmd () {
       elif cmd_exist rar; then
         cmd=(istemp "rar p -inul" "$2" "$file2")
       fi
-    elif [[ "$1" = *7-zip\ archive* ]] && cmd_exist 7za; then
+    elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
       cmd=(istemp "7za e -so" "$2" "$file2")
     elif [[ "$1" = *[Cc]abinet* ]] && cmd_exist cabextract; then
       cmd=(iscab "$2" "$file2")
@@ -365,7 +374,7 @@ isrpm () {
     b=$(nexttmp)
     echo "$b.out" > "$b"
     # to support older versions of cpio the --to-stdout option is not used here
-    rpm2cpio "$1"|cpio -i --quiet --rename-batch-file "$b" "$2"
+    rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --rename-batch-file "$b" "$2"
     cat "$b.out"
   elif cmd_exist rpmunpack && cmd_exist cpio; then
     # rpmunpack will write to stdout if it gets file from stdin
@@ -407,11 +416,24 @@ isfinal() {
     cat "$2"
     return
   elif [[ "$3" = $sep* ]]; then
+    if [[ "$3" = $sep ]]; then
+      msg "append :. or :<filetype> to activate syntax highlighting"
+    else
+      lang=${3#$sep}
+      lang="-l ${lang#.}"
+      lang=${lang%%-l }
+      if cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} $lang "$2"
+        if [[ $? = 0 ]]; then
+          return
+        fi
+      fi
+    fi
     cat "$2"
     return
   fi
 
-  # color requires -r or -R when calling less, not recommended
+  # color requires -r or -R when calling less
   typeset COLOR
   if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
     COLOR="--color=always"
@@ -422,20 +444,20 @@ isfinal() {
   elif [[ "$1" = *directory* ]]; then
     cmd=(ls -lA $COLOR "$2")
     if ! ls $COLOR > /dev/null 2>&1; then
-      cmd=("CLICOLOR_FORCE=1" ls -lA -G "$2")
+      cmd=(ls -lA -G "$2")
       if ! ls -lA -G > /dev/null 2>&1; then
         cmd=(ls -lA "$2")
       fi
     fi
     msg "This is a directory, showing the output of ${cmd[@]}"
-    "${cmd[@]}"
+    if [[ ${cmd[2]} = '-G' ]]; then
+      CLICOLOR_FORCE=1 "${cmd[@]}"
+    else
+      "${cmd[@]}"
+    fi
   elif [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
-    if [[ $COLOR ]] && cmd_exist tarcolor; then
-      $tarcmd tvf "$2" | tarcolor
-    else
-      $tarcmd tvf "$2"
-    fi
+    $tarcmd tvf "$2"
   elif [[ "$1" = *RPM* ]]; then
     header="use RPM_file${sep}contained_file to view a file in the RPM"
     if cmd_exist rpm; then
@@ -446,7 +468,7 @@ isfinal() {
     if cmd_exist cpio && cmd_exist rpm2cpio; then
       echo $header
       echo "================================= Content ======================================"
-      istemp rpm2cpio "$2"|cpio -i -tv 2>/dev/null
+      istemp rpm2cpio "$2" 2>/dev/null|cpio -i -tv 2>/dev/null
     elif cmd_exist cpio && cmd_exist rpmunpack; then
       echo $header
       echo "================================= Content ======================================"
@@ -483,14 +505,14 @@ isfinal() {
     istemp "ar p" "$2" data.tar.gz | gzip -dc - | $tarcmd tvf -
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then
-  elif [[ "$1" = *Perl\ POD\ document\ text$NOL_A_P* ]] && cmd_exist perldoc; then
+  elif [[ "$1" = *Perl\ POD\ document\ text* ]] && cmd_exist perldoc; then
     msg "append $sep to filename to view the perl source"
     istemp perldoc "$2"
   elif [[ "$1" = *\ script* ]]; then
     set "plain text" "$2"
   elif [[ "$1" = *text\ executable* ]]; then
     set "plain text" "$2"
-  elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
+  elif [[ "$1" = *PostScript* ]]; then
     if cmd_exist pstotext; then
       msg "append $sep to filename to view the postscript file"
       nodash pstotext "$2"
@@ -520,7 +542,7 @@ isfinal() {
       msg "use rar_file${sep}contained_file to view a file in the archive"
       istemp "rar v" "$2"
     fi 
-  elif [[ "$1" = *7-zip\ archive* ]] && cmd_exist 7za; then
+  elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
     typeset res
     res=$(istemp "7za l" "$2")
     if [[ "$res" = *\ 1\ file* ]]; then
@@ -545,7 +567,7 @@ isfinal() {
   elif [[ "$1" = *\ DVI* ]] && cmd_exist dvi2tty; then
     msg "append $sep to filename to view the binary DVI file"
     isdvi "$2"
-  elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *HTML* ]]; then
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
   elif [[ "$PARSEHTML" = yes && "$1" = *PDF* ]] && cmd_exist pdftohtml; then
@@ -569,7 +591,7 @@ isfinal() {
       msg "install antiword or catdoc to view human readable text"
       cat "$2"
     fi
-  elif [[ "$1" = *Rich\ Text\ Format$NOL_A_P* ]]  && cmd_exist unrtf; then
+  elif [[ "$1" = *Rich\ Text\ Format* ]]  && cmd_exist unrtf; then
     if [[ "$PARSEHTML" = yes ]]; then
       msg "append $sep to filename to view the RTF source"
       istemp "unrtf --html" "$2" | parsehtml -
@@ -612,26 +634,34 @@ isfinal() {
       msg "append $sep to filename to view the binary data"
       mp3info "$2"
     fi
-  elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
+  elif [[ "$1" = *perl\ Storable* ]]; then
     msg "append $sep to filename to view the binary data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8$NOL_A_P* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *UTF-8* ]] && cmd_exist iconv; then
     msg "append $sep to filename to view the UTF-8 encoded data"
     iconv -f UTF-8 "$2"
-  elif [[ "$1" = *ISO-8859$NOL_A_P* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *ISO-8859* ]] && cmd_exist iconv; then
     msg "append $sep to filename to view the ISO-8859 encoded data"
     iconv -f ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16$NOL_A_P* ]] && cmd_exist iconv; then
+  elif [[ "$1" = *UTF-16* ]] && cmd_exist iconv; then
     msg "append $sep to filename to view the UTF-16 encoded data"
     iconv -f UTF-16 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
-  elif [[ "$1" = *data$NOL_A_P* ]]; then
+  elif [[ "$1" = *data* ]]; then
     msg "append $sep to filename to view the $1 source"
     nodash strings "$2"
   else
     set "plain text" "$2"
+  fi
+  if [[ "$1" = *plain\ text* ]]; then
+    if cmd_exist code2color; then
+      code2color $PPID ${in_file:+"$in_file"} "$2"
+      if [[ $? = 0 ]]; then
+        return
+      fi
+    fi
   fi
   if [[ "$2" = - ]]; then
     cat
@@ -646,15 +676,9 @@ if [[ "$a" = "" ]]; then
   fi
   if [[ "$SHELL" = *csh ]]; then
     echo "setenv LESSOPEN \"|$pat$0 %s\""
-    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-      echo "setenv LESS_ADVANCED_PREPROCESSOR 1"
-    fi
   else
     echo "LESSOPEN=\"|$pat$0 %s\""
     echo "export LESSOPEN"
-    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-      echo "LESS_ADVANCED_PREPROCESSOR=1; export LESS_ADVANCED_PREPROCESSOR"
-    fi
   fi
 else
   # check for pipes so that "less -f ... <(cmd) ..." works properly

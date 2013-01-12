@@ -9,5 +9,10 @@ And cabextract prior to version 1.0 will pollute your working directory
 with unpacked files. Both the old bzip2 and cabextract versions are detected
 by configure and are not accepted.
 
-If the last test (utf-16) fails although iconv is available, then the magic
-file needs to be modified (suppress the recognition of MPEG ADTS formats).
+If the test for the file testok/test.utf16 fails although iconv is available,
+then the magic file needs to be modified (suppress the recognition of MPEG ADTS
+formats).
+
+The test.pl script sets internally the variables LESSOPEN and
+LESS_ADVANCED_PREPROCESSOR, therefore executing the commands outside of the
+script may produce different results.

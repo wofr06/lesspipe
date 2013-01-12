@@ -398,7 +398,7 @@ __END__
 
 #file		/usr/bin/file	# it is better to let configure do the checks
 HILITE		Y		# we do want syntax highlighting for --fixed
-LESS_ADVANCED_PREPROCESSOR Y	# always interpret textlike files (html, ...)
+LESS_ADVANCED_PREPROCESSOR N	# always interpret textlike files (html, ...)
 
 # compression programs
 bzip2		Y	# include bzip2 and unzip code, it is fairly essential

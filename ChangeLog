@@ -1,16 +1,18 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-Version 1.80 Jan 10 2013
-- remove lzip tests, add dir test,report number of ignored tests in test.pl
+Version 1.80 Jan 12 2013
+- test.pl now shows ignored tests and missing executables, tests added/deleted
 - check for existence of mp3info2 to display mp3 tags
 - correct bug in 1.72 for less <dir> where dir contains spaces (Tobias Hoffmann)
 - add colorized tar listings using tarcolor (contributed by Marc Abramowitz)
 - suppress the ==> lines if LESSQUIET is set (proposed by Dale Wijnand)
 - use alternate syntax highlighting program given by LESSCOLORIZER, currently
   only pygmentizer and code2color are allowed (proposed by Christian Höltje)
+- add directory from LESSOPEN to $PATH, look in $PATH for code2color
 - Introduce DESTDIR support in Makefile (requested by Michel Hermier) 
 - the generated lesspipe.sh in the tar file has syntax highlighting enabled
+  and no LESS_ADVANCED_PREPROCESSOR support
 Version 1.72 Nov 17 2011
 - detect proper options for the file command at runtime (Vincent Lefèvre)
 - guess the character encoding and optionally do a char conversion (VL)
