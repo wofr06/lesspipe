@@ -398,17 +398,18 @@ __END__
 
 #file		/usr/bin/file	# it is better to let configure do the checks
 HILITE		Y		# we do want syntax highlighting for --fixed
-LESS_ADVANCED_PREPROCESSOR Y	# always interpret textlike files (html, ...)
+LESS_ADVANCED_PREPROCESSOR N	# always interpret textlike files (html, ...)
 
 # compression programs
 bzip2		Y	# include bzip2 and unzip code, it is fairly essential
 unzip		Y
 rar		Y
 unrar		Y
-lzip		Y	# default for lzma, lzip, xz, 7za should probably be N
+lzip		N	# default for lzma, lzip, xz, 7za should probably be N
 lzma		Y
 xz		Y
 7za		Y
+7zr		N	# included in 7za code
 # essential utilities
 cpio		Y
 elinks		Y	# only one of html2text, elinks, links, lynx, w3m needed
@@ -439,6 +440,7 @@ fastjar		N	# I do prefer unzip
 gpg		Y
 id3v2		Y	# id3v2 is preferred over mp3info if both selected
 mp3info		N	# code for mp3info is included anyway if id3v2 selected
+mp3info2	N	# code for mp3info2 is included anyway if id3v2 selected
 identify	Y
 isoinfo		Y	# I would not want to see that
 o3tohtml	Y

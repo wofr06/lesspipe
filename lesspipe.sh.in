@@ -1,4 +1,4 @@
-# lesspipe.sh, a preprocessor for less (version 1.72)
+# lesspipe.sh, a preprocessor for less (version 1.80)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### from http://sourceforge.net/projects/lesspipe/
@@ -13,7 +13,7 @@
 #			less archive_file:contained_file
 #	   This can be used to extract ASCII files from a multifile archive:
 #			less archive_file:contained_file>extracted_file
-#	   As less is not good for extracting binary data use instead:
+#	   As less is not good for extracting raw data use instead:
 #			lesspipe.sh archive_file:contained_file>extracted_file
 #          Even a file in a multifile archive that itself is contained in yet
 #          another archive can be viewed this way:
@@ -33,6 +33,12 @@ set +o noclobber
 #ifdef tar
 tarcmd='tar'
 #endif
+
+dir=${LESSOPEN#\|}
+dir=${dir%%lesspipe.sh*\%s}
+dir=${dir%%/}
+# look for commands also where lesspipe.sh is stored
+PATH=$PATH:$dir
 
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
@@ -78,18 +84,27 @@ trap - PIPE
 unset iconv
 iconv() {
   if [[ -z "$iconv" ]]; then
-    iconv="command iconv $(printf "%s$(command iconv --help | sed -n \
-      's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
-      tr \\n ' ')") -t //TRANSLIT"
+    arg=$(printf "%s$(command iconv --help 2>/dev/null | \
+      sed -n 's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
+      tr \\n ' ')")
+    if [[ -n "$arg" ]]; then
+      iconv="command iconv $arg  -t //TRANSLIT"
+    else
+      if ! command iconv "$@" > /dev/null 2>&1; then
+        iconv="command iconv -t utf-8"
+      else
+        iconv="command iconv"
+      fi
+    fi
   fi
   $iconv "$@"
 }
 
 msg () {
-  if [[ "$LESSQUIET" ]]; then
+  if [[ -n "$LESSQUIET" ]]; then
     return
   fi
-  echo "==> $1"
+  echo "==> $@"
 }
 
 filetype () {
@@ -321,8 +336,13 @@ get_cmd () {
       set -A cmd istemp "rar p -inul" "$2" "$file2"
 #endif 
 #ifdef 7za
-    elif [[ "$1" = *7-zip\ archive* ]] && cmd_exist 7za; then
+    elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
       set -A cmd istemp "7za e -so" "$2" "$file2"
+    elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7zr; then
+      set -A cmd istemp "7zr e -so" "$2" "$file2"
+#elif 7zr
+    elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7zr; then
+      set -A cmd istemp "7zr e -so" "$2" "$file2"
 #endif
 #ifdef cabextract
     elif [[ "$1" = *[Cc]abinet* ]] && cmd_exist cabextract; then
@@ -418,13 +438,13 @@ isrpm () {
 # nasty hack to make rpm inspection work on MacOSX (and other BSD based systems)
 #ifdef bsd_cpio
     b=$(nexttmp -d)
-    rpm2cpio "$1"|(cd $b; pax -r "$2" 2>/dev/null)
+    rpm2cpio "$1" 2>/dev/null|(cd $b; pax -r "$2" 2>/dev/null)
     cat "$b/$2"
 #else
     b=$(nexttmp)
     echo "$b.out" > "$b"
     # to support older versions of cpio the --to-stdout option is not used here
-    rpm2cpio "$1"|cpio -i --quiet --rename-batch-file "$b" "$2"
+    rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --rename-batch-file "$b" "$2"
     cat "$b.out"
 #endif
   elif cmd_exist rpmunpack && cmd_exist cpio; then
@@ -513,11 +533,11 @@ isfinal() {
       lang=${3#$sep}
       lang="-l ${lang#.}"
       lang=${lang%%-l }
-      dir=${LESSOPEN#\|}
-      dir=${dir%%lesspipe.sh*\%s}
-      ${dir}code2color $PPID ${in_file:+"$in_file"} $lang "$2"
-      if [[ $? = 0 ]]; then
-        return
+      if cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} $lang "$2"
+        if [[ $? = 0 ]]; then
+          return
+        fi
       fi
     fi
 #endif
@@ -525,7 +545,7 @@ isfinal() {
     return
   fi
 
-  # color requires -r or -R when calling less, not recommended
+  # color requires -r or -R when calling less
   typeset COLOR
   if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
     COLOR="--color=always"
@@ -536,17 +556,21 @@ isfinal() {
   elif [[ "$1" = *directory* ]]; then
     set -A cmd ls -lA $COLOR "$2"
     if ! ls $COLOR > /dev/null 2>&1; then
-      set -A cmd "CLICOLOR_FORCE=1" ls -lA -G "$2"
+      set -A cmd ls -lA -G "$2"
       if ! ls -lA -G > /dev/null 2>&1; then
         set -A cmd ls -lA "$2"
       fi
     fi
     msg "This is a directory, showing the output of ${cmd[@]}"
-    "${cmd[@]}"
+    if [[ ${cmd[2]} = '-G' ]]; then
+      CLICOLOR_FORCE=1 "${cmd[@]}"
+    else
+      "${cmd[@]}"
+    fi
   elif [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
 #ifdef tarcolor
-    if [[ $COLOR ]] && cmd_exist tarcolor; then
+    if [[ -n $COLOR ]] && cmd_exist tarcolor; then
       $tarcmd tvf "$2" | tarcolor
     else
       $tarcmd tvf "$2"
@@ -565,7 +589,7 @@ isfinal() {
     if cmd_exist cpio && cmd_exist rpm2cpio; then
       echo $header
       echo "================================= Content ======================================"
-      istemp rpm2cpio "$2"|cpio -i -tv 2>/dev/null
+      istemp rpm2cpio "$2" 2>/dev/null|cpio -i -tv 2>/dev/null
     elif cmd_exist cpio && cmd_exist rpmunpack; then
       echo $header
       echo "================================= Content ======================================"
@@ -578,7 +602,7 @@ isfinal() {
     if cmd_exist cpio && cmd_exist rpm2cpio; then
       msg "use RPM_file${sep}contained_file to view a file in the RPM"
       echo "================================= Content ======================================"
-      istemp rpm2cpio "$2"|cpio -i -tv --quiet
+      istemp rpm2cpio "$2" 2>/dev/null|cpio -i -tv --quiet
     elif cmd_exist cpio && cmd_exist rpmunpack; then
       msg "use RPM_file${sep}contained_file to view a file in the RPM"
       echo "================================= Content ======================================"
@@ -662,7 +686,7 @@ isfinal() {
     fi
 #endif
   elif [[ "$1" = *executable* ]]; then
-    msg "append $sep to filename to view the binary file"
+    msg "append $sep to filename to view the raw file"
     nodash strings "$2"
   elif [[ "$1" = *\ ar\ archive* ]]; then
     msg "use library${sep}contained_file to view a file in the archive"
@@ -697,7 +721,7 @@ isfinal() {
     istemp "rar v" "$2"
 #endif
 #ifdef 7za
-  elif [[ "$1" = *7-zip\ archive* ]] && cmd_exist 7za; then
+  elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
     typeset res
     res=$(istemp "7za l" "$2")
     if [[ "$res" = *\ 1\ file* ]]; then
@@ -716,6 +740,45 @@ isfinal() {
       msg "use 7za_file${sep}contained_file to view a file in the archive"
       echo "$res"
     fi
+  elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7zr; then
+    typeset res
+    res=$(istemp "7zr l" "$2")
+    if [[ "$res" = *\ 1\ file* ]]; then
+      msg "a 7za archive containing one file was silently unpacked"
+      if [[ "$2" != - ]]; then
+        7zr e -so "$2" 2>/dev/null
+      else
+        # extract name of temporary file containing the 7za archive
+        t=${res#*Listing\ archive:\ }
+        t2="
+"
+        t=${t%%$t2*}
+        7zr e -so $t 2>/dev/null
+      fi
+    else
+      msg "use 7za_file${sep}contained_file to view a file in the archive"
+      echo "$res"
+    fi
+#elif 7zr
+  elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7zr; then
+    typeset res
+    res=$(istemp "7zr l" "$2")
+    if [[ "$res" = *\ 1\ file* ]]; then
+      msg "a 7za archive containing one file was silently unpacked"
+      if [[ "$2" != - ]]; then
+        7zr e -so "$2" 2>/dev/null
+      else
+        # extract name of temporary file containing the 7za archive
+        t=${res#*Listing\ archive:\ }
+        t2="
+"
+        t=${t%%$t2*}
+        7zr e -so $t 2>/dev/null
+      fi
+    else
+      msg "use 7za_file${sep}contained_file to view a file in the archive"
+      echo "$res"
+    fi
 #endif
 #ifdef cabextract
   elif [[ "$1" = *[Cc]abinet* ]] && cmd_exist cabextract; then
@@ -724,7 +787,7 @@ isfinal() {
 #endif
 #ifdef dvi2tty
   elif [[ "$1" = *\ DVI* ]] && cmd_exist dvi2tty; then
-    msg "append $sep to filename to view the binary DVI file"
+    msg "append $sep to filename to view the raw DVI file"
     isdvi "$2"
 #endif 
   elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
@@ -815,7 +878,7 @@ isfinal() {
 #ifdef isoinfo
   elif [[ "$1" = *ISO\ 9660* ]] && cmd_exist isoinfo; then
     if [[ "$2" != - ]]; then
-      msg "append $sep to filename to view the binary data"
+      msg "append $sep to filename to view the raw data"
       isoinfo -d -i "$2"
       joliet=`isoinfo -d -i "$2" | egrep '^Joliet'|cut -c1`
       echo "================================= Content ======================================"
@@ -824,34 +887,37 @@ isfinal() {
 #endif 
 #ifdef identify
   elif [[ "$1" = *image\ data*  || "$1" = *JPEG\ file* || "$1" = *JPG\ file* ]] && cmd_exist identify; then
-    msg "append $sep to filename to view the binary data"
+    msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
 #endif 
 #ifdef id3v2
   elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]]; then
     if cmd_exist id3v2; then
-      msg "append $sep to filename to view the binary data"
+      msg "append $sep to filename to view the raw data"
       istemp "id3v2 -l" "$2"
+    elif cmd_exist mp3info2; then
+      msg "append $sep to filename to view the raw data"
+      mp3info2 "$2"
     elif cmd_exist mp3info; then
-      msg "append $sep to filename to view the binary data"
+      msg "append $sep to filename to view the raw data"
       mp3info "$2"
     fi
 #elif mp3info2
   elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]] && cmd_exist mp3info2; then
-    msg "append $sep to filename to view the binary data"
+    msg "append $sep to filename to view the raw data"
     mp3info2 "$2"
 #elif mp3info
   elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]] && cmd_exist mp3info; then
-    msg "append $sep to filename to view the binary data"
+    msg "append $sep to filename to view the raw data"
     mp3info "$2"
 #endif
 #ifdef lsbom
   elif [[ "$1" = *bill\ of\ materials* ]] && cmd_exist lsbom; then
-    msg "append $sep to filename to view the binary data"
+    msg "append $sep to filename to view the raw data"
     lsbom -p MUGsf "$2"
 #endif
   elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
-    msg "append $sep to filename to view the binary data"
+    msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
 #ifdef iconv
   elif [[ "$1" = *UTF-8$NOL_A_P* ]] && cmd_exist iconv; then
@@ -871,11 +937,11 @@ isfinal() {
 #endif
 #ifdef plutil
   elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
-    msg "append $sep to filename to view the binary data"
+    msg "append $sep to filename to view the raw data"
     plutil -convert xml1 -o - "$2"
 #endif
   elif [[ "$1" = *data$NOL_A_P* ]]; then
-    msg "append $sep to filename to view the $1 source"
+    msg "append $sep to filename to view the raw data"
     nodash strings "$2"
   else
     set "plain text" "$2"
@@ -883,11 +949,11 @@ isfinal() {
 # the next conditional is only there to remove syntax highlighting code
 #ifdef perl
   if [[ "$1" = *plain\ text* ]]; then
-    dir=${LESSOPEN#\|}
-    dir=${dir%%lesspipe.sh*\%s}
-    ${dir}code2color $PPID ${in_file:+"$in_file"} "$2"
-    if [[ $? = 0 ]]; then
-      return
+    if cmd_exist code2color; then
+      code2color $PPID ${in_file:+"$in_file"} "$2"
+      if [[ $? = 0 ]]; then
+        return
+      fi
     fi
   fi
 #endif

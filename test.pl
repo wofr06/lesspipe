@@ -8,7 +8,8 @@ my $debug = 0;
 $debug = 1 if $ARGV[0] and $ARGV[0] eq '-d';
 
 $ENV{LESSOPEN} = "|./lesspipe.sh %s";
-$ENV{PATH} .= ":."; # make sure we do find sxw2txt
+# to check all test cases with the filter
+$ENV{LESS_ADVANCED_PREPROCESSOR} =1;
 open F, "TESTCMDS" or die "Could not read TESTCMDS:$!\n";
 my $retcode = 0;
 my $duration = time();
@@ -19,7 +20,7 @@ while (<F>) {
   next if /^#/;
   next if /^\s*$/;
   chomp;
-  my $ignore = $_ =~ s/#\s*ignore error*//;
+  my $ignore = $1 if s/#\s*needs (.*)//;
   my $res = `$_ 2>&1`;
   my $ok = 0;
   my $lines = 0;
@@ -43,9 +44,10 @@ while (<F>) {
     print "result:$res" if $debug;
     my @res = split /\n/, $res;
     shift @res if $res[0] =~ /^==>/;
+    $res[0] =~ s/^pst0$//;
     shift @res while @res and $res[0] =~ /^\s*$/;
     # special case for directory listing
-    $res[0] = 'test' if $res =~ /total \d+\b.*r--r--.*test/s;
+    $res[0] = 'test' if $res =~ /-rw-r--r--.*test/;
     $ok = $res[0] =~ /^\s*(\e\[36m)?test(\e\[0m)?\s*$/ if $res[0];
     # special case for nroff
     $ok = $res[0] =~ s/^test \(1\)\s+.*/test/ if $res[0] and ! $ok;
@@ -65,11 +67,12 @@ while (<F>) {
     #$res .= " ($lines trailing lines)" if $lines;
     $sumok++;
   } else {
-    $retcode++ if ! $ok and ! $ignore;
+    my $failed = is_exec($ignore);
+    $retcode++ if ! $ok and $failed;
     $res = "NOT ok";
-    $res .= " (ignored)" if $ignore;
-    $sumnok++ if ! $ignore;
-    $sumignore++ if $ignore;
+    $res = "ignored, needs " . (split ' ', $ignore)[0] if ! $failed;
+    $sumnok++ if $failed;
+    $sumignore++ if ! $failed;
   }
   printf "%-56s %s\n", $_, $res;
 }
@@ -77,3 +80,12 @@ close F;
 $duration = time() - $duration;
 print "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $duration seconds\n";
 exit $retcode;
+
+sub is_exec {
+  my $arg = shift;
+  return 1 if ! $arg;
+  for my $prog (split ' ', $arg) {
+    return 1 if grep {-x "$_/$prog"} split /:/, $ENV{PATH};
+  }
+  return 0
+}
