@@ -1,9 +1,10 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-Version 1.80 Jan 12 2013
+Version 1.80 Jan 13 2013
 - test.pl now shows ignored tests and missing executables, tests added/deleted
 - check for existence of mp3info2 to display mp3 tags
+- check for existence of 7zr to display 7za archives
 - correct bug in 1.72 for less <dir> where dir contains spaces (Tobias Hoffmann)
 - add colorized tar listings using tarcolor (contributed by Marc Abramowitz)
 - suppress the ==> lines if LESSQUIET is set (proposed by Dale Wijnand)

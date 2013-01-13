@@ -44,9 +44,10 @@ while (<F>) {
     print "result:$res" if $debug;
     my @res = split /\n/, $res;
     shift @res if $res[0] =~ /^==>/;
+    $res[0] =~ s/^pst0$//;
     shift @res while @res and $res[0] =~ /^\s*$/;
     # special case for directory listing
-    $res[0] = 'test' if $res =~ /total \d+\b.*r--r--.*test/s;
+    $res[0] = 'test' if $res =~ /-rw-r--r--.*test/;
     $ok = $res[0] =~ /^\s*(\e\[36m)?test(\e\[0m)?\s*$/ if $res[0];
     # special case for nroff
     $ok = $res[0] =~ s/^test \(1\)\s+.*/test/ if $res[0] and ! $ok;
@@ -82,6 +83,7 @@ exit $retcode;
 
 sub is_exec {
   my $arg = shift;
+  return 1 if ! $arg;
   for my $prog (split ' ', $arg) {
     return 1 if grep {-x "$_/$prog"} split /:/, $ENV{PATH};
   }
