@@ -1,5 +1,5 @@
 #!/bin/bash
-# lesspipe.sh, a preprocessor for less (version 1.80)
+# lesspipe.sh, a preprocessor for less (version 1.81)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### from http://sourceforge.net/projects/lesspipe/

@@ -10,7 +10,7 @@ test:
 	./test.pl
 install:
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	mkdir -p $(DESTDIR)$(PREFIX)/man/man1
+	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
 	cp ./code2color ./sxw2txt ./tarcolor ./lesspipe.sh $(DESTDIR)$(PREFIX)/bin
 	cp ./lesspipe.1 $(DESTDIR)$(PREFIX)/share/man/man1
 	chmod 0755 $(DESTDIR)$(PREFIX)/bin/lesspipe.sh
