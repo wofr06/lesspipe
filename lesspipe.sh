@@ -454,7 +454,11 @@ isfinal() {
     fi
   elif [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
-    $tarcmd tvf "$2"
+    if [[ -n $COLOR ]] && cmd_exist tarcolor; then
+      $tarcmd tvf "$2" | tarcolor
+    else
+      $tarcmd tvf "$2"
+    fi
   elif [[ "$1" = *RPM* ]]; then
     header="use RPM_file${sep}contained_file to view a file in the RPM"
     if cmd_exist rpm; then

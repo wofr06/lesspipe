@@ -7,6 +7,8 @@
 
 # do a clean up if we get a CTRL-C
 $SIG{INT} = sub  { unlink "lesspipe.sh.tmp"; print "\n"; exit 1 };
+# find sxw2txt and other scripts in current dir, if scripts not installed yet
+$ENV{PATH} .= ':.';
 
 use vars qw($opt_help $opt_prefix $opt_yes $opt_default $opt_ask $opt_nomake
             $opt_shell $opt_fixed $ifsyntax $ifadvanced %have %rep $recursion
@@ -453,4 +455,6 @@ dpkg		Y	# for debian systems, fallback is tar+g(un)zip
 ### please change to Y on MacOSX
 lsbom		N	# we are not on MacOSX
 plutil		N	# we are not on MacOSX
+bsd_cpio	N	# we are not on MacOSX
+tarcolor	Y	# to colorize tar listings
 
