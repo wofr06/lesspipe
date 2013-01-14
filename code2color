@@ -3255,7 +3255,7 @@ getopts('i:l:') || exit 2;
       if ! -x $ENV{LESSCOLORIZER}
       and ! grep { -x "$_/$ENV{LESSCOLORIZER}" } split /:/, $ENV{PATH};
     # call external colorizer
-    `$ENV{LESSCOLORIZER} @ARGV`;
+    system($ENV{LESSCOLORIZER}, @ARGV);
     exit;
   }
   $str = main(parse_passed_params( infile        => $ARGV[0] || '-',
