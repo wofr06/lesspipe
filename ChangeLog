@@ -1,6 +1,10 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 1.81 Jan 15 2013
+- adjust Makefile generation, find uninstalled tarcolor in configure
+- add a spec file to generate a lesspipe RPM
+- correct LESSCOLORIZER call
 Version 1.80 Jan 13 2013
 - test.pl now shows ignored tests and missing executables, tests added/deleted
 - check for existence of mp3info2 to display mp3 tags

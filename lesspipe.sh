@@ -1,5 +1,5 @@
-#!/bin/ksh
-# lesspipe.sh, a preprocessor for less (version 1.80)
+#!/bin/bash
+# lesspipe.sh, a preprocessor for less (version 1.81)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### from http://sourceforge.net/projects/lesspipe/
@@ -29,9 +29,10 @@
 # Author:  Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 #
 #===============================================================================
+( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 #setopt KSH_ARRAYS SH_WORD_SPLIT 2>/dev/null
 set +o noclobber
-tarcmd='gtar'
+tarcmd='tar'
 
 dir=${LESSOPEN#\|}
 dir=${dir%%lesspipe.sh*\%s}
@@ -41,9 +42,6 @@ PATH=$PATH:$dir
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
 }
-if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-   NOL_A_P=_NO_L_A_P
-fi
 
 filecmd() {
   file -L -s "$@"
@@ -168,19 +166,6 @@ show () {
   rest11="$rest1"
   if [[ "$cmd" = "" ]]; then
     type=$(filetype "$file1") || exit 1
-    if cmd_exist lsbom; then
-      if [[ ! -f "$file1" ]]; then
-        if [[ "$type" = *directory* ]]; then
-	  if [[ "$file1" = *.pkg ]]; then
-	    if [[ -f "$file1/Contents/Archive.bom" ]]; then
-	      type="bill of materials"
-	      file1="$file1/Contents/Archive.bom"
-	      msg "This is a Mac OS X archive directory, showing its contents (bom file)"
-	    fi
-	  fi
-        fi
-      fi
-    fi
     get_cmd "$type" "$file1" "$rest1"
     if [[ "$cmd" != "" ]]; then
       show "-$rest1"
@@ -188,7 +173,7 @@ show () {
       isfinal "$type" "$file1" "$rest11"
     fi
   elif [[ "$c1" = "" ]]; then
-    set -A c1 "${cmd[@]}"
+    c1=("${cmd[@]}")
     type=$("${c1[@]}" | filetype -) || exit 1
     get_cmd "$type" "$file1" "$rest1"
     if [[ "$cmd" != "" ]]; then
@@ -197,7 +182,7 @@ show () {
       "${c1[@]}" | isfinal "$type" - "$rest11"
     fi
   elif [[ "$c2" = "" ]]; then
-    set -A c2 "${cmd[@]}"
+    c2=("${cmd[@]}")
     type=$("${c1[@]}" | "${c2[@]}" | filetype -) || exit 1
     get_cmd "$type" "$file1" "$rest1"
     if [[ "$cmd" != "" ]]; then
@@ -206,7 +191,7 @@ show () {
       "${c1[@]}" | "${c2[@]}" | isfinal "$type" - "$rest11"
     fi
   elif [[ "$c3" = "" ]]; then
-    set -A c3 "${cmd[@]}"
+    c3=("${cmd[@]}")
     type=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | filetype -) || exit 1
     get_cmd "$type" "$file1" "$rest1"
     if [[ "$cmd" != "" ]]; then
@@ -215,7 +200,7 @@ show () {
       "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | isfinal "$type" - "$rest11"
     fi
   elif [[ "$c4" = "" ]]; then
-    set -A c4 "${cmd[@]}"
+    c4=("${cmd[@]}")
     type=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | filetype -) || exit 1
     get_cmd "$type" "$file1" "$rest1"
     if [[ "$cmd" != "" ]]; then
@@ -224,7 +209,7 @@ show () {
       "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | isfinal "$type" - "$rest11"
     fi
   elif [[ "$c5" = "" ]]; then
-    set -A c5 "${cmd[@]}"
+    c5=("${cmd[@]}")
     type=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | filetype -) || exit 1
     get_cmd "$type" "$file1" "$rest1"
     if [[ "$cmd" != "" ]]; then
@@ -242,36 +227,29 @@ get_cmd () {
     if [[ "$3" = $sep$sep ]]; then
       return
     elif [[ "$1" = *bzip*compress* ]] && cmd_exist bzip2; then
-      set -A cmd bzip2 -cd "$2"
+      cmd=(bzip2 -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
         *.bz2) filen="${filen%.bz2}";;
         *.tbz) filen="${filen%.tbz}.tar";;
       esac
       return
-    elif [[ "$1" = *lzip\ compressed* ]] && cmd_exist lzip; then
-      set -A cmd lzip -cd "$2"
-      if [[ "$2" != - ]]; then filen="$2"; fi
-      case "$filen" in
-        *.lz) filen="${filen%.lz}";;
-        *.tlz) filen="${filen%.tlz}.tar";;
-      esac
     elif [[ "$1" = *LZMA\ compressed* ]] && cmd_exist lzma; then
-      set -A cmd lzma -cd "$2"
+      cmd=(lzma -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
         *.lzma) filen="${filen%.lzma}";;
         *.tlz) filen="${filen%.tlz}.tar";;
       esac
     elif [[ "$1" = *gzip\ compress* || "$1" =  *compress\'d\ * || "$1" = *packed\ data* ]]; then ## added '#..then' to fix vim's syntax parsing
-      set -A cmd gzip -cd "$2"
+      cmd=(gzip -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
         *.gz) filen="${filen%.gz}";;
         *.tgz) filen="${filen%.tgz}.tar";;
       esac
     elif [[ "$1" = *[Xx][Zz]\ compressed* ]] && cmd_exist xz; then
-      set -A cmd xz -cd "$2"
+      cmd=(xz -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
        *.xz) filen="${filen%.xz}";;
@@ -285,7 +263,7 @@ get_cmd () {
   rest1="$rest2"
   if [[ "$file2" != "" ]]; then
     if [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
-      set -A cmd istar "$2" "$file2"
+      cmd=(istar "$2" "$file2")
     elif [[ "$1" = *Debian* ]]; then
       t=$(nexttmp)
       if [[ "$file2" = control/* ]]; then
@@ -294,29 +272,27 @@ get_cmd () {
       else
         istemp "ar p" "$2" data.tar.gz | gzip -dc - > "$t"
       fi
-      set -A cmd istar "$t" "$file2"
+      cmd=(istar "$t" "$file2")
     elif [[ "$1" = *RPM* ]] && cmd_exist cpio && ( cmd_exist rpm2cpio || cmd_exist rpmunpack ); then
-      set -A cmd isrpm "$2" "$file2"
-    elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
-      set -A cmd isjar "$2" "$file2"
+      cmd=(isrpm "$2" "$file2")
     elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
-      set -A cmd istemp "unzip -avp" "$2" "$file2"
+      cmd=(istemp "unzip -avp" "$2" "$file2")
     elif [[ "$1" = *RAR\ archive* ]]; then
       if cmd_exist unrar; then
-        set -A cmd istemp "unrar p -inul" "$2" "$file2"
+        cmd=(istemp "unrar p -inul" "$2" "$file2")
       elif cmd_exist rar; then
-        set -A cmd istemp "rar p -inul" "$2" "$file2"
+        cmd=(istemp "rar p -inul" "$2" "$file2")
       fi
     elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
-      set -A cmd istemp "7za e -so" "$2" "$file2"
+      cmd=(istemp "7za e -so" "$2" "$file2")
     elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7zr; then
-      set -A cmd istemp "7zr e -so" "$2" "$file2"
+      cmd=(istemp "7zr e -so" "$2" "$file2")
     elif [[ "$1" = *[Cc]abinet* ]] && cmd_exist cabextract; then
-      set -A cmd iscab "$2" "$file2"
+      cmd=(iscab "$2" "$file2")
     elif [[ "$1" = *\ ar\ archive* ]]; then
-      set -A cmd istemp "ar p" "$2" "$file2"
+      cmd=(istemp "ar p" "$2" "$file2")
     elif [[ "$1" = *ISO\ 9660* ]] && cmd_exist isoinfo; then
-      set -A cmd isoinfo "-i$2" "-x$file2"
+      cmd=(isoinfo "-i$2" "-x$file2")
     fi
     if [[ "$cmd" != "" ]]; then
       filen="$file2"
@@ -405,26 +381,6 @@ isrpm () {
   fi
 }
 
-isjar () {
-  case "$2" in
-    /*) echo "lesspipe can't unjar files with absolute paths" >&2
-      exit 1
-      ;;
-    ../*) echo "lesspipe can't unjar files with ../ paths" >&2
-      exit 1
-      ;;
-  esac
-  typeset d
-  d=$(nexttmp -d)
-  [[ -d "$d" ]] || exit 1
-  cat "$1" | (
-    cd "$d"
-    fastjar -x "$2"
-    if [[ -f "$2" ]]; then
-      cat "$2"
-    fi
-  )
-}
 
 if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
   PARSEHTML=yes
@@ -483,11 +439,11 @@ isfinal() {
   if [[ "$1" = *No\ such* ]]; then
     exit 1
   elif [[ "$1" = *directory* ]]; then
-    set -A cmd ls -lA $COLOR "$2"
+    cmd=(ls -lA $COLOR "$2")
     if ! ls $COLOR > /dev/null 2>&1; then
-      set -A cmd ls -lA -G "$2"
+      cmd=(ls -lA -G "$2")
       if ! ls -lA -G > /dev/null 2>&1; then
-        set -A cmd ls -lA "$2"
+        cmd=(ls -lA "$2")
       fi
     fi
     msg "This is a directory, showing the output of ${cmd[@]}"
@@ -550,14 +506,14 @@ isfinal() {
     istemp "ar p" "$2" data.tar.gz | gzip -dc - | $tarcmd tvf -
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then
-  elif [[ "$1" = *Perl\ POD\ document\ text$NOL_A_P* ]] && cmd_exist perldoc; then
+  elif [[ "$1" = *Perl\ POD\ document\ text* ]] && cmd_exist perldoc; then
     msg "append $sep to filename to view the perl source"
     istemp perldoc "$2"
   elif [[ "$1" = *\ script* ]]; then
     set "plain text" "$2"
   elif [[ "$1" = *text\ executable* ]]; then
     set "plain text" "$2"
-  elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
+  elif [[ "$1" = *PostScript* ]]; then
     if cmd_exist pstotext; then
       msg "append $sep to filename to view the postscript file"
       nodash pstotext "$2"
@@ -576,9 +532,6 @@ isfinal() {
   elif [[ "$1" = *shared* ]] && cmd_exist nm; then
     msg "This is a dynamic library, showing the output of nm"
     istemp nm "$2"
-  elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
-    msg "use jar_file${sep}contained_file to view a file in the archive"
-    nodash "fastjar -tf" "$2"
   elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
     msg "use zip_file${sep}contained_file to view a file in the archive"
     istemp "unzip -lv" "$2"
@@ -634,7 +587,7 @@ isfinal() {
   elif [[ "$1" = *\ DVI* ]] && cmd_exist dvi2tty; then
     msg "append $sep to filename to view the raw DVI file"
     isdvi "$2"
-  elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *HTML* ]]; then
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
   elif [[ "$PARSEHTML" = yes && "$1" = *PDF* ]] && cmd_exist pdftohtml; then
@@ -658,7 +611,7 @@ isfinal() {
       msg "install antiword or catdoc to view human readable text"
       cat "$2"
     fi
-  elif [[ "$1" = *Rich\ Text\ Format$NOL_A_P* ]]  && cmd_exist unrtf; then
+  elif [[ "$1" = *Rich\ Text\ Format* ]]  && cmd_exist unrtf; then
     if [[ "$PARSEHTML" = yes ]]; then
       msg "append $sep to filename to view the RTF source"
       istemp "unrtf --html" "$2" | parsehtml -
@@ -704,28 +657,22 @@ isfinal() {
       msg "append $sep to filename to view the raw data"
       mp3info "$2"
     fi
-  elif [[ "$1" = *bill\ of\ materials* ]] && cmd_exist lsbom; then
-    msg "append $sep to filename to view the raw data"
-    lsbom -p MUGsf "$2"
-  elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
+  elif [[ "$1" = *perl\ Storable* ]]; then
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8$NOL_A_P* ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-8* ]] && cmd_exist iconv; then
     msg "append $sep to filename to view the UTF-8 encoded data"
-    iconv -c -f UTF-8 "$2"
-  elif [[ "$1" = *ISO-8859$NOL_A_P* ]] && cmd_exist iconv -c; then
+    iconv -f UTF-8 "$2"
+  elif [[ "$1" = *ISO-8859* ]] && cmd_exist iconv; then
     msg "append $sep to filename to view the ISO-8859 encoded data"
-    iconv -c -f ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16$NOL_A_P* ]] && cmd_exist iconv -c; then
+    iconv -f ISO-8859-1 "$2"
+  elif [[ "$1" = *UTF-16* ]] && cmd_exist iconv; then
     msg "append $sep to filename to view the UTF-16 encoded data"
-    iconv -c -f UTF-16 "$2"
+    iconv -f UTF-16 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
-  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
-    msg "append $sep to filename to view the raw data"
-    plutil -convert xml1 -o - "$2"
-  elif [[ "$1" = *data$NOL_A_P* ]]; then
+  elif [[ "$1" = *data* ]]; then
     msg "append $sep to filename to view the raw data"
     nodash strings "$2"
   else
@@ -752,15 +699,9 @@ if [[ "$a" = "" ]]; then
   fi
   if [[ "$SHELL" = *csh ]]; then
     echo "setenv LESSOPEN \"|$pat$0 %s\""
-    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-      echo "setenv LESS_ADVANCED_PREPROCESSOR 1"
-    fi
   else
     echo "LESSOPEN=\"|$pat$0 %s\""
     echo "export LESSOPEN"
-    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-      echo "LESS_ADVANCED_PREPROCESSOR=1; export LESS_ADVANCED_PREPROCESSOR"
-    fi
   fi
 else
   # check for pipes so that "less -f ... <(cmd) ..." works properly
