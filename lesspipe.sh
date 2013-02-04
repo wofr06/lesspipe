@@ -1,5 +1,5 @@
 #!/bin/bash
-# lesspipe.sh, a preprocessor for less (version 1.81)
+# lesspipe.sh, a preprocessor for less (version 1.82)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
 ### from http://sourceforge.net/projects/lesspipe/
@@ -83,16 +83,15 @@ iconv() {
       sed -n 's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
       tr \\n ' ')")
     if [[ -n "$arg" ]]; then
-      iconv="command iconv $arg  -t //TRANSLIT"
+      iconv="command iconv -c $arg  -t //TRANSLIT"
     else
-      if ! command iconv "$@" > /dev/null 2>&1; then
-        iconv="command iconv -t utf-8"
-      else
-        iconv="command iconv"
-      fi
+      iconv="command iconv -c"
     fi
   fi
-  $iconv "$@"
+  if $iconv "$@" > /dev/null 2>&1; then
+    msg "append $sep to filename to view the $2 encoded data"
+    $iconv "$@"
+  fi
 }
 
 msg () {
@@ -660,14 +659,11 @@ isfinal() {
   elif [[ "$1" = *perl\ Storable* ]]; then
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8* ]] && cmd_exist iconv; then
-    msg "append $sep to filename to view the UTF-8 encoded data"
+  elif [[ "$1" = *UTF-8* && $LANG != *UTF-8 ]] && cmd_exist iconv; then
     iconv -f UTF-8 "$2"
-  elif [[ "$1" = *ISO-8859* ]] && cmd_exist iconv; then
-    msg "append $sep to filename to view the ISO-8859 encoded data"
+  elif [[ "$1" = *ISO-8859* && $LANG != *ISO-8859-1 ]] && cmd_exist iconv; then
     iconv -f ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16* ]] && cmd_exist iconv; then
-    msg "append $sep to filename to view the UTF-16 encoded data"
+  elif [[ "$1" = *UTF-16* && $LANG != *UTF-16 ]] && cmd_exist iconv; then
     iconv -f UTF-16 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"

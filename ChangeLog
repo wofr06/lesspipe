@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 1.82 Feb 04 2013
+- better handling of encodings and protect against iconv failures
 Version 1.81 Jan 15 2013
 - adjust Makefile generation, find uninstalled tarcolor in configure
 - add a spec file to generate a lesspipe RPM

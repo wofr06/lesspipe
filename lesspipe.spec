@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 1.81
+%define packageversion 1.82
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -83,5 +83,7 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Mon Feb 04 2013 1.82-1 20130204 - Wolfgang.Friebel@desy.de
+- protect against iconv errors
 * Mon Jan 14 2013 1.81-1 20130114 - Wolfgang.Friebel@desy.de
 - initial build starting with (prerelease of) lesspipe version 1.81
