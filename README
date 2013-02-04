@@ -1,7 +1,7 @@
 lesspipe.sh, a preprocessor for less
 ====================================
 
-Version: 1.80
+Version: 1.82
 Author : Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 License: GPL
 
@@ -203,7 +203,8 @@ Contents
  If the file utility reports text containing ISO-8859, UTF-8 or UTF-16 encoded
  characters then the text will be transformed using iconv into the default
  encoding. This does assume iconv has the right default which can be wrong
- in some situations.
+ in some situations. It is checked if iconv would fail. Then the text is
+ displayed unmodified.
 
 4.4 File formats currently not supported
 ----------------------------------------
