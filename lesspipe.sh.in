@@ -312,12 +312,14 @@ get_cmd () {
     if [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
       set -A cmd istar "$2" "$file2"
     elif [[ "$1" = *Debian* ]]; then
+      data=`ar t "$2"|grep data.tar`
+      set -A cmd2 "unpack_cmd" "$data"
       t=$(nexttmp)
       if [[ "$file2" = control/* ]]; then
         istemp "ar p" "$2" control.tar.gz | gzip -dc - > "$t"
         file2=".${file2:7}"
       else
-        istemp "ar p" "$2" data.tar.gz | gzip -dc - > "$t"
+        istemp "ar p" "$2" $data | $("${cmd2[@]}") > "$t"
       fi
       set -A cmd istar "$t" "$file2"
 #ifdef rpm2cpio,cpio
@@ -508,7 +510,7 @@ parsehtml () {
     return
 #ifdef html2text
   elif cmd_exist html2text; then
-    html2text -style pretty "$1"
+    if [[ "$1" = - ]]; then html2text; else html2text "$1"; fi
 #ifdef lynx
   elif cmd_exist lynx; then
     if [[ "$1" = - ]]; then set - -stdin; fi
@@ -528,6 +530,20 @@ parsehtml () {
     links -dump -force_html "$1"
 #endif
   fi
+}
+
+unpack_cmd() {
+    cmd_string="cat"
+    if [[ "$1" == *xz ]]; then
+      cmd_string="xz -dc -"
+    elif [[ "$1" == *gz ]]; then
+      cmd_string="gzip -dc -"
+    elif [[ "$1" == *bz2 ]]; then
+      cmd_string="bzip2 -dc -"
+    elif [[ "$1" == *lzma ]]; then
+      cmd_string="lzma -dc -"
+    fi
+    echo "$cmd_string"
 }
 
 isfinal() {
@@ -663,8 +679,10 @@ isfinal() {
     echo
     istemp "ar p" "$2" control.tar.gz | gzip -dc - | $tarcmd tvf - | sed -r 's/(.{48})\./\1control/'
 #endif
+    data=`ar t "$2"|grep data.tar`
+    set -A cmd2 "unpack_cmd" "$data"
     echo
-    istemp "ar p" "$2" data.tar.gz | gzip -dc - | $tarcmd tvf -
+    istemp "ar p" "$2" $data | $("${cmd2[@]}") | $tarcmd tvf -
 #ifdef perldoc
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then

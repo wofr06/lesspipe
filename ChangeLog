@@ -5,8 +5,10 @@
 - add bsdtar as a command to unpack rar files (coadde)
 - add support for NetCDF and HDF5 files using ncdump, h5dump (Matt Thompson)
 - correctly display directories with a colon in the name (Oliver Mangold)
+- more conservative usage of html2text (Matt Ghali)
 - highlight empty inline C++ comments correctly, better pygmentize call
   (no - argument, use -g) (Antony Lee)
+- add support for Debian 2.0 files with xz packed data (Tobias Hoffmann)
 Version 1.82 Feb 04 2013
 - better handling of encodings and protect against iconv failures
 Version 1.81 Jan 15 2013
