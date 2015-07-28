@@ -5,7 +5,7 @@ use Getopt::Long;
 use File::Basename;
 use POSIX;
 
-my $VERSION = "0.2";
+my $VERSION = "0.3";
 my $vernr = "0.9.1"; # this is the underlying version of Peter Palfraders script
 ##########################################################################
 # allow only a limited set of known (external) colorizers
@@ -1499,15 +1499,15 @@ $LANGUAGE{'c'}          = {
                             'regex'      => '',
                             'patterns'   => [
                                               {
-                                                'name'       => 'doc comment',
-                                                'regex'      => '/\\*\\*.*?\\*/',
-                                                'style'      => 'doc comment',
-                                                'childregex' => []
-                                              },
-                                              {
                                                 'name'       => 'comment',
                                                 'regex'      => '/\\*.*?\\*/',
                                                 'style'      => 'comment',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'doc comment',
+                                                'regex'      => '/\\*\\*.*?\\*/',
+                                                'style'      => 'doc comment',
                                                 'childregex' => []
                                               },
                                               {
@@ -1630,15 +1630,15 @@ $LANGUAGE{'c++'}        = {
                             'regex'      => '',
                             'patterns'   => [
                                               {
-                                                'name'       => 'doc comment',
-                                                'regex'      => '/\\*\\*.*?\\*/',
-                                                'style'      => 'doc comment',
-                                                'childregex' => []
-                                              },
-                                              {
                                                 'name'       => 'comment',
                                                 'regex'      => '/\\*.*?\\*/',
                                                 'style'      => 'comment',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'doc comment',
+                                                'regex'      => '/\\*\\*.*?\\*/',
+                                                'style'      => 'doc comment',
                                                 'childregex' => []
                                               },
                                               {
@@ -3255,6 +3255,11 @@ getopts('i:l:') || exit 2;
       if ! -x $ENV{LESSCOLORIZER}
       and ! grep { -x "$_/$ENV{LESSCOLORIZER}" } split /:/, $ENV{PATH};
     # call external colorizer
+    if ($ENV{LESSCOLORIZER} eq 'pygmentize') {
+      # do not call pygmentize with - and use option -g
+      @ARGV = {grep $_ ne '-'} @ARGV;
+      unshift @ARGV, '-g';
+    }
     system($ENV{LESSCOLORIZER}, @ARGV);
     exit;
   }

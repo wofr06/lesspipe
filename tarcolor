@@ -83,6 +83,21 @@ sub get_filename {
         return $1, pos();
     }
 
+    my $bsdtar_date_dmy = m{
+        \d{1,2}                                                # Day
+        \s+
+        (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)   # Month
+        \s+
+        (?: (?: \d{4}) | (?: \d{2}:\d{2}))                     # Year or time
+        \s+
+        (.+?)                                                  # Capture group 1: filename
+        (?=\s->|$)
+    }gx;
+
+    if ($bsdtar_date_dmy) {
+        return $1, pos();
+    }
+
     my $gnutar_date = m{
         \d{4}-\d{2}-\d{2}   # Date (%Y-%m-%d)
         \s 
@@ -151,17 +166,7 @@ while (<>) {
 # ABSTRACT: colors output of `tar tvf`
 # PODNAME: tarcolor
 
-
-__END__
 =pod
-
-=head1 NAME
-
-tarcolor - colors output of `tar tvf`
-
-=head1 VERSION
-
-version 0.011
 
 =head1 SYNOPSIS
 
@@ -189,17 +194,4 @@ tarcolorauto(1)
 
 https://github.com/msabramo/tarcolor
 
-=head1 AUTHOR
-
-Marc Abramowitz <marc@marc-abramowitz.com>
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is Copyright (c) 2012 by Marc Abramowitz.
-
-This is free software, licensed under:
-
-  The (three-clause) BSD License
-
 =cut
-
