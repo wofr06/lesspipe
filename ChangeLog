@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- shortcut for unreadable files (Peter Wu)
 Version 1.82 Feb 04 2013
 - better handling of encodings and protect against iconv failures
 Version 1.81 Jan 15 2013

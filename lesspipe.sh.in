@@ -1,7 +1,7 @@
-# lesspipe.sh, a preprocessor for less (version 1.82)
+# lesspipe.sh, a preprocessor for less (version 1.83)
 #===============================================================================
-### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
-### from http://sourceforge.net/projects/lesspipe/
+### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE ZIP FILE
+### from https://github.com/wofr06/lesspipe.sh/archive/master.zip
 ### AND RUN configure TO GENERATE A lesspipe.sh THAT WORKS IN YOUR ENVIRONMENT
 #===============================================================================
 #
@@ -150,6 +150,9 @@ show () {
       file1="${1%$rest1}"
     fi
   done
+  if [[ ! -e $file1  && "$file1" != '-' ]]; then
+    return
+  fi
   rest11="${rest1#$sep}"
   file2="${rest11%%$sep*}"
   rest2="${rest11#$file2}"
@@ -168,6 +171,13 @@ show () {
   fi
   rest2="${rest11#$file2}"
   rest11="$rest1"
+
+  if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
+    PARSEHTML=yes
+  else
+    PARSEHTML=no
+  fi
+
   if [[ "$cmd" = "" ]]; then
     type=$(filetype "$file1") || exit 1
 #ifdef lsbom
@@ -483,11 +493,6 @@ isjar () {
 }
 #endif
 
-if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
-  PARSEHTML=yes
-else
-  PARSEHTML=no
-fi
 # TODO
 #parsexml () { nodash "elinks -dump -default-mime-type text/xml" "$1"; }
 parsehtml () {

@@ -146,7 +146,7 @@ while (<IN>) {
   # try to be flexible and allow a switch of the shell at run time
   if ( /^setopt / ) {
     if ( $shell eq 'zsh' ) {
-      print OUT '( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec bash -- "$0" ${1+"$@"} )', "\n";
+      print OUT '( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec bash -- "$0" ${1+"$@"}', "\n";
     } else {
       s/^/#/;
       print OUT '( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}', "\n" if $shell ne 'ksh';
