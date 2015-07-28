@@ -1,3 +1,12 @@
+Open requests/proposals
+=======================
+displaying HTML on the Mac using lynx seems not to be working, I received a
+patch to correct that and use elinks as the preferred viewer. It needs to be
+checked and probably included in a coming version
+
+On the same line I got a different patch to use elinks for better coloring the
+HTML output. As there are differences btween MacOS and Linux this needs careful checking before making changes. This is deferred as well.
+
 Man page install location
 =========================
 

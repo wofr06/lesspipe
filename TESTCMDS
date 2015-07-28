@@ -24,6 +24,8 @@ less    testok/iso.image:/ISO.TXT\;1          #needs isoinfo
 less    testok/test.rpm:test.txt              #needs rpm2cpio
 less    testok/cabinet.cab:a\ text.gz         #needs cabextract
 less    testok/test.deb:./test.txt            
+less    testok/test2.deb:./test.txt            
+less    testok/test3.deb:./test.txt            
 less    testok/a\ b.tgz:testok/a\#b.sxw       #needs sxw2txt o3tohtml
 less    testok/a\ b.tgz:testok/a\~b.odt       #needs sxw2txt o3tohtml
 less    testok/a\|b.7za:testok/a\|b.txt       #needs 7za 7zr
@@ -41,3 +43,4 @@ less -f testok/a\]b.gz
 #less    testok/azip.tlz:a\$b.lz               #needs lzip
 #less -f testok/a\\b.lz                        #needs lzip
 less    testok/a\ test
+less    testok/a:test

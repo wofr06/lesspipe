@@ -1,16 +1,16 @@
 lesspipe.sh, a preprocessor for less
 ====================================
 
-Version: 1.82
+Version: 1.83
 Author : Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
 License: GPL
 
 Latest version available from:
- http://freshmeat.net/projects/lesspipe/	or
- http://sourceforge.net/projects/lesspipe/
+ https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
+ https://github.com/wofr06/lesspipe (git repository)
 
-The development version can be checked out using svn:
- svn co svn://svn.code.sf.net/p/lesspipe/code/trunk
+The development version can be cloned using git:
+ git clone https://github.com/wofr06/lesspipe.git
 To report bugs or make proposals to improve lesspipe please contact
 the author by email.
 
@@ -146,7 +146,7 @@ Contents
 4. Supported file formats
 =========================
 
- Currently lesspipe.sh [3],[4] supports the following compression methods
+ Currently lesspipe.sh [3] supports the following compression methods
  and file types (i.e. the file contents gets transformed by lesspipe.sh):
 
 4.1 Supported compression methods
@@ -197,6 +197,8 @@ Contents
  OASIS		Opendocument text documents (used for Openoffice, Libreoffice)
  		requires unzip and o3tohtml or sxw2txt (distributed together
 		with lesspipe)
+ nc4		requires ncdump (NetCDF format)
+ hdf5		requires h5dump (Hierarchical Data Format)
 
 4.3 Conversion of files with alternate character encoding
 ---------------------------------------------------------
@@ -431,8 +433,7 @@ less diagram.png
 --------------
  [1] http://www.greenwoodsoftware.com/less/	(less)
  [2] ftp://ftp.astron.com/pub/file/		(file)
- [3] http://freshmeat.net/projects/lesspipe/
- [4] http://sourceforge.net/projects/lesspipe/
+ [3] https://github.com/wofr06/lesspipe
  [5] http://www.palfrader.org/code2html/	(code2html)
  [6] http://www.darwinsys.com/file/		(file)
  [7] https://github.com/msabramo/tarcolor	(tarcolor)
@@ -457,21 +458,25 @@ less diagram.png
  Philippe Defert: unattended installation
  Antonio Diaz Diaz: proposed support for lzip
  Bastian Fuchs: Issues using bash vs. sh
+ Matt Ghali: more conservative usage of html2text
  Carl Greco: enhanced output for .deb files
  Stephan Hegel: suggested better 7za support
  Michel Hermier: support for DESTDIR in the Makefile
- Tobias Hoffmann: bug fix introduced in v 1.72
+ Tobias Hoffmann: fixed a bug introduced in v 1.72, add support for Debian 2.0
+   files with xz packed data
  Christian Höltje: suggested to use LESSCOLORIZER like in the Gentoo distro
  Jürgen Kahnert: display debian files without dpkg
  Sebastian Kayser: suggested a less wrapper to display URLs
  Ben Kibbey: works on FreeBSD
  Peter Kostka: mktemp on MacOS fixes
  Heinrich Kuettler: formatting, html via lynx
+ Antony Lee: correctly call pygmentize (no - argument, use -g)
  Vincent Lefèvre: runtime checks for shell, many enhancements, provided sxw2txt,
    determine options for 'file' at runtime, display text in the proper encoding
  David Leverton: detect helper programs at runtime
  Jay Levitt: suggested to use enscript for highlighting support (see 4.2 above)
  Vladimir Linek: inspired me to add ps and dvi support
+ Oliver Mangold: correctly display directories with a colon in the name
  Istvan Marko: speedup of the procedure
  Markus Meyer: improved mp3 handling
  Remi Mommsen: Mac OS X support
@@ -482,9 +487,11 @@ less diagram.png
  Daniel Risacher: gpg support
  Jens Schleusener: ksh syntax fixes
  Ken Teague?: support more versions of file command
+ Matt Thompson: add support for NetCDF and HDF5 files using ncdump, h5dump
  Paul Townsend: improved zip support for Solaris, bug fixes in configure
  Petr Uzel: detect helper programs at runtime
  Chelban Vasile: trap command not working under /bin/sh
  Götz Waschk: suggested lzma support
  Michael Wiedmann: Debian packages support
  Dale Wijnand: Proposed the suppression of informal output
+ Peter Wu: shortcut for unreadable files
