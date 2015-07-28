@@ -55,7 +55,7 @@ filecmd() {
 sep=:						# file name separator
 altsep==					# alternate separator character
 # if the alternate separator char is used it is repeated at the end of the line
-if [[ -f "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
+if [[ -e "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
   sep=$altsep
   xxx="${1%=}"
   set "$xxx"
@@ -133,6 +133,8 @@ filetype () {
        type=" PowerPoint document"
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xls) ]]; then
        type=" Excel document"
+  elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
+       type=" NetCDF Data Format data"
   fi
   echo "$type"
 }
@@ -819,6 +821,14 @@ isfinal() {
   elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
     msg "append $sep to filename to view the PDF source"
     istemp pdftotext "$2" -
+#endif
+#ifdef h5dump
+  elif [[ "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist h5dump; then
+    istemp h5dump "$2"
+#endif
+#ifdef ncdump
+  elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then
+    istemp ncdump "$2"
 #endif
 #ifdef djvutxt
   elif [[ "$1" = *DjVu* ]] && cmd_exist djvutxt; then
