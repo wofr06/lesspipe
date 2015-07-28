@@ -1,7 +1,7 @@
 # lesspipe.sh, a preprocessor for less (version 1.83)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE ZIP FILE
-### from https://github.com/wofr06/lesspipe.sh/archive/master.zip
+### from https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
 ### AND RUN configure TO GENERATE A lesspipe.sh THAT WORKS IN YOUR ENVIRONMENT
 #===============================================================================
 #
@@ -339,10 +339,15 @@ get_cmd () {
         set -A cmd istemp "unrar p -inul" "$2" "$file2"
       elif cmd_exist rar; then
         set -A cmd istemp "rar p -inul" "$2" "$file2"
+      elif cmd_exist bsdtar; then
+        set -A cmd istemp "bsdtar Oxf" "$2" "$file2"
       fi
 #elif rar
     elif [[ "$1" = *RAR\ archive* ]] && cmd_exist rar; then
       set -A cmd istemp "rar p -inul" "$2" "$file2"
+#elif bsdtar
+    elif [[ "$1" = *RAR\ archive* ]] && cmd_exist bsdtar; then
+      set -A cmd istemp "bsdtar Oxf" "$2" "$file2"
 #endif 
 #ifdef 7za
     elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
@@ -718,11 +723,18 @@ isfinal() {
     elif cmd_exist rar; then
       msg "use rar_file${sep}contained_file to view a file in the archive"
       istemp "rar v" "$2"
+    elif cmd_exist bsdtar; then
+      msg "use rar_file${sep}contained_file to view a file in the archive"
+      istemp "bsdtar tvf" "$2"
     fi 
 #elif rar
   elif [[ "$1" = *RAR\ archive* ]] && cmd_exist rar; then
     msg "use rar_file${sep}contained_file to view a file in the archive"
     istemp "rar v" "$2"
+#elif bsdtar
+  elif [[ "$1" = *RAR\ archive* ]] && cmd_exist bsdtar; then
+    msg "use rar_file${sep}contained_file to view a file in the archive"
+    istemp "bsdtar tvf" "$2"
 #endif
 #ifdef 7za
   elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
