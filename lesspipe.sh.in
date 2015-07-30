@@ -1,7 +1,7 @@
-# lesspipe.sh, a preprocessor for less (version 1.82)
+# lesspipe.sh, a preprocessor for less (version 1.83)
 #===============================================================================
-### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
-### from http://sourceforge.net/projects/lesspipe/
+### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE ZIP FILE
+### from https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
 ### AND RUN configure TO GENERATE A lesspipe.sh THAT WORKS IN YOUR ENVIRONMENT
 #===============================================================================
 #
@@ -55,7 +55,7 @@ filecmd() {
 sep=:						# file name separator
 altsep==					# alternate separator character
 # if the alternate separator char is used it is repeated at the end of the line
-if [[ -f "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
+if [[ -e "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
   sep=$altsep
   xxx="${1%=}"
   set "$xxx"
@@ -133,6 +133,8 @@ filetype () {
        type=" PowerPoint document"
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xls) ]]; then
        type=" Excel document"
+  elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
+       type=" NetCDF Data Format data"
   fi
   echo "$type"
 }
@@ -150,6 +152,9 @@ show () {
       file1="${1%$rest1}"
     fi
   done
+  if [[ ! -e $file1  && "$file1" != '-' ]]; then
+    return
+  fi
   rest11="${rest1#$sep}"
   file2="${rest11%%$sep*}"
   rest2="${rest11#$file2}"
@@ -168,6 +173,13 @@ show () {
   fi
   rest2="${rest11#$file2}"
   rest11="$rest1"
+
+  if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
+    PARSEHTML=yes
+  else
+    PARSEHTML=no
+  fi
+
   if [[ "$cmd" = "" ]]; then
     type=$(filetype "$file1") || exit 1
 #ifdef lsbom
@@ -300,12 +312,14 @@ get_cmd () {
     if [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
       set -A cmd istar "$2" "$file2"
     elif [[ "$1" = *Debian* ]]; then
+      data=`ar t "$2"|grep data.tar`
+      set -A cmd2 "unpack_cmd" "$data"
       t=$(nexttmp)
       if [[ "$file2" = control/* ]]; then
         istemp "ar p" "$2" control.tar.gz | gzip -dc - > "$t"
         file2=".${file2:7}"
       else
-        istemp "ar p" "$2" data.tar.gz | gzip -dc - > "$t"
+        istemp "ar p" "$2" $data | $("${cmd2[@]}") > "$t"
       fi
       set -A cmd istar "$t" "$file2"
 #ifdef rpm2cpio,cpio
@@ -329,10 +343,15 @@ get_cmd () {
         set -A cmd istemp "unrar p -inul" "$2" "$file2"
       elif cmd_exist rar; then
         set -A cmd istemp "rar p -inul" "$2" "$file2"
+      elif cmd_exist bsdtar; then
+        set -A cmd istemp "bsdtar Oxf" "$2" "$file2"
       fi
 #elif rar
     elif [[ "$1" = *RAR\ archive* ]] && cmd_exist rar; then
       set -A cmd istemp "rar p -inul" "$2" "$file2"
+#elif bsdtar
+    elif [[ "$1" = *RAR\ archive* ]] && cmd_exist bsdtar; then
+      set -A cmd istemp "bsdtar Oxf" "$2" "$file2"
 #endif 
 #ifdef 7za
     elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
@@ -483,11 +502,6 @@ isjar () {
 }
 #endif
 
-if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
-  PARSEHTML=yes
-else
-  PARSEHTML=no
-fi
 # TODO
 #parsexml () { nodash "elinks -dump -default-mime-type text/xml" "$1"; }
 parsehtml () {
@@ -496,7 +510,7 @@ parsehtml () {
     return
 #ifdef html2text
   elif cmd_exist html2text; then
-    html2text -style pretty "$1"
+    if [[ "$1" = - ]]; then html2text; else html2text "$1"; fi
 #ifdef lynx
   elif cmd_exist lynx; then
     if [[ "$1" = - ]]; then set - -stdin; fi
@@ -516,6 +530,20 @@ parsehtml () {
     links -dump -force_html "$1"
 #endif
   fi
+}
+
+unpack_cmd() {
+    cmd_string="cat"
+    if [[ "$1" == *xz ]]; then
+      cmd_string="xz -dc -"
+    elif [[ "$1" == *gz ]]; then
+      cmd_string="gzip -dc -"
+    elif [[ "$1" == *bz2 ]]; then
+      cmd_string="bzip2 -dc -"
+    elif [[ "$1" == *lzma ]]; then
+      cmd_string="lzma -dc -"
+    fi
+    echo "$cmd_string"
 }
 
 isfinal() {
@@ -651,8 +679,10 @@ isfinal() {
     echo
     istemp "ar p" "$2" control.tar.gz | gzip -dc - | $tarcmd tvf - | sed -r 's/(.{48})\./\1control/'
 #endif
+    data=`ar t "$2"|grep data.tar`
+    set -A cmd2 "unpack_cmd" "$data"
     echo
-    istemp "ar p" "$2" data.tar.gz | gzip -dc - | $tarcmd tvf -
+    istemp "ar p" "$2" $data | $("${cmd2[@]}") | $tarcmd tvf -
 #ifdef perldoc
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then
@@ -713,11 +743,18 @@ isfinal() {
     elif cmd_exist rar; then
       msg "use rar_file${sep}contained_file to view a file in the archive"
       istemp "rar v" "$2"
+    elif cmd_exist bsdtar; then
+      msg "use rar_file${sep}contained_file to view a file in the archive"
+      istemp "bsdtar tvf" "$2"
     fi 
 #elif rar
   elif [[ "$1" = *RAR\ archive* ]] && cmd_exist rar; then
     msg "use rar_file${sep}contained_file to view a file in the archive"
     istemp "rar v" "$2"
+#elif bsdtar
+  elif [[ "$1" = *RAR\ archive* ]] && cmd_exist bsdtar; then
+    msg "use rar_file${sep}contained_file to view a file in the archive"
+    istemp "bsdtar tvf" "$2"
 #endif
 #ifdef 7za
   elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
@@ -792,16 +829,24 @@ isfinal() {
   elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
+#ifdef pdftotext
+  elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
+    msg "append $sep to filename to view the PDF source"
+    istemp pdftotext "$2" -
+#endif
 #ifdef pdftohtml
   elif [[ "$PARSEHTML" = yes && "$1" = *PDF* ]] && cmd_exist pdftohtml; then
     msg "append $sep to filename to view the PDF source"
     t=$(nexttmp)
     cat "$2" > "$t"; pdftohtml -stdout "$t" | parsehtml -
 #endif
-#ifdef pdftotext
-  elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
-    msg "append $sep to filename to view the PDF source"
-    istemp pdftotext "$2" -
+#ifdef h5dump
+  elif [[ "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist h5dump; then
+    istemp h5dump "$2"
+#endif
+#ifdef ncdump
+  elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then
+    istemp ncdump "$2"
 #endif
 #ifdef djvutxt
   elif [[ "$1" = *DjVu* ]] && cmd_exist djvutxt; then

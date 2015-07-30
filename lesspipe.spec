@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 1.82
+%define packageversion 1.83
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -10,7 +10,7 @@ Source0:       lesspipe-%{packageversion}.tar.gz
 BuildArch:     noarch
 AutoReqProv:   on
 Packager:      Wolfgang Friebel <wolfgang.friebel@desy.de>
-URL:           https://sourceforge.net/projects/lesspipe/files/latest/download
+URL:           https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
 License:       GPL
 BuildRoot:     /var/tmp/%{packagename}-%{packageversion}
 Summary:       Input filter for less to better display files
@@ -83,6 +83,8 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Tue Jul 28 2015 1.83-1 20150728 - Wolfgang.Friebel@desy.de
+- new version (see ChangeLog)
 * Mon Feb 04 2013 1.82-1 20130204 - Wolfgang.Friebel@desy.de
 - protect against iconv errors
 * Mon Jan 14 2013 1.81-1 20130114 - Wolfgang.Friebel@desy.de

@@ -1,8 +1,8 @@
 #!/bin/bash
-# lesspipe.sh, a preprocessor for less (version 1.82)
+# lesspipe.sh, a preprocessor for less (version 1.83)
 #===============================================================================
-### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE TAR FILE
-### from http://sourceforge.net/projects/lesspipe/
+### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE ZIP FILE
+### from https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
 ### AND RUN configure TO GENERATE A lesspipe.sh THAT WORKS IN YOUR ENVIRONMENT
 #===============================================================================
 #
@@ -42,6 +42,9 @@ PATH=$PATH:$dir
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
 }
+if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
+   NOL_A_P=_NO_L_A_P
+fi
 
 filecmd() {
   file -L -s "$@"
@@ -50,7 +53,7 @@ filecmd() {
 
 sep=:						# file name separator
 altsep==					# alternate separator character
-if [[ -f "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
+if [[ -e "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
   sep=$altsep
   xxx="${1%=}"
   set "$xxx"
@@ -128,6 +131,8 @@ filetype () {
        type=" PowerPoint document"
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xls) ]]; then
        type=" Excel document"
+  elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
+       type=" NetCDF Data Format data"
   fi
   echo "$type"
 }
@@ -145,6 +150,9 @@ show () {
       file1="${1%$rest1}"
     fi
   done
+  if [[ ! -e $file1  && "$file1" != '-' ]]; then
+    return
+  fi
   rest11="${rest1#$sep}"
   file2="${rest11%%$sep*}"
   rest2="${rest11#$file2}"
@@ -163,8 +171,28 @@ show () {
   fi
   rest2="${rest11#$file2}"
   rest11="$rest1"
+
+  if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
+    PARSEHTML=yes
+  else
+    PARSEHTML=no
+  fi
+
   if [[ "$cmd" = "" ]]; then
     type=$(filetype "$file1") || exit 1
+    if cmd_exist lsbom; then
+      if [[ ! -f "$file1" ]]; then
+        if [[ "$type" = *directory* ]]; then
+	  if [[ "$file1" = *.pkg ]]; then
+	    if [[ -f "$file1/Contents/Archive.bom" ]]; then
+	      type="bill of materials"
+	      file1="$file1/Contents/Archive.bom"
+	      msg "This is a Mac OS X archive directory, showing its contents (bom file)"
+	    fi
+	  fi
+        fi
+      fi
+    fi
     get_cmd "$type" "$file1" "$rest1"
     if [[ "$cmd" != "" ]]; then
       show "-$rest1"
@@ -233,6 +261,13 @@ get_cmd () {
         *.tbz) filen="${filen%.tbz}.tar";;
       esac
       return
+    elif [[ "$1" = *lzip\ compressed* ]] && cmd_exist lzip; then
+      cmd=(lzip -cd "$2")
+      if [[ "$2" != - ]]; then filen="$2"; fi
+      case "$filen" in
+        *.lz) filen="${filen%.lz}";;
+        *.tlz) filen="${filen%.tlz}.tar";;
+      esac
     elif [[ "$1" = *LZMA\ compressed* ]] && cmd_exist lzma; then
       cmd=(lzma -cd "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
@@ -264,16 +299,20 @@ get_cmd () {
     if [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
       cmd=(istar "$2" "$file2")
     elif [[ "$1" = *Debian* ]]; then
+      data=`ar t "$2"|grep data.tar`
+      cmd2=("unpack_cmd" "$data")
       t=$(nexttmp)
       if [[ "$file2" = control/* ]]; then
         istemp "ar p" "$2" control.tar.gz | gzip -dc - > "$t"
         file2=".${file2:7}"
       else
-        istemp "ar p" "$2" data.tar.gz | gzip -dc - > "$t"
+        istemp "ar p" "$2" $data | $("${cmd2[@]}") > "$t"
       fi
       cmd=(istar "$t" "$file2")
     elif [[ "$1" = *RPM* ]] && cmd_exist cpio && ( cmd_exist rpm2cpio || cmd_exist rpmunpack ); then
       cmd=(isrpm "$2" "$file2")
+    elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
+      cmd=(isjar "$2" "$file2")
     elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
       cmd=(istemp "unzip -avp" "$2" "$file2")
     elif [[ "$1" = *RAR\ archive* ]]; then
@@ -281,6 +320,8 @@ get_cmd () {
         cmd=(istemp "unrar p -inul" "$2" "$file2")
       elif cmd_exist rar; then
         cmd=(istemp "rar p -inul" "$2" "$file2")
+      elif cmd_exist bsdtar; then
+        cmd=(istemp "bsdtar Oxf" "$2" "$file2")
       fi
     elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
       cmd=(istemp "7za e -so" "$2" "$file2")
@@ -380,19 +421,34 @@ isrpm () {
   fi
 }
 
+isjar () {
+  case "$2" in
+    /*) echo "lesspipe can't unjar files with absolute paths" >&2
+      exit 1
+      ;;
+    ../*) echo "lesspipe can't unjar files with ../ paths" >&2
+      exit 1
+      ;;
+  esac
+  typeset d
+  d=$(nexttmp -d)
+  [[ -d "$d" ]] || exit 1
+  cat "$1" | (
+    cd "$d"
+    fastjar -x "$2"
+    if [[ -f "$2" ]]; then
+      cat "$2"
+    fi
+  )
+}
 
-if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
-  PARSEHTML=yes
-else
-  PARSEHTML=no
-fi
 #parsexml () { nodash "elinks -dump -default-mime-type text/xml" "$1"; }
 parsehtml () {
   if [[ "$PARSEHTML" = no ]]; then
     msg "No suitable tool for HTML parsing found, install one of html2text, elinks, links, lynx or w3m"
     return
   elif cmd_exist html2text; then
-    html2text -style pretty "$1"
+    if [[ "$1" = - ]]; then html2text; else html2text "$1"; fi
   elif cmd_exist lynx; then
     if [[ "$1" = - ]]; then set - -stdin; fi
     lynx -dump -force_html "$1" && return
@@ -404,6 +460,20 @@ parsehtml () {
     if [[ "$1" = - ]]; then set - -stdin; fi
     links -dump -force_html "$1"
   fi
+}
+
+unpack_cmd() {
+    cmd_string="cat"
+    if [[ "$1" == *xz ]]; then
+      cmd_string="xz -dc -"
+    elif [[ "$1" == *gz ]]; then
+      cmd_string="gzip -dc -"
+    elif [[ "$1" == *bz2 ]]; then
+      cmd_string="bzip2 -dc -"
+    elif [[ "$1" == *lzma ]]; then
+      cmd_string="lzma -dc -"
+    fi
+    echo "$cmd_string"
 }
 
 isfinal() {
@@ -501,18 +571,20 @@ isfinal() {
       echo
       istemp "ar p" "$2" control.tar.gz | gzip -dc - | $tarcmd tvf - | sed -r 's/(.{48})\./\1control/'
     fi
+    data=`ar t "$2"|grep data.tar`
+    cmd2=("unpack_cmd" "$data")
     echo
-    istemp "ar p" "$2" data.tar.gz | gzip -dc - | $tarcmd tvf -
+    istemp "ar p" "$2" $data | $("${cmd2[@]}") | $tarcmd tvf -
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then
-  elif [[ "$1" = *Perl\ POD\ document\ text* ]] && cmd_exist perldoc; then
+  elif [[ "$1" = *Perl\ POD\ document\ text$NOL_A_P* ]] && cmd_exist perldoc; then
     msg "append $sep to filename to view the perl source"
     istemp perldoc "$2"
   elif [[ "$1" = *\ script* ]]; then
     set "plain text" "$2"
   elif [[ "$1" = *text\ executable* ]]; then
     set "plain text" "$2"
-  elif [[ "$1" = *PostScript* ]]; then
+  elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
     if cmd_exist pstotext; then
       msg "append $sep to filename to view the postscript file"
       nodash pstotext "$2"
@@ -531,6 +603,9 @@ isfinal() {
   elif [[ "$1" = *shared* ]] && cmd_exist nm; then
     msg "This is a dynamic library, showing the output of nm"
     istemp nm "$2"
+  elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
+    msg "use jar_file${sep}contained_file to view a file in the archive"
+    nodash "fastjar -tf" "$2"
   elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
     msg "use zip_file${sep}contained_file to view a file in the archive"
     istemp "unzip -lv" "$2"
@@ -541,6 +616,9 @@ isfinal() {
     elif cmd_exist rar; then
       msg "use rar_file${sep}contained_file to view a file in the archive"
       istemp "rar v" "$2"
+    elif cmd_exist bsdtar; then
+      msg "use rar_file${sep}contained_file to view a file in the archive"
+      istemp "bsdtar tvf" "$2"
     fi 
   elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
     typeset res
@@ -586,16 +664,20 @@ isfinal() {
   elif [[ "$1" = *\ DVI* ]] && cmd_exist dvi2tty; then
     msg "append $sep to filename to view the raw DVI file"
     isdvi "$2"
-  elif [[ "$PARSEHTML" = yes && "$1" = *HTML* ]]; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
+  elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
+    msg "append $sep to filename to view the PDF source"
+    istemp pdftotext "$2" -
   elif [[ "$PARSEHTML" = yes && "$1" = *PDF* ]] && cmd_exist pdftohtml; then
     msg "append $sep to filename to view the PDF source"
     t=$(nexttmp)
     cat "$2" > "$t"; pdftohtml -stdout "$t" | parsehtml -
-  elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
-    msg "append $sep to filename to view the PDF source"
-    istemp pdftotext "$2" -
+  elif [[ "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist h5dump; then
+    istemp h5dump "$2"
+  elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then
+    istemp ncdump "$2"
   elif [[ "$1" = *DjVu* ]] && cmd_exist djvutxt; then
     msg "append $sep to filename to view the DjVu source"
     djvutxt "$2"
@@ -610,7 +692,7 @@ isfinal() {
       msg "install antiword or catdoc to view human readable text"
       cat "$2"
     fi
-  elif [[ "$1" = *Rich\ Text\ Format* ]]  && cmd_exist unrtf; then
+  elif [[ "$1" = *Rich\ Text\ Format$NOL_A_P* ]]  && cmd_exist unrtf; then
     if [[ "$PARSEHTML" = yes ]]; then
       msg "append $sep to filename to view the RTF source"
       istemp "unrtf --html" "$2" | parsehtml -
@@ -656,19 +738,25 @@ isfinal() {
       msg "append $sep to filename to view the raw data"
       mp3info "$2"
     fi
-  elif [[ "$1" = *perl\ Storable* ]]; then
+  elif [[ "$1" = *bill\ of\ materials* ]] && cmd_exist lsbom; then
+    msg "append $sep to filename to view the raw data"
+    lsbom -p MUGsf "$2"
+  elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8* && $LANG != *UTF-8 ]] && cmd_exist iconv; then
-    iconv -f UTF-8 "$2"
-  elif [[ "$1" = *ISO-8859* && $LANG != *ISO-8859-1 ]] && cmd_exist iconv; then
-    iconv -f ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16* && $LANG != *UTF-16 ]] && cmd_exist iconv; then
-    iconv -f UTF-16 "$2"
+  elif [[ "$1" = *UTF-8$NOL_A_P* && $LANG != *UTF-8 ]] && cmd_exist iconv -c; then
+    iconv -c -f UTF-8 "$2"
+  elif [[ "$1" = *ISO-8859$NOL_A_P* && $LANG != *ISO-8859-1 ]] && cmd_exist iconv -c; then
+    iconv -c -f ISO-8859-1 "$2"
+  elif [[ "$1" = *UTF-16$NOL_A_P* && $LANG != *UTF-16 ]] && cmd_exist iconv -c; then
+    iconv -c -f UTF-16 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
-  elif [[ "$1" = *data* ]]; then
+  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
+    msg "append $sep to filename to view the raw data"
+    plutil -convert xml1 -o - "$2"
+  elif [[ "$1" = *data$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
     nodash strings "$2"
   else
@@ -695,9 +783,15 @@ if [[ "$a" = "" ]]; then
   fi
   if [[ "$SHELL" = *csh ]]; then
     echo "setenv LESSOPEN \"|$pat$0 %s\""
+    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
+      echo "setenv LESS_ADVANCED_PREPROCESSOR 1"
+    fi
   else
     echo "LESSOPEN=\"|$pat$0 %s\""
     echo "export LESSOPEN"
+    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
+      echo "LESS_ADVANCED_PREPROCESSOR=1; export LESS_ADVANCED_PREPROCESSOR"
+    fi
   fi
 else
   # check for pipes so that "less -f ... <(cmd) ..." works properly
