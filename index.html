@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Lesspipe by wofr06</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Lesspipe</h1>
+      <h2 class="project-tagline">lesspipe (formerly on sourceforge)</h2>
+      <a href="https://github.com/wofr06/lesspipe" class="btn">View on GitHub</a>
+      <a href="https://github.com/wofr06/lesspipe/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/wofr06/lesspipe/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="lesspipesh-a-preprocessor-for-less" class="anchor" href="#lesspipesh-a-preprocessor-for-less" aria-hidden="true"><span class="octicon octicon-link"></span></a>lesspipe.sh, a preprocessor for less</h1>
+
+<p>Version: 1.83
+Author : Wolfgang Friebel, DESY (Wolfgang.Friebel AT desy.de)
+License: GPL</p>
+
+<p>Latest version available from:<br>
+ <a href="https://github.com/wofr06/lesspipe/archive/lesspipe.zip">https://github.com/wofr06/lesspipe/archive/lesspipe.zip</a><br>
+ <a href="https://github.com/wofr06/lesspipe">https://github.com/wofr06/lesspipe</a> (git repository)  </p>
+
+<p>The development version can be cloned using git:<br>
+ git clone <a href="https://github.com/wofr06/lesspipe.git">https://github.com/wofr06/lesspipe.git</a></p>
+
+<p>To report bugs or make proposals to improve lesspipe please contact
+the author by email.</p>
+
+<h1>
+<a id="contents" class="anchor" href="#contents" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contents</h1>
+
+<ol>
+<li>  Introduction</li>
+<li>  Usage</li>
+<li>  Required programs</li>
+<li>  Supported file formats
+
+<ol>
+<li>  Supported compression methods</li>
+<li>  List of preprocessed file types</li>
+<li>  Conversion of files with alternate character encoding</li>
+<li>  File formats currently not supported</li>
+</ol>
+</li>
+<li> Syntax highlighting
+
+<ol>
+<li>  List of supported languages</li>
+<li>  Syntax highlighting alternatives</li>
+<li>  Colored directory listing</li>
+<li>  Colored listing of tar file contents</li>
+</ol>
+</li>
+<li> Displaying files with special characters in the file name</li>
+<li> Examples</li>
+<li> Other documentation about lesspipe</li>
+<li> External links
+
+<ol>
+<li>  URLs to some utilities</li>
+<li>  References</li>
+</ol>
+</li>
+<li><p>Contributors</p></li>
+</ol>
+
+<h1>
+<a id="1-introduction" class="anchor" href="#1-introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. Introduction</h1>
+
+<p>To browse files under UNIX the excellent viewer less [1] can be used. By
+ setting the environment variable LESSOPEN, less can be enhanced by external
+ filters to become even more powerful. Most Linux distributions come already
+ with a "lesspipe.sh" that covers the most common situations.</p>
+
+<p>The input filter for less described here is called "lesspipe.sh". It is able
+ to process a wide variety of file formats. It enables users to deeply inspect
+ archives and to display the contents of files in archives without having to
+ unpack them before. That means file contents can be properly interpreted even
+ if the files are compressed and contained in a hierarchy of archives (often
+ found in RPM or DEB archives containing source tarballs). The filter is easily
+ extensible for new formats.</p>
+
+<p>The input filter which is also called "lesspipe.sh" is written in a ksh
+ compatible language (ksh, bash, zsh) as one of these is nearly always installed
+ on UNIX systems and uses comparably few resources. Otherwise an implementation
+ in perl for example would have been somewhat simpler to code. The code looks
+ less clean than it could as it was tried to make the script compatible with
+ a number of old shells and applications especially found on non Linux systems.</p>
+
+<p>The filter does different things depending on the file format. In most cases
+ it is determined on the output of the "file" command [2], [6], that recognizes
+ lots of formats. Only in a few cases the file suffix is used to determine what
+ to display. Up to date file descriptions are included in the "file" package.
+ Maintaining a list of file formats is therefore only a matter of keeping that
+ package up to date.</p>
+
+<h1>
+<a id="2-usage" class="anchor" href="#2-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. Usage</h1>
+
+<p>(see also the man page lesspipe.1)</p>
+
+<p>To activate lesspipe.sh the environment variable LESSOPEN has to be defined
+ in the following way:</p>
+
+<pre><code> LESSOPEN="|lesspipe.sh %s"; export LESSOPEN    (sh like shells)
+ setenv LESSOPEN "|lesspipe.sh %s"      (csh, tcsh)
+</code></pre>
+
+<p>If lesspipe.sh is not in the UNIX search path or if the wrong lesspipe.sh is
+ found in the search path, then the full path to lesspipe.sh should be given
+ in the above commands.</p>
+
+<p>As lesspipe.sh is accepting only a single argument, a hierarchical list of file
+ names has to be separated by a non blank character. A colon is rarely found
+ in file names, therefore it has been chosen as the separator character. If a
+ file name does however contain at least one isolated colon, the equal sign =
+ can be used as an alternate separator character. In that case the = character
+ has to reoccur as the last character of the argument. At each stage in
+ extracting files from such a hierarchy the file type is determined. This
+ guarantees a correct processing and display at each stage of the filtering.</p>
+
+<p>To view files in multifile archives the following command can be used:</p>
+
+<pre><code>less archive_file:contained_file      or
+less archive_file=contained_file=     (with = as separator)  
+</code></pre>
+
+<p>This can be used to extract single files from a multifile archive:  </p>
+
+<pre><code>less archive_file:contained_file &gt; extracted_file
+</code></pre>
+
+<p>For extracting files less is not required, that can be done also using:  </p>
+
+<pre><code>lesspipe.sh archive_file:contained_file &gt; extracted_file
+</code></pre>
+
+<p>Even a file in a multifile archive that itself is contained in yet
+ another archive can be viewed this way:  </p>
+
+<pre><code>less super_archive:archive_file:contained_file
+</code></pre>
+
+<p>The script is able to extract files up to a depth of 6 where applying a
+ decompression algorithm counts as a separate level. In a few rare cases the
+ file command does not recognize the correct format (especially with nroff).
+ In such cases the filtering can be suppressed by a trailing colon on the file
+ name.</p>
+
+<p>Display the last file in the file1:..:fileN chain in raw format:<br>
+ Suppress input filtering:  <code>less file1:..:fileN:</code>  (append 1 colon)<br>
+ Suppress decompression:    <code>less file1:..:fileN::</code> (append 2 colons)  </p>
+
+<p>Suppress syntax highlighting:  <code>less file1:..:fileN:</code>  (append 1 colon)<br>
+ Syntax highlighting (see below) is only tried if less is called with -r or -R
+ and highlighting support was requested when generating lesspipe.sh !!!</p>
+
+<p>Several environment variables can influence the behavior of lesspipe.sh.</p>
+
+<p>LESSQUIET will suppress additional output not belonging to the file contents
+ if set to a non empty value.</p>
+
+<p>LESS can be used to switch on colored less output (has to contain -r or -R).</p>
+
+<p>LESSCOLORIZER can contain a syntax highlighting program different from
+ the code2color used by default (currently only pygmentize allowed).</p>
+
+<p>Code for using LESS_ADVANCED_PREPROCESSOR is optionally generated (configure).
+ LESS_ADVANCED_PREPROCESSOR will switch on filtering methods for html, rtf, ps
+ files and files with alternate character encoding, if this variable is set. 
+ Filtering these formats is also done if there is no LESS_ADVANCED_PREPROCESSOR
+ support (then this string is not contained in lesspipe.sh). Otherwise these
+ types of files will be shown unmodified.</p>
+
+<h1>
+<a id="3-required-programs" class="anchor" href="#3-required-programs" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. Required programs</h1>
+
+<p>bash   or zsh or ksh (also pdksh, tested with version 5.2). Configure puts an
+        appropriate first line in the script<br>
+ file   (a version with an up to date magic file) (GNU file 4.xx recommended)<br>
+ perl   (for configure, code2color and tarcolor, lesspipe.sh works without it)<br>
+ Standard UNIX programs like ar, cat, cut, dd, egrep, gzip, ln, ls, mkdir,
+ rm, sed, strings, tar, tput and further programs for special formats.</p>
+
+<h1>
+<a id="4-supported-file-formats" class="anchor" href="#4-supported-file-formats" aria-hidden="true"><span class="octicon octicon-link"></span></a>4. Supported file formats</h1>
+
+<p>Currently lesspipe.sh [3] supports the following compression methods
+ and file types (i.e. the file contents gets transformed by lesspipe.sh):</p>
+
+<h2>
+<a id="41-supported-compression-methods" class="anchor" href="#41-supported-compression-methods" aria-hidden="true"><span class="octicon octicon-link"></span></a>4.1 Supported compression methods</h2>
+
+<ul>
+<li> gzip, compress, pack requires gzip<br>
+</li>
+<li> bzip2            requires bzip2<br>
+</li>
+<li> zip          requires unzip<br>
+</li>
+<li> rar          requires rar or unrar<br>
+</li>
+<li> 7-zip            requires 7za<br>
+</li>
+<li> lzip         requires lzip<br>
+</li>
+<li> lzma         requires lzma (limited support only)<br>
+</li>
+<li> xz           requires xz<br>
+</li>
+</ul>
+
+<h2>
+<a id="42-list-of-preprocessed-file-types" class="anchor" href="#42-list-of-preprocessed-file-types" aria-hidden="true"><span class="octicon octicon-link"></span></a>4.2 List of preprocessed file types</h2>
+
+<ul>
+<li> tar      requires GNU tar and optionally tarcolor for coloring<br>
+</li>
+<li> nroff(mandoc)    requires groff<br>
+</li>
+<li> ar library   requires ar<br>
+</li>
+<li> jar archive  requires fastjar or unzip<br>
+</li>
+<li> rar archive  requires unrar or rar<br>
+</li>
+<li> 7-zip archive    requires 7za<br>
+</li>
+<li> lzip archive requires lzip</li>
+<li> shared library   requires nm</li>
+<li> executable   requires strings</li>
+<li> directory    displayed using ls -lA</li>
+<li> RPM      requires GNU cpio and rpm2cpio or rpmunpack, optionally rpm</li>
+<li> Microsoft Word   requires antiword or catdoc</li>
+<li> MS Powerpoint    requires ppthtml</li>
+<li> MS Excel requires xlhtml</li>
+<li> Debian   requires ar, gzip and tar, shows more info if dpkg is installed</li>
+<li> html     requires html2text or elinks or links or lynx or w3m</li>
+<li> pdf      requires pdftotext or pdftohtml</li>
+<li> perl     requires pod2text</li>
+<li> rtf      requires unrtf</li>
+<li> dvi      requires dvi2tty</li>
+<li> djvu     requires djvutxt</li>
+<li> ps       requires pstotext or ps2ascii (from the gs package)</li>
+<li> mp3      requires id3v2 or mp3info or mp3info2</li>
+<li> jpg, png, gif    requires identify</li>
+<li> iso images   requires isoinfo</li>
+<li> MacOSX archive   requires lsbom</li>
+<li> MacOS X bom  requires lsbom</li>
+<li> MacOS X plist    requires plutil</li>
+<li> cab      requires cabextract (version 1.0 or above)</li>
+<li> gpg encrypted    requires gpg</li>
+<li> perl storable    requires perl (and the perl modules Storable and Data::Dumper)</li>
+<li> perl pod       requires perldoc</li>
+<li> OASIS        Opendocument text documents (used for Openoffice, Libreoffice)</li>
+<li>      requires unzip and o3tohtml or sxw2txt (distributed together</li>
+<li>      with lesspipe)</li>
+<li> nc4      requires ncdump (NetCDF format)</li>
+<li> hdf5     requires h5dump (Hierarchical Data Format)</li>
+</ul>
+
+<h2>
+<a id="43-conversion-of-files-with-alternate-character-encoding" class="anchor" href="#43-conversion-of-files-with-alternate-character-encoding" aria-hidden="true"><span class="octicon octicon-link"></span></a>4.3 Conversion of files with alternate character encoding</h2>
+
+<p>If the file utility reports text containing ISO-8859, UTF-8 or UTF-16 encoded
+ characters then the text will be transformed using iconv into the default
+ encoding. This does assume iconv has the right default which can be wrong
+ in some situations. It is checked if iconv would fail. Then the text is
+ displayed unmodified.</p>
+
+<h2>
+<a id="44-file-formats-currently-not-supported" class="anchor" href="#44-file-formats-currently-not-supported" aria-hidden="true"><span class="octicon octicon-link"></span></a>4.4 File formats currently not supported</h2>
+
+<p>(code contributed but commented out)</p>
+
+<p>jpeg and pbm graphics files to be displayed in ASCII art. The ASCII art
+ library works with overprinting that does not work properly within less.
+ Therefore the resulting quality of the converted picture is not satisfactory.</p>
+
+<p>Display of video streams using mplayer with -aadriver (again ASCII art) is
+ considered abuse of less and also commented out.</p>
+
+<p>looking at contents of DOS formatted disks by accessing the proper device file</p>
+
+<h1>
+<a id="5-colorizing-the-output" class="anchor" href="#5-colorizing-the-output" aria-hidden="true"><span class="octicon octicon-link"></span></a>5. Colorizing the output</h1>
+
+<p>ATTENTION: Syntax highlighting and other methods of colorizing the output
+ is only activated if the environment variable LESS is existing and contains
+ the option -R or -r or less is called with one of these options.</p>
+
+<p>This guarantees, that instead of literal escape sequences colors are
+ displayed. The detection of the -r/-R presence at run time is rather
+ dependent on the operating system and may not work in all cases.
+ Putting the option in the LESS environment variable is guaranteed to
+ work. By installing the perl module Proc::ProcessTable the OS dependence
+ can be reduced as well.</p>
+
+<p>The display of wrapped long lines and moving backward in a file using the
+ options -r/-R can give weird output. For an explanation see
+ <a href="http://www.greenwoodsoftware.com/less/faq.html#dashr">http://www.greenwoodsoftware.com/less/faq.html#dashr</a></p>
+
+<h2>
+<a id="51-syntax-highlighting" class="anchor" href="#51-syntax-highlighting" aria-hidden="true"><span class="octicon octicon-link"></span></a>5.1 Syntax highlighting</h2>
+
+<p>Experimental support for syntax highlighting was added through a perl
+ script 'code2color' which is derived from code2html [5].</p>
+
+<p>As syntax highlighting is rather resource intense it can be switched off by
+ appending a colon after the file name if the output was colorful. If the
+ wrong language was chosen for syntax highlighting then another one can be
+ forced by appending a colon and a suffix to the file name as follows (assuming
+ this is a file with perl syntax):</p>
+
+<pre><code>less config_file:.pl
+</code></pre>
+
+<p>That works as well to force the call of code2color for a given language.</p>
+
+<h2>
+<a id="511-list-of-supported-languages-code2color" class="anchor" href="#511-list-of-supported-languages-code2color" aria-hidden="true"><span class="octicon octicon-link"></span></a>5.1.1 List of supported languages (code2color)</h2>
+
+<p>Text files for the following languages can be highlighted using code2color:<br>
+ ada, asm, awk, c, c++, groff, html, xml, java, javascript, lisp, m4,
+ make, pascal, patch, perl, povray, python, ruby, shellscript, sql<br>
+ The corresponding suffixes recognized by code2color are:<br>
+ .ada .asm .inc .awk .c .h .cpp .cxx .groff .html .php .xml .java .js .lsp .m4
+ Makefile .pas .patch .diff .pm .pl .pod .pov .py .rb .sh .sql</p>
+
+<h2>
+<a id="512-syntax-highlighting-alternatives" class="anchor" href="#512-syntax-highlighting-alternatives" aria-hidden="true"><span class="octicon octicon-link"></span></a>5.1.2 Syntax highlighting alternatives</h2>
+
+<p>The enabling of syntax highlighting contains OS dependent code and is not
+ guaranteed to work (it was tested on Linux, Solaris, IRIX, HPUX, AIX,
+ MacOS X, Cygwin and FreeBSD). It is deactivated by default and not
+ recommended by me. It can be activated using "configure" or "make MODE=ask".</p>
+
+<p>The function code2color contains code to guarantee that color codes are only
+ sent if less is called with one of the options -r or -R. To ensure that these
+ checks are always performed, alternate syntax colorizers will be called 
+ from within code2color by setting the environment variable LESSCOLORIZER
+ to the name of another program. Currently only pygmentize (and code2color as
+ the default) is allowed. This can be changed in the first lines of code2color.</p>
+
+<p>Much better syntax highlighting is obtained using the less emulation of vim:
+ The editor vim comes with a file less.sh, in my case located in
+ /usr/share/vim/vim73/macros. Assuming that file location 
+ a function lessc (bash, zsh, ksh users)</p>
+
+<pre><code>lessc () { /usr/share/vim/vim73/macros/less.sh "$@"}
+</code></pre>
+
+<p>or an alias lessc (csh, tcsh users)</p>
+
+<pre><code>alias lessc /usr/share/vim/vim73/macros/less.sh
+</code></pre>
+
+<p>is defined and "lessc filename" is used to view the colorful file contents.</p>
+
+<h2>
+<a id="52-colored-directory-listing" class="anchor" href="#52-colored-directory-listing" aria-hidden="true"><span class="octicon octicon-link"></span></a>5.2 Colored Directory listing</h2>
+
+<p>The conditions to display a colored listing are described above. Depending
+on the operating system ls is then called with appropriate options to
+produce colored output.</p>
+
+<h2>
+<a id="53-colored-listing-of-tar-file-contents" class="anchor" href="#53-colored-listing-of-tar-file-contents" aria-hidden="true"><span class="octicon octicon-link"></span></a>5.3 Colored listing of tar file contents</h2>
+
+<p>As above less has to be called with -r or -R. If also the executable tarcolor
+(contained in the lesspipe tar file, see also [7]) is installed, then the
+listing of tar file contents is colored in a similar fashion as directory
+contents.</p>
+
+<h1>
+<a id="6-displaying-files-with-special-characters-in-the-file-name" class="anchor" href="#6-displaying-files-with-special-characters-in-the-file-name" aria-hidden="true"><span class="octicon octicon-link"></span></a>6. Displaying files with special characters in the file name</h1>
+
+<p>Shell meta characters in file names: space (frequently used in windows
+ file names), the characters <code>| &amp; ; ( )</code> &lt; &gt; " ' # ~ = $ * ? [ ] or `
+ must be escaped by a \ when used in the shell, e.g. <code>less a\ b.tar.gz:a\"b</code>
+ will display the file a"b contained in the gzipped tar archive a b.tar.gz.</p>
+
+<p>Files within an archive that do have an isolated colon in the name cannot
+ be displayed using the<br>
+    <code>archive_name:contained_file_name</code><br>
+ notation. These files can be displayed using a notation with the alternate
+ separator character = as follows:
+    <code>archive_name=contained_file_name=</code><br>
+ Please note the trailing = which is required.</p>
+
+<h1>
+<a id="7-examples" class="anchor" href="#7-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>7. Examples</h1>
+
+<p>As a typical usage case it is shown how one could display the man page
+ "file.man" found in the Fedora10 RPM source archive file-4.26-3.fc10.src.rpm</p>
+
+<p>The less command enhanced with the lesspipe.sh filter</p>
+
+<pre><code>less file-4.26-3.fc10.src.rpm
+</code></pre>
+
+<p>yields the following output
+<code>...</code><br>
+ <code>-rw-r--r--   1 root     root       584803 Sep 15 16:29 file-4.26.tar.gz</code><br>
+ <code>-rw-r--r--   1 root     root        17124 Oct 16 13:01 file.spec</code>  </p>
+
+<p>Then the command</p>
+
+<pre><code>    less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz
+</code></pre>
+
+<p>produces the output
+<code>...</code><br>
+ <code>-rw-rw-r-- 10080/10080   16027 2008-08-30 12:01:41 file-4.26/doc/Makefile.in</code><br>
+ <code>-rw-rw-r-- 10080/10080   16097 2008-03-07 16:00:07 file-4.26/doc/file.man</code><br>
+ <code>-rw-rw-r-- 10080/10080   16943 2008-08-30 11:50:20 file-4.26/doc/magic.man</code><br>
+ <code>...</code></p>
+
+<p>The desired man page can finally be viewed with</p>
+
+<pre><code>    less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/doc/file.man
+</code></pre>
+
+<p>The subcomponents of the argument to less were easily obtained by cut and
+ paste using information contained in the previous lines of output.
+ Care has been taken to display the subcomponents already in the way
+ required by lesspipe, so that in most cases double clicking will select it. 
+ If the nroff sources should have been displayed instead, appending
+ another colon at the end of the argument would have done the job:</p>
+
+<pre><code>    less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/doc/file.man:
+</code></pre>
+
+<p>If the man page was compressed (e.g. as file.man.gz) it would have been
+ uncompressed anyway. To also disallow uncompressing the source file.man.gz
+ a second colon would have to be appended to the argument.</p>
+
+<p>Even extracting single files from an archive is possible, like with</p>
+
+<pre><code>     less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/src/file.c &gt; file.c
+</code></pre>
+
+<p>Files with binary contents can be extracted as well:</p>
+
+<pre><code>    less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:: &gt; file-4.26.tar.gz
+</code></pre>
+
+<p>Here the two colons at the end of the argument are required to suppress the
+ unzipping of the resulting file and to extract the tar file instead of
+ interpreting it.</p>
+
+<p>Another interesting example is to get the dominating colors of a picture,
+ that contains a diagram with a few colors only. The command</p>
+
+<pre><code>    less diagram.png
+</code></pre>
+
+<p>does produce a lot of information, among others
+<code>...</code><br>
+  <code>Histogram:</code><br>
+       <code>720: (  0,  0,127)       #00007F</code><br>
+      <code>3032: (127,127,127)       grey50</code><br>
+     <code>18935: (  0,  0,255)       blue</code><br>
+     <code>21480: (  0,255,  0)       lim</code><br>
+     <code>21041: (  0,255,255)       cyan</code><br>
+      <code>8719: (255,  0,  0)       red</code><br>
+     <code>14476: (255,  0,255)       magenta</code><br>
+      <code>8822: (255,183,  0)       #FFB700</code><br>
+     <code>13608: (255,255,  0)       yellow</code><br>
+     <code>49167: (255,255,255)       white</code><br>
+ <code>...</code></p>
+
+<p>Other interesting examples are the inspection of Java's .jar files or Debian
+ package contents without unpacking the files and even without having java
+ installed or without working necessarily on a Debian system.</p>
+
+<p>The contrib directory does contain a less wrapper (a bash/zsh function) that
+ can be used to display URLs using less. This allows to pass the URL contents
+ through lesspipe as if it would be a local file.</p>
+
+<h1>
+<a id="8-other-documentation-about-lesspipe" class="anchor" href="#8-other-documentation-about-lesspipe" aria-hidden="true"><span class="octicon octicon-link"></span></a>8. Other documentation about lesspipe</h1>
+
+<pre><code>http://ref.cern.ch/CERN/CNL/2002/001/unix-less/  
+http://www.linux-magazine.com/issue/21/lesspipe.pdf  
+    in bash cookbook (Ch. 8.15) by Carl Albing, Cameron Newham, J. P. Vossen
+    http://carloscosta.org/2008/07/05/how-to-get-more-from-less/  
+</code></pre>
+
+<p>Documentation in german:<br>
+    german.txt (distributed with lesspipe, not updated)<br>
+    <a href="http://www.linux-magazin.de/Heft-Abo/Ausgaben/2001/01/Bessere-Sicht">http://www.linux-magazin.de/Heft-Abo/Ausgaben/2001/01/Bessere-Sicht</a><br>
+    <a href="http://www.linux-user.de/ausgabe/2002/04/060-ootb/lesspipe-1.html">http://www.linux-user.de/ausgabe/2002/04/060-ootb/lesspipe-1.html</a>  </p>
+
+<h1>
+<a id="9-external-links" class="anchor" href="#9-external-links" aria-hidden="true"><span class="octicon octicon-link"></span></a>9. External links</h1>
+
+<p>(last checked: Jan 10 2013):</p>
+
+<h2>
+<a id="91-urls-to-some-utilities" class="anchor" href="#91-urls-to-some-utilities" aria-hidden="true"><span class="octicon octicon-link"></span></a>9.1 URLs to some utilities</h2>
+
+<ul>
+<li> antiword   <a href="http://www.winfield.demon.nl/">http://www.winfield.demon.nl/</a>
+</li>
+<li> html2text  <a href="http://www.mbayer.de/html2text/">http://www.mbayer.de/html2text/</a>
+</li>
+<li> cabextract <a href="http://www.cabextract.org.uk/">http://www.cabextract.org.uk/</a>
+</li>
+<li> 7za        <a href="https://sourceforge.net/projects/p7zip/">https://sourceforge.net/projects/p7zip/</a>
+</li>
+<li> lzip       <a href="http://download.savannah.gnu.org/releases/lzip/">http://download.savannah.gnu.org/releases/lzip/</a>
+</li>
+<li> dvi2tty    <a href="http://www.ctan.org/tex-archive/dviware/dvi2tty/">http://www.ctan.org/tex-archive/dviware/dvi2tty/</a>
+</li>
+<li> unrtf      <a href="http://ftp.gnu.org/gnu/unrtf/">http://ftp.gnu.org/gnu/unrtf/</a>
+</li>
+<li> id3v2      <a href="http://id3v2.sourceforge.net/">http://id3v2.sourceforge.net/</a>
+</li>
+</ul>
+
+<h2>
+<a id="92-references" class="anchor" href="#92-references" aria-hidden="true"><span class="octicon octicon-link"></span></a>9.2 References</h2>
+
+<ul>
+<li> [1] <a href="http://www.greenwoodsoftware.com/less/">http://www.greenwoodsoftware.com/less/</a>   (less)</li>
+<li> [2] ftp://ftp.astron.com/pub/file/       (file)</li>
+<li> [3] <a href="https://github.com/wofr06/lesspipe">https://github.com/wofr06/lesspipe</a>
+</li>
+<li> [5] <a href="http://www.palfrader.org/code2html/">http://www.palfrader.org/code2html/</a>  (code2html)</li>
+<li> [6] <a href="http://www.darwinsys.com/file/">http://www.darwinsys.com/file/</a>       (file)</li>
+<li><p>[7] <a href="https://github.com/msabramo/tarcolor">https://github.com/msabramo/tarcolor</a> (tarcolor)</p></li>
+</ul>
+
+<h1>
+<a id="10-contributors" class="anchor" href="#10-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>10. Contributors</h1>
+
+<p>The script lesspipe.sh is constantly enhanced thanks to suggestions from
+ users. Among the additions to lesspipe.sh is the code to browse the ASCII
+ contents of Word or Openoffice files, to show characteristics of mp3 files
+ or to decode MacOS X formats.</p>
+
+<p>Thanks to (in alphabetical order):</p>
+
+<ul>
+<li>Marc Abramowitz: allow for color output when ls or tar commands are used</li>
+<li> James Ahlborn: do not interpret .xml files as html</li>
+<li> Sören Andersen: PPD files colorization requested</li>
+<li> Andrew Barnert: shell syntax fix</li>
+<li> Peter D. Barnes, Jr.: plist files for Mac OS X</li>
+<li> Eduard Bloch: proposed support for ISO images</li>
+<li> Mathieu Bouillaguet: add support for xz compression</li>
+<li> Florian Cramer: MS Word, Openoffice support (o3read), ASCIIart, DjVu support</li>
+<li> Philippe Defert: unattended installation</li>
+<li> Antonio Diaz Diaz: proposed support for lzip</li>
+<li> Bastian Fuchs: Issues using bash vs. sh</li>
+<li> Matt Ghali: more conservative usage of html2text</li>
+<li> Carl Greco: enhanced output for .deb files</li>
+<li> Stephan Hegel: suggested better 7za support</li>
+<li> Michel Hermier: support for DESTDIR in the Makefile</li>
+<li> Tobias Hoffmann: fixed a bug introduced in v 1.72, add support for Debian 2.0</li>
+<li>   files with xz packed data</li>
+<li> Christian Höltje: suggested to use LESSCOLORIZER like in the Gentoo distro</li>
+<li> Jürgen Kahnert: display debian files without dpkg</li>
+<li> Sebastian Kayser: suggested a less wrapper to display URLs</li>
+<li> Ben Kibbey: works on FreeBSD</li>
+<li> Peter Kostka: mktemp on MacOS fixes</li>
+<li> Heinrich Kuettler: formatting, html via lynx</li>
+<li> Antony Lee: correctly call pygmentize (no - argument, use -g)</li>
+<li> Vincent Lefèvre: runtime checks for shell, many enhancements, provided sxw2txt,</li>
+<li>   determine options for 'file' at runtime, display text in the proper encoding</li>
+<li> David Leverton: detect helper programs at runtime</li>
+<li> Jay Levitt: suggested to use enscript for highlighting support (see 4.2 above)</li>
+<li> Vladimir Linek: inspired me to add ps and dvi support</li>
+<li> Oliver Mangold: correctly display directories with a colon in the name</li>
+<li> Istvan Marko: speedup of the procedure</li>
+<li> Markus Meyer: improved mp3 handling</li>
+<li> Remi Mommsen: Mac OS X support</li>
+<li> Derek B. Noonburg: PDF files support</li>
+<li> Martin Otte: mktemp on MacOS fixes</li>
+<li> Jim Pryor: many enhancements, bug fixes, restructuring of code, tar detection</li>
+<li> Slaven Rezic: Cygwin support, bug fixes</li>
+<li> Daniel Risacher: gpg support</li>
+<li> Jens Schleusener: ksh syntax fixes</li>
+<li> Ken Teague?: support more versions of file command</li>
+<li> Matt Thompson: add support for NetCDF and HDF5 files using ncdump, h5dump</li>
+<li> Paul Townsend: improved zip support for Solaris, bug fixes in configure</li>
+<li> Petr Uzel: detect helper programs at runtime</li>
+<li> Chelban Vasile: trap command not working under /bin/sh</li>
+<li> Götz Waschk: suggested lzma support</li>
+<li> Michael Wiedmann: Debian packages support</li>
+<li> Dale Wijnand: Proposed the suppression of informal output</li>
+<li> Peter Wu: shortcut for unreadable files</li>
+</ul>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/wofr06/lesspipe">Lesspipe</a> is maintained by <a href="https://github.com/wofr06">wofr06</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
