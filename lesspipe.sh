@@ -667,13 +667,13 @@ isfinal() {
   elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
+  elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
+    msg "append $sep to filename to view the PDF source"
+    istemp pdftotext "$2" -
   elif [[ "$PARSEHTML" = yes && "$1" = *PDF* ]] && cmd_exist pdftohtml; then
     msg "append $sep to filename to view the PDF source"
     t=$(nexttmp)
     cat "$2" > "$t"; pdftohtml -stdout "$t" | parsehtml -
-  elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
-    msg "append $sep to filename to view the PDF source"
-    istemp pdftotext "$2" -
   elif [[ "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist h5dump; then
     istemp h5dump "$2"
   elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then

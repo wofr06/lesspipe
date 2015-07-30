@@ -2,7 +2,7 @@
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
 Version 1.83 Jul 28 2015
-- shortcut for unreadable files (Peter Wu)
+- shortcut for unreadable files, prefer pdftotext over pdftohtml (Peter Wu)
 - add bsdtar as a command to unpack rar files (coadde)
 - add support for NetCDF and HDF5 files using ncdump, h5dump (Matt Thompson)
 - correctly display directories with a colon in the name (Oliver Mangold)
