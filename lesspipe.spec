@@ -10,7 +10,7 @@ Source0:       lesspipe-%{packageversion}.tar.gz
 BuildArch:     noarch
 AutoReqProv:   on
 Packager:      Wolfgang Friebel <wolfgang.friebel@desy.de>
-URL:           https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
+URL:           https://github.com/wofr06/lesspipe/archive/lesspipe.zip
 License:       GPL
 BuildRoot:     /var/tmp/%{packagename}-%{packageversion}
 Summary:       Input filter for less to better display files

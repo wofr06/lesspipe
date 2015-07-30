@@ -1,7 +1,7 @@
 # lesspipe.sh, a preprocessor for less (version 1.83)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE ZIP FILE
-### from https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
+### from https://github.com/wofr06/lesspipe/archive/lesspipe.zip
 ### AND RUN configure TO GENERATE A lesspipe.sh THAT WORKS IN YOUR ENVIRONMENT
 #===============================================================================
 #
