@@ -3257,7 +3257,7 @@ getopts('i:l:') || exit 2;
     # call external colorizer
     if ($ENV{LESSCOLORIZER} eq 'pygmentize') {
       # do not call pygmentize with - and use option -g
-      @ARGV = {grep $_ ne '-'} @ARGV;
+      @ARGV = grep {$_ ne '-'} @ARGV;
       unshift @ARGV, '-g';
     }
     system($ENV{LESSCOLORIZER}, @ARGV);
