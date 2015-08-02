@@ -833,6 +833,10 @@ sub put_output {
     $prefix = $params->{'line_number_prefix'}.'_'  
       if $params->{'line_number_prefix'};
 
+	for (my $i = 0; $i < $#$snippetlist_ref - 1; $i++) {
+		next if $snippetlist_ref->[$i+1] !~ /\n/;
+		$snippetlist_ref->[$i+1] =~ s/\n/$snippetlist_ref->[$i+2]\n$snippetlist_ref->[$i]/g;
+	}
     $result = &{ $ { $$STYLE_REF{'linenumbers'}} {$params->{'linenumbers'}} 
                }(join ('', @$snippetlist_ref), $prefix);
 
