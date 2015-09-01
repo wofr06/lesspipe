@@ -10,6 +10,7 @@ $debug = 1 if $ARGV[0] and $ARGV[0] eq '-d';
 $ENV{LESSOPEN} = "|./lesspipe.sh %s";
 # to check all test cases with the filter
 $ENV{LESS_ADVANCED_PREPROCESSOR} =1;
+$ENV{LESSCOLORIZER} = undef;
 open F, "TESTCMDS" or die "Could not read TESTCMDS:$!\n";
 my $retcode = 0;
 my $duration = time();

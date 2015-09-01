@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- correct treatment of nonexistent files (Antony Lee)
+- LESSCOLORIZER content can be a fully qualified path, unset when testing
 Version 1.83 Jul 28 2015
 - shortcut for unreadable files, prefer pdftotext over pdftohtml (Peter Wu)
 - add bsdtar as a command to unpack rar files (coadde)
