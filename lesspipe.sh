@@ -133,6 +133,11 @@ filetype () {
        type=" Excel document"
   elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
        type=" NetCDF Data Format data"
+  elif [[ "$type" = *roff\ *,* && ("$name" = */[Mm]akefile || "$name" = */[Mm]akefile.* || "$name" = */BSDmakefile || "$name" = *.mk) ]]; then
+       # Sometimes a BSD makefile is identified as "troff or
+       # preprocessor input text" probably due to its ".if" style
+       # directives.
+       type=" BSD makefile script,${type#*,}}"
   fi
   echo "$type"
 }
