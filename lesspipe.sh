@@ -755,7 +755,7 @@ isfinal() {
     iconv -c -f ISO-8859-1 "$2"
   elif [[ "$1" = *UTF-16$NOL_A_P* && $LANG != *UTF-16 ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-16 "$2"
-  elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
+  elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
   elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
