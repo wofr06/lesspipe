@@ -977,7 +977,7 @@ isfinal() {
     iconv -f UTF-16 "$2"
 #endif
 #ifdef gpg
-  elif [[ "$1" = *GPG\ encrypted\ data* ]] && cmd_exist gpg; then
+  elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
 #endif
