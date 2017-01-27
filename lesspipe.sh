@@ -764,6 +764,15 @@ isfinal() {
   elif [[ "$1" = *data$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
     nodash strings "$2"
+  elif [[ "$2" = *.crt || "$2" = *.pem ]] && cmd_exist openssl; then
+    msg "append $sep to filename to view the raw data"
+    openssl x509 -hash -text -noout -in "$2"
+  elif [[ "$2" = *.csr ]] && cmd_exist openssl; then
+    msg "append $sep to filename to view the raw data"
+    openssl req -text -noout -in "$2"
+  elif [[ "$2" = *.crl ]] && cmd_exist openssl; then
+    msg "append $sep to filename to view the raw data"
+    openssl crl -hash -text -noout -in "$2"
   else
     set "plain text" "$2"
   fi
