@@ -413,6 +413,8 @@ xz		Y
 7za		Y
 7zr		N	# included in 7za code
 zstd		Y
+brotli		Y
+lz4		Y
 # essential utilities
 cpio		Y
 elinks		Y	# only one of html2text, elinks, links, lynx, w3m needed
