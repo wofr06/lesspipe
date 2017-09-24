@@ -306,13 +306,9 @@ get_cmd () {
        *.zst) filen="${filen%.zst}";;
        *.tzst) filen="${filen%.tzst}.tar";;
       esac
-    elif [[ "$1" = *[Bb]rotli\ compressed* ]] && cmd_exist bro; then
-      if [[ "$2" != - ]]; then
-        cmd=(cmd bro -d --input "$2")
-        filen="$2"
-      else
-        cmd=(cmd bro -d)
-      fi
+    elif [[ "$1" = *[Bb]rotli\ compressed* ]] && cmd_exist brotli; then
+      cmd=(brotli -cd -- "$2")
+      if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
        *.br|*.bro) filen="${filen%.*}";;
        *.tbr) filen="${filen%.*}.tar";;
@@ -510,7 +506,7 @@ unpack_cmd() {
     elif [[ "$1" == *zst ]]; then
       cmd_string="zstd -dcq -"
     elif [[ ("$1" == *br || "$1" == *bro) ]]; then
-      cmd_string="bro -d"
+      cmd_string="brotli -dc -"
     elif [[ "$1" == *lz4 ]]; then
       cmd_string="lz4 -dcq -"
     fi
