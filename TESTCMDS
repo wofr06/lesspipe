@@ -44,3 +44,7 @@ less -f testok/a\]b.gz
 #less -f testok/a\\b.lz                        #needs lzip
 less    testok/a\ test
 less    testok/a:test
+less    testok/test.zst
+less    testok/test.zst.tzst
+less    testok/test.zst.tzst:test.zst
+less    testok/test.tar.zst

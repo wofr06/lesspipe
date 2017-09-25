@@ -159,6 +159,7 @@ Contents
  lzip			requires lzip
  lzma			requires lzma (limited support only)
  xz			requires xz
+ zstd			requires zstd
 
 4.2 List of preprocessed file types
 -----------------------------------

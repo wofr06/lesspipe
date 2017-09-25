@@ -255,7 +255,7 @@ show () {
 get_cmd () {
   cmd=
   typeset t
-  if [[ "$1" = *[bg]zip*compress* || "$1" = *compress\'d\ * || "$1" = *packed\ data* || "$1" = *LZMA\ compressed* || "$1" = *lzip\ compressed* || "$1" = *[Xx][Zz]\ compressed* ]]; then ## added '#..then' to fix vim's syntax parsing
+  if [[ "$1" = *[bg]zip*compress* || "$1" = *compress\'d\ * || "$1" = *packed\ data* || "$1" = *LZMA\ compressed* || "$1" = *lzip\ compressed* || "$1" = *[Xx][Zz]\ compressed* || "$1" = *Zstandard\ compressed* ]]; then ## added '#..then' to fix vim's syntax parsing
     if [[ "$3" = $sep$sep ]]; then
       return
     elif [[ "$1" = *bzip*compress* ]] && cmd_exist bzip2; then
@@ -293,6 +293,13 @@ get_cmd () {
       case "$filen" in
        *.xz) filen="${filen%.xz}";;
        *.txz) filen="${filen%.txz}.tar";;
+      esac
+    elif [[ "$1" = *Zstandard\ compressed* ]] && cmd_exist zstd; then
+      cmd=(zstd -cdq "$2")
+      if [[ "$2" != - ]]; then filen="$2"; fi
+      case "$filen" in
+       *.zst) filen="${filen%.zst}";;
+       *.tzst) filen="${filen%.tzst}.tar";;
       esac
     fi
     return
@@ -477,6 +484,8 @@ unpack_cmd() {
       cmd_string="bzip2 -dc -"
     elif [[ "$1" == *lzma ]]; then
       cmd_string="lzma -dc -"
+    elif [[ "$1" == *zst ]]; then
+      cmd_string="zstd -dcq -"
     fi
     echo "$cmd_string"
 }
