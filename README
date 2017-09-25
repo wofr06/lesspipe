@@ -160,6 +160,8 @@ Contents
  lzma			requires lzma (limited support only)
  xz			requires xz
  zstd			requires zstd
+ brotli			requires bro
+ lz4			requires lz4
 
 4.2 List of preprocessed file types
 -----------------------------------

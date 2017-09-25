@@ -113,6 +113,11 @@ filetype () {
     set "$tmpdir/file" "$2"
     name="$filen"
   fi
+  if [[ ("$name" = *.br || "$name" = *.bro || "$name" = *.tbr) ]]; then
+    # In current format, brotli can only be detected by extension
+    echo " brotli compressed data"
+    return
+  fi
   typeset type
   # type=" $(filecmd -b "$1")" # not supported by all versions of 'file'
   type=$(filecmd "$1" | cut -d : -f 2-)
@@ -255,7 +260,7 @@ show () {
 get_cmd () {
   cmd=
   typeset t
-  if [[ "$1" = *[bg]zip*compress* || "$1" = *compress\'d\ * || "$1" = *packed\ data* || "$1" = *LZMA\ compressed* || "$1" = *lzip\ compressed* || "$1" = *[Xx][Zz]\ compressed* || "$1" = *Zstandard\ compressed* ]]; then ## added '#..then' to fix vim's syntax parsing
+  if [[ "$1" = *[bg]zip*compress* || "$1" = *compress\'d\ * || "$1" = *packed\ data* || "$1" = *LZMA\ compressed* || "$1" = *lzip\ compressed* || "$1" = *[Xx][Zz]\ compressed* || "$1" = *Zstandard\ compressed* || "$1" = *[Bb]rotli\ compressed* || "$1" = *LZ4\ compressed* ]]; then ## added '#..then' to fix vim's syntax parsing
     if [[ "$3" = $sep$sep ]]; then
       return
     elif [[ "$1" = *bzip*compress* ]] && cmd_exist bzip2; then
@@ -300,6 +305,20 @@ get_cmd () {
       case "$filen" in
        *.zst) filen="${filen%.zst}";;
        *.tzst) filen="${filen%.tzst}.tar";;
+      esac
+    elif [[ "$1" = *[Bb]rotli\ compressed* ]] && cmd_exist brotli; then
+      cmd=(brotli -cd -- "$2")
+      if [[ "$2" != - ]]; then filen="$2"; fi
+      case "$filen" in
+       *.br|*.bro) filen="${filen%.*}";;
+       *.tbr) filen="${filen%.*}.tar";;
+      esac
+    elif [[ "$1" = *LZ4\ compressed* ]] && cmd_exist lz4; then
+      cmd=(lz4 -cdq "$2")
+      if [[ "$2" != - ]]; then filen="$2"; fi
+      case "$filen" in
+       *.lz4) filen="${filen%.*}";;
+       *.tl4|*.tz4|*.tlz4) filen="${filen%.*}.tar";;
       esac
     fi
     return
@@ -486,6 +505,10 @@ unpack_cmd() {
       cmd_string="lzma -dc -"
     elif [[ "$1" == *zst ]]; then
       cmd_string="zstd -dcq -"
+    elif [[ ("$1" == *br || "$1" == *bro) ]]; then
+      cmd_string="brotli -dc -"
+    elif [[ "$1" == *lz4 ]]; then
+      cmd_string="lz4 -dcq -"
     fi
     echo "$cmd_string"
 }
