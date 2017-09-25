@@ -446,6 +446,7 @@ mp3info2	N	# code for mp3info2 is included anyway if id3v2 selected
 identify	Y
 isoinfo		Y	# I would not want to see that
 o3tohtml	Y
+openssl		Y
 perldoc		Y
 ppthtml		Y
 unrtf		Y

@@ -199,6 +199,7 @@ Contents
 		with lesspipe)
  nc4		requires ncdump (NetCDF format)
  hdf5		requires h5dump (Hierarchical Data Format)
+ crt, pem, csr, crl requires openssl
 
 4.3 Conversion of files with alternate character encoding
 ---------------------------------------------------------
