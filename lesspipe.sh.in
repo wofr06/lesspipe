@@ -893,6 +893,11 @@ isfinal() {
   elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then
     istemp ncdump "$2"
 #endif
+#ifdef matdump
+  elif [[ "$1" = *Matlab\ v[0-9.]*\ mat-file* ]] && cmd_exist matdump; then
+    msg "append $sep to filename to view the raw data"
+    matdump -d "$2"
+#endif
 #ifdef djvutxt
   elif [[ "$1" = *DjVu* ]] && cmd_exist djvutxt; then
     msg "append $sep to filename to view the DjVu source"
@@ -1029,11 +1034,6 @@ isfinal() {
   elif [[ "$1" = *data$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
     nodash strings "$2"
-#ifdef matdump
-  elif [[ "$1" = *Matlab\ v[0-9.]*\ mat-file* ]] && cmd_exist matdump; then
-    msg "append $sep to filename to view the raw data"
-    matdump -d "$2"
-#endif
 #ifdef openssl
   elif [[ "$2" = *.crt || "$2" = *.pem ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
