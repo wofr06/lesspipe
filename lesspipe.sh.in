@@ -893,6 +893,11 @@ isfinal() {
   elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then
     istemp ncdump "$2"
 #endif
+#ifdef matdump
+  elif [[ "$1" = *Matlab\ v[0-9.]*\ mat-file* ]] && cmd_exist matdump; then
+    msg "append $sep to filename to view the raw data"
+    matdump -d "$2"
+#endif
 #ifdef djvutxt
   elif [[ "$1" = *DjVu* ]] && cmd_exist djvutxt; then
     msg "append $sep to filename to view the DjVu source"

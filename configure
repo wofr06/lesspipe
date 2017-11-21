@@ -440,6 +440,7 @@ pdftohtml	Y
 pdftotext	Y
 # other helper programs
 cabextract	Y
+matdump	N
 djvutxt		Y
 fastjar		N	# I do prefer unzip
 gpg		Y
