@@ -302,7 +302,7 @@ get_cmd () {
        *.txz) filen="${filen%.txz}.tar";;
       esac
     elif [[ "$1" = *Zstandard\ compressed* ]] && cmd_exist zstd; then
-      cmd=(zstd -cdq "$2")
+      cmd=(zstd -cdqM4294967295 "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
        *.zst) filen="${filen%.zst}";;
@@ -506,7 +506,7 @@ unpack_cmd() {
     elif [[ "$1" == *lzma ]]; then
       cmd_string="lzma -dc -"
     elif [[ "$1" == *zst ]]; then
-      cmd_string="zstd -dcq -"
+      cmd_string="zstd -dcqM4294967295 -"
     elif [[ ("$1" == *br || "$1" == *bro) ]]; then
       cmd_string="brotli -dc -"
     elif [[ "$1" == *lz4 ]]; then
