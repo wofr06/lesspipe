@@ -109,14 +109,16 @@ filetype () {
   typeset name
   name="$1"
   if [[ "$1" = - ]]; then
-    dd bs=40000 count=1 > "$tmpdir/file" 2>/dev/null
-    set "$tmpdir/file" "$2"
     name="$filen"
   fi
   if [[ ("$name" = *.br || "$name" = *.bro || "$name" = *.tbr) ]]; then
     # In current format, brotli can only be detected by extension
     echo " brotli compressed data"
     return
+  fi
+  if [[ "$1" = - ]]; then
+    dd bs=40000 count=1 > "$tmpdir/file" 2>/dev/null
+    set "$tmpdir/file" "$2"
   fi
   typeset type
   # type=" $(filecmd -b "$1")" # not supported by all versions of 'file'

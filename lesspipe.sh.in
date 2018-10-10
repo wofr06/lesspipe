@@ -111,8 +111,6 @@ filetype () {
   typeset name
   name="$1"
   if [[ "$1" = - ]]; then
-    dd bs=40000 count=1 > "$tmpdir/file" 2>/dev/null
-    set "$tmpdir/file" "$2"
     name="$filen"
   fi
 #ifdef brotli
@@ -122,6 +120,10 @@ filetype () {
     return
   fi
 #endif
+  if [[ "$1" = - ]]; then
+    dd bs=40000 count=1 > "$tmpdir/file" 2>/dev/null
+    set "$tmpdir/file" "$2"
+  fi
   typeset type
   # type=" $(filecmd -b "$1")" # not supported by all versions of 'file'
   type=$(filecmd "$1" | cut -d : -f 2-)
