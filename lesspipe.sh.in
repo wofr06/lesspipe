@@ -371,11 +371,11 @@ get_cmd () {
       set -A cmd isrpm "$2" "$file2"
 #endif 
 #ifdef fastjar
-    elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
+    elif [[ "$1" = *Jar\ archive* || "$1" = *Java\ archive* ]] && cmd_exist fastjar; then
       set -A cmd isjar "$2" "$file2"
 #endif
 #ifdef unzip
-    elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
+    elif [[ "$1" = *Zip* || "$1" = *ZIP* || "$1" = *JAR* ]] && cmd_exist unzip; then
       set -A cmd istemp "unzip -avp" "$2" "$file2"
 #endif 
 #ifdef unrar
@@ -778,7 +778,7 @@ isfinal() {
     nodash "fastjar -tf" "$2"
 #endif
 #ifdef unzip
-  elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
+  elif [[ "$1" = *Zip* || "$1" = *ZIP* || "$1" = *JAR* ]] && cmd_exist unzip; then
     msg "use zip_file${sep}contained_file to view a file in the archive"
     istemp "unzip -lv" "$2"
 #endif
