@@ -905,6 +905,36 @@ isfinal() {
     msg "append $sep to filename to view the DjVu source"
     djvutxt "$2"
 #endif
+#ifdef docx2txt.pl
+  elif [[ "$1" = *Microsoft\ Word\ 2007* ]]; then
+    if cmd_exist docx2txt.pl; then
+      msg "append $sep to filename to view the raw word document"
+      docx2txt.pl "$2"
+    else
+      msg "install docx2txt.pl to view human readable text"
+      cat "$2"
+    fi
+#elif doc2txt.pl
+#ifdef pandoc
+  elif [[ "$1" = *Microsoft\ Word\ 2007* ]]; then
+    if cmd_exist pandoc; then
+      msg "append $sep to filename to view the raw word document"
+      pandoc --from=docx --to=plain "$2"
+    else
+      msg "install docx2txt.pl to view human readable text"
+      cat "$2"
+    fi
+#elif pandoc
+#ifdef libreoffice
+  elif [[ "$1" = *Microsoft\ [[:alpha:]]*\ 2007* ]]; then
+    if cmd_exist libreoffice; then
+      msg "append $sep to filename to view the raw word document"
+      libreoffice --headless --cat "$2"
+    else
+      msg "install LibreOffice to view human readable text"
+      cat "$2"
+    fi
+#elif libreoffice
 #ifdef antiword
   elif [[ "$1" = *Microsoft\ Word* || "$1" = *Microsoft\ Office* ]]; then
     if cmd_exist antiword; then

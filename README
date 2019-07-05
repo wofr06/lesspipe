@@ -128,11 +128,11 @@ Contents
 
  Code for using LESS_ADVANCED_PREPROCESSOR is optionally generated (configure).
  LESS_ADVANCED_PREPROCESSOR will switch on filtering methods for html, rtf, ps
- files and files with alternate character encoding, if this variable is set. 
+ files and files with alternate character encoding, if this variable is set.
  Filtering these formats is also done if there is no LESS_ADVANCED_PREPROCESSOR
  support (then this string is not contained in lesspipe.sh). Otherwise these
  types of files will be shown unmodified.
- 
+
 3. Required programs
 ====================
 
@@ -176,9 +176,12 @@ Contents
  executable	requires strings
  directory	displayed using ls -lA
  RPM		requires GNU cpio and rpm2cpio or rpmunpack, optionally rpm
- Microsoft Word	requires antiword or catdoc
- MS Powerpoint	requires ppthtml
- MS Excel	requires xlhtml
+ Microsoft Word < 2007	requires antiword or catdoc
+ MS Powerpoint < 2007	requires ppthtml
+ MS Excel < 2007	requires xlhtml
+ Microsoft Word (docx) >= 2007	requires libreoffice, pandoc or doc2txt.pl
+ MS Powerpoint (pptx) >= 2007	requires libreoffice
+ MS Excel (xlsx) >= 2007	requires libreoffice
  Debian 	requires ar, gzip and tar, shows more info if dpkg is installed
  html		requires html2text or elinks or links or lynx or w3m
  pdf		requires pdftotext or pdftohtml
@@ -276,14 +279,14 @@ Contents
 
  The function code2color contains code to guarantee that color codes are only
  sent if less is called with one of the options -r or -R. To ensure that these
- checks are always performed, alternate syntax colorizers will be called 
+ checks are always performed, alternate syntax colorizers will be called
  from within code2color by setting the environment variable LESSCOLORIZER
  to the name of another program. Currently only pygmentize (and code2color as
  the default) is allowed. This can be changed in the first lines of code2color.
 
  Much better syntax highlighting is obtained using the less emulation of vim:
  The editor vim comes with a file less.sh, in my case located in
- /usr/share/vim/vim73/macros. Assuming that file location 
+ /usr/share/vim/vim73/macros. Assuming that file location
  a function lessc (bash, zsh, ksh users)
 
 	lessc () { /usr/share/vim/vim73/macros/less.sh "$@"}
@@ -291,7 +294,7 @@ Contents
  or an alias lessc (csh, tcsh users)
 
 	alias lessc /usr/share/vim/vim73/macros/less.sh
- 
+
  is defined and "lessc filename" is used to view the colorful file contents.
 
 5.2 Colored Directory listing
@@ -356,7 +359,7 @@ less file-4.26-3.fc10.src.rpm:file-4.26.tar.gz:file-4.26/doc/file.man
  The subcomponents of the argument to less were easily obtained by cut and
  paste using information contained in the previous lines of output.
  Care has been taken to display the subcomponents already in the way
- required by lesspipe, so that in most cases double clicking will select it. 
+ required by lesspipe, so that in most cases double clicking will select it.
  If the nroff sources should have been displayed instead, appending
  another colon at the end of the argument would have done the job:
 
