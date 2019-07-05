@@ -179,14 +179,15 @@ Contents
  Microsoft Word < 2007	requires antiword or catdoc
  MS Powerpoint < 2007	requires ppthtml
  MS Excel < 2007	requires xlhtml
- Microsoft Word (docx) >= 2007	requires libreoffice, pandoc or doc2txt.pl
+ Microsoft Word (docx) >= 2007	requires libreoffice or pandoc or doc2txt.pl
  MS Powerpoint (pptx) >= 2007	requires libreoffice
  MS Excel (xlsx) >= 2007	requires libreoffice
+ epub requires pandoc
  Debian 	requires ar, gzip and tar, shows more info if dpkg is installed
  html		requires html2text or elinks or links or lynx or w3m
  pdf		requires pdftotext or pdftohtml
  perl		requires pod2text
- rtf		requires unrtf
+ rtf		requires pandoc or libreoffice or unrtf
  dvi		requires dvi2tty
  djvu		requires djvutxt
  ps		requires pstotext or ps2ascii (from the gs package)
@@ -201,8 +202,8 @@ Contents
  perl storable	requires perl (and the perl modules Storable and Data::Dumper)
  perl pod       requires perldoc
  OASIS		Opendocument text documents (used for Openoffice, Libreoffice)
- 		requires unzip and o3tohtml or sxw2txt (distributed together
-		with lesspipe)
+ 		requires libreoffice or pandoc or unzip and o3tohtml or sxw2txt
+ 	  (distributed together with lesspipe)
  nc4		requires ncdump (NetCDF format)
  hdf5		requires h5dump (Hierarchical Data Format)
  crt, pem, csr, crl requires openssl
@@ -427,14 +428,17 @@ less diagram.png
 
 9.1 URLs to some utilities
 --------------------------
- antiword   http://www.winfield.demon.nl/
- html2text  http://www.mbayer.de/html2text/
- cabextract http://www.cabextract.org.uk/
- 7za        https://sourceforge.net/projects/p7zip/
- lzip       http://download.savannah.gnu.org/releases/lzip/
- dvi2tty    http://www.ctan.org/tex-archive/dviware/dvi2tty/
- unrtf      http://ftp.gnu.org/gnu/unrtf/
- id3v2      http://id3v2.sourceforge.net/
+ antiword     http://www.winfield.demon.nl/
+ html2text    http://www.mbayer.de/html2text/
+ cabextract   http://www.cabextract.org.uk/
+ 7za          https://sourceforge.net/projects/p7zip/
+ lzip         http://download.savannah.gnu.org/releases/lzip/
+ dvi2tty      http://www.ctan.org/tex-archive/dviware/dvi2tty/
+ unrtf        http://ftp.gnu.org/gnu/unrtf/
+ docx2txt.pl  https://github.com/arthursucks/docx2txt
+ pandoc       http://pandoc.org
+ libreoffice  http://www.libreoffice.org
+ id3v2        http://id3v2.sourceforge.net/
 
 9.2 References
 --------------
