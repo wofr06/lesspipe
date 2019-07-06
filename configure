@@ -429,6 +429,9 @@ rpmunpack	N	# fallback for rpm2cpio only, code inserted anyway
 rpm2cpio	Y
 w3m		Y
 # code for these programs should be included in lesspipe.sh
+doc2txt.pl	Y	  # to view Microsoft Word 2007+ files
+pandoc	    Y	      # to view Microsoft Word 2007+ files
+libreoffice	Y	  # to view Microsoft Office 2007+ files
 antiword	Y	# one of antiword or catdoc should be installed
 catdoc		Y
 dvi2tty		Y	# nice to have
