@@ -344,9 +344,9 @@ get_cmd () {
       cmd=(istar "$t" "$file2")
     elif [[ "$1" = *RPM* ]] && cmd_exist cpio && ( cmd_exist rpm2cpio || cmd_exist rpmunpack ); then
       cmd=(isrpm "$2" "$file2")
-    elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
+    elif [[ "$1" = *Jar\ archive* || "$1" = *Java\ archive* ]] && cmd_exist fastjar; then
       cmd=(isjar "$2" "$file2")
-    elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
+    elif [[ "$1" = *Zip* || "$1" = *ZIP* || "$1" = *JAR* ]] && cmd_exist unzip; then
       cmd=(istemp "unzip -avp" "$2" "$file2")
     elif [[ "$1" = *RAR\ archive* ]]; then
       if cmd_exist unrar; then
@@ -645,7 +645,7 @@ isfinal() {
   elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
     msg "use jar_file${sep}contained_file to view a file in the archive"
     nodash "fastjar -tf" "$2"
-  elif [[ "$1" = *Zip* || "$1" = *ZIP* ]] && cmd_exist unzip; then
+  elif [[ "$1" = *Zip* || "$1" = *ZIP* || "$1" = *JAR* ]] && cmd_exist unzip; then
     msg "use zip_file${sep}contained_file to view a file in the archive"
     istemp "unzip -lv" "$2"
   elif [[ "$1" = *RAR\ archive* ]]; then
@@ -717,9 +717,54 @@ isfinal() {
     istemp h5dump "$2"
   elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then
     istemp ncdump "$2"
+  elif [[ "$1" = *Matlab\ v[0-9.]*\ mat-file* ]] && cmd_exist matdump; then
+    msg "append $sep to filename to view the raw data"
+    matdump -d "$2"
   elif [[ "$1" = *DjVu* ]] && cmd_exist djvutxt; then
     msg "append $sep to filename to view the DjVu source"
     djvutxt "$2"
+  elif [[ "$1" = *Microsoft\ Word\ 2007* ]]; then
+    if cmd_exist docx2txt.pl; then
+      msg "append $sep to filename to view the raw word document"
+      docx2txt.pl "$2" -
+    else
+      msg "install docx2txt.pl to view human readable text"
+      cat "$2"
+    fi
+  elif [[ "$1" = *Microsoft\ Word\ 2007* ]]; then
+    if cmd_exist pandoc; then
+      msg "append $sep to filename to view the raw word document"
+      pandoc --from=docx --to=plain "$2"
+    else
+      msg "install pandoc to view human readable text"
+      cat "$2"
+    fi
+  elif [[ "$1" = *EPUB\ document* ]]; then
+    if cmd_exist pandoc; then
+      msg "append $sep to filename to view the raw word document"
+      pandoc --from=epub --to=plain "$2"
+    else
+      msg "install pandoc to view human readable text"
+      cat "$2"
+    fi
+  elif [[ "$1" = *OpenDocument\ Text* || "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]* ]]; then
+    if cmd_exist pandoc; then
+      msg "append $sep to filename to view the raw word document"
+      pandoc --from=odt --to=plain "$2"
+    else
+      msg "install pandoc to view human readable text"
+      cat "$2"
+    fi
+  elif [[ "$1" = *Microsoft\ [[:alpha:]]*\ 2007* ||
+    "$1" = *Rich\ Text\ Format$NOL_A_P* ||
+    ("$1" = *OpenDocument\ Text* || "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]*) ]]; then
+    if cmd_exist libreoffice; then
+      msg "append $sep to filename to view the raw word document"
+      libreoffice --headless --cat "$2"
+    else
+      msg "install LibreOffice to view human readable text"
+      cat "$2"
+    fi
   elif [[ "$1" = *Microsoft\ Word* || "$1" = *Microsoft\ Office* ]]; then
     if cmd_exist antiword; then
       msg "append $sep to filename to view the raw word document"
