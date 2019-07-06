@@ -909,7 +909,7 @@ isfinal() {
   elif [[ "$1" = *Microsoft\ Word\ 2007* ]]; then
     if cmd_exist docx2txt.pl; then
       msg "append $sep to filename to view the raw word document"
-      docx2txt.pl "$2"
+      docx2txt.pl "$2" -
     else
       msg "install docx2txt.pl to view human readable text"
       cat "$2"
