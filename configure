@@ -434,7 +434,6 @@ pandoc	    Y	      # to view Microsoft Word 2007+ files
 libreoffice	Y	  # to view Microsoft Office 2007+ files
 antiword	Y	# one of antiword or catdoc or wvText should be installed
 catdoc		Y
-wvHtml		Y
 wvText		Y
 dvi2tty		Y	# nice to have
 pstotext	Y	# pstotext is better than the fallback ps2ascii

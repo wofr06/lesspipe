@@ -777,9 +777,6 @@ isfinal() {
       msg "install pandoc to view human readable text"
       cat "$2"
     fi
-  elif [[ "$PARSEHTML" = yes && "$1" = *Word\ document* ]] && cmd_exist wvHtml; then
-    msg "append $sep to filename to view the raw word document"
-    wvHtml "$2" - | parsehtml -
   elif [[ "$1" = *Word\ document* ]] && cmd_exist wvText; then
     msg "append $sep to filename to view the raw word document"
     wvText "$2" -
