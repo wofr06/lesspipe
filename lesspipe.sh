@@ -121,6 +121,7 @@ filetype () {
     dd bs=40000 count=1 > "$tmpdir/file" 2>/dev/null
     set "$tmpdir/file" "$2"
   fi
+
   typeset type
   # type=" $(filecmd -b "$1")" # not supported by all versions of 'file'
   type="$(filecmd "$1" | cut -d : -f 2-)"
@@ -160,12 +161,15 @@ filetype () {
        # directives.
        type=" BSD makefile script,${type#*,}}"
   fi
-  mime="$(filecmd --mime --brief "$1")"
-  if [[ "$mime" = *image/* ]]; then
-    type=" image data"
-  elif [[ "$mime" = *audio/* ]]; then
-    type=" audio data"
+
+  # file -b not supported by all versions of 'file'
+  mime="$(file -ib "$1")"
+  if [[ "$mime" = image/* ]]; then
+    type="image"
+  elif [[ "$mime" = audio/* ]]; then
+    type="audio"
   fi
+
   echo "$type"
 }
 
@@ -903,10 +907,10 @@ isfinal() {
   elif [[ "$2" = *.crl ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl crl -hash -text -noout -in "$2"
-  elif [[ "$1" = *image\ data* ]] && cmd_exist identify; then
+  elif [[ "$1" = "image" ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
-  elif [[ "$1" = *audio\ data* ]]; then
+  elif [[ "$1" = "audio" ]]; then
     if cmd_exist id3v2; then
       msg "append $sep to filename to view the raw data"
       istemp "id3v2 --list" "$2"

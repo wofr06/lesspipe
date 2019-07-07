@@ -125,6 +125,7 @@ filetype () {
     dd bs=40000 count=1 > "$tmpdir/file" 2>/dev/null
     set "$tmpdir/file" "$2"
   fi
+
   typeset type
   # type=" $(filecmd -b "$1")" # not supported by all versions of 'file'
   type="$(filecmd "$1" | cut -d : -f 2-)"
@@ -164,12 +165,15 @@ filetype () {
        # directives.
        type=" BSD makefile script,${type#*,}}"
   fi
-  mime="$(filecmd --mime --brief "$1")"
-  if [[ "$mime" = *image/* ]]; then
-    type=" image data"
-  elif [[ "$mime" = *audio/* ]]; then
-    type=" audio data"
+
+  # file -b not supported by all versions of 'file'
+  mime="$(file -ib "$1")"
+  if [[ "$mime" = image/* ]]; then
+    type="image"
+  elif [[ "$mime" = audio/* ]]; then
+    type="audio"
   fi
+
   echo "$type"
 }
 
@@ -1144,12 +1148,12 @@ isfinal() {
     openssl crl -hash -text -noout -in "$2"
 #endif
 #ifdef identify
-  elif [[ "$1" = *image\ data* ]] && cmd_exist identify; then
+  elif [[ "$1" = "image" ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
 #endif 
 #ifdef id3v2
-  elif [[ "$1" = *audio\ data* ]]; then
+  elif [[ "$1" = "audio" ]]; then
     if cmd_exist id3v2; then
       msg "append $sep to filename to view the raw data"
       istemp "id3v2 --list" "$2"
@@ -1161,11 +1165,11 @@ isfinal() {
       mp3info "$2"
     fi
 #elif mp3info2
-  elif [[ "$1" = *audio\ data* ]] && cmd_exist mp3info2; then
+  elif [[ "$1" = "audio" ]] && cmd_exist mp3info2; then
     msg "append $sep to filename to view the raw data"
     mp3info2 "$2"
 #elif mp3info
-  elif [[ "$1" = *audio\ data* ]] && cmd_exist mp3info; then
+  elif [[ "$1" = "audio" ]] && cmd_exist mp3info; then
     msg "append $sep to filename to view the raw data"
     mp3info "$2"
 #endif
