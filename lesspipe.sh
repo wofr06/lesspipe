@@ -168,6 +168,8 @@ filetype () {
     type="image"
   elif [[ "$mime" = audio/* ]]; then
     type="audio"
+  elif [[ "$mime" = video/* ]]; then
+    type="video"
   fi
 
   echo "$type"
@@ -910,6 +912,9 @@ isfinal() {
   elif [[ "$1" = "image" ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
+  elif [[ "$1" = "video" ]] && cmd_exist mediainfo; then
+    msg "append $sep to filename to view the raw data"
+    mediainfo --Full "$2"
   elif [[ "$1" = "audio" ]]; then
     if cmd_exist id3v2; then
       msg "append $sep to filename to view the raw data"

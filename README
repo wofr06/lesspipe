@@ -190,9 +190,10 @@ Contents
  rtf		requires pandoc or libreoffice or unrtf
  dvi		requires dvi2tty
  djvu		requires djvutxt
- ps		requires pstotext or ps2ascii (from the gs package)
+ ps		  requires pstotext or ps2ascii (from the gs package)
  mp3		requires id3v2 or mp3info or mp3info2
  jpg, png, gif	requires identify
+ mp4	  requires mediainfo
  iso images	requires isoinfo
  MacOSX archive	requires lsbom
  MacOS X bom	requires lsbom
@@ -428,6 +429,7 @@ less diagram.png
 
 9.1 URLs to some utilities
 --------------------------
+ mediainfo            https://mediaarea.net/MediaInfo
  wvText               https://github.com/tsgouros/wv
  antiword             http://www.winfield.demon.nl/
  html2text            http://www.mbayer.de/html2text/
