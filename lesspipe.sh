@@ -64,16 +64,16 @@ if cmd_exist mktemp; then
 
   nexttmp () {
     # nexttmp -d returns a directory
-    mktemp $1 "${tmpdir}/XXXXXXXX"
+    mktemp "$1" "${tmpdir}/XXXXXXXX"
   }
 else
-  tmpdir=$TMPDIR/lesspipe.$RANDOM
-  mkdir $tmpdir
+  tmpdir="$TMPDIR"/lesspipe."$RANDOM"
+  mkdir "$tmpdir"
 
   nexttmp () {
     new="$tmpdir/lesspipe.$RANDOM"
-    [[ "$1" = -d ]] && mkdir $new
-    echo $new
+    [[ "$1" = -d ]] && mkdir "$new"
+    echo "$new"
   }
 fi
 [[ -d "$tmpdir" ]] || exit 1
@@ -123,7 +123,7 @@ filetype () {
   fi
   typeset type
   # type=" $(filecmd -b "$1")" # not supported by all versions of 'file'
-  type=$(filecmd "$1" | cut -d : -f 2-)
+  type="$(filecmd "$1" | cut -d : -f 2-)"
   if [[ "$type" = " empty" ]]; then
     # exit if file returns "empty" (e.g., with "less archive:nonexisting_file")
     exit 1
@@ -159,6 +159,12 @@ filetype () {
        # preprocessor input text" probably due to its ".if" style
        # directives.
        type=" BSD makefile script,${type#*,}}"
+  fi
+  mime="$(filecmd --mime --brief "$1")"
+  if [[ "$mime" = *image/* ]]; then
+    type=" image data"
+  elif [[ "$mime" = *audio/* ]]; then
+    type=" audio data"
   fi
   echo "$type"
 }
@@ -346,14 +352,14 @@ get_cmd () {
     if [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
       cmd=(istar "$2" "$file2")
     elif [[ "$1" = *Debian* ]]; then
-      data=`ar t "$2"|grep data.tar`
+      data="$(ar t "$2"|grep data.tar)"
       cmd2=("unpack_cmd" "$data")
       t=$(nexttmp)
       if [[ "$file2" = control/* ]]; then
         istemp "ar p" "$2" control.tar.gz | gzip -dc - > "$t"
         file2=".${file2:7}"
       else
-        istemp "ar p" "$2" $data | $("${cmd2[@]}") > "$t"
+        istemp "ar p" "$2" "$data" | $("${cmd2[@]}") > "$t"
       fi
       cmd=(istar "$t" "$file2")
     elif [[ "$1" = *RPM* ]] && cmd_exist cpio && ( cmd_exist rpm2cpio || cmd_exist rpmunpack ); then
@@ -481,7 +487,7 @@ isjar () {
   d=$(nexttmp -d)
   [[ -d "$d" ]] || exit 1
   cat "$1" | (
-    cd "$d"
+    cd "$d" || return
     fastjar -x "$2"
     if [[ -f "$2" ]]; then
       cat "$2"
@@ -531,18 +537,18 @@ unpack_cmd() {
 
 isfinal() {
   typeset t
-  if [[ "$3" = $sep$sep ]]; then
+  if [[ $3 = $sep$sep ]]; then
     cat "$2"
     return
-  elif [[ "$3" = $sep* ]]; then
-    if [[ "$3" = $sep ]]; then
+  elif [[ $3 = $sep* ]]; then
+    if [[ $3 = "$sep" ]]; then
       msg "append :. or :<filetype> to activate syntax highlighting"
     else
       lang=${3#$sep}
       lang="-l ${lang#.}"
       lang=${lang%%-l }
       if cmd_exist code2color; then
-        code2color $PPID ${in_file:+"$in_file"} $lang "$2"
+        code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
         if [[ $? = 0 ]]; then
           return
         fi
@@ -584,7 +590,7 @@ isfinal() {
   elif [[ "$1" = *RPM* ]]; then
     header="use RPM_file${sep}contained_file to view a file in the RPM"
     if cmd_exist rpm; then
-      echo $header
+      echo "$header"
       istemp "rpm -qivp" "$2"
       header="";
     fi
@@ -624,10 +630,10 @@ isfinal() {
       echo
       istemp "ar p" "$2" control.tar.gz | gzip -dc - | $tarcmd tvf - | sed -r 's/(.{48})\./\1control/'
     fi
-    data=`ar t "$2"|grep data.tar`
+    data=$(ar t "$2"|grep data.tar)
     cmd2=("unpack_cmd" "$data")
     echo
-    istemp "ar p" "$2" $data | $("${cmd2[@]}") | $tarcmd tvf -
+    istemp "ar p" "$2" "$data" | $("${cmd2[@]}") | $tarcmd tvf -
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then
   elif [[ "$1" = *Perl\ POD\ document\ text$NOL_A_P* ]] && cmd_exist perldoc; then
@@ -686,7 +692,7 @@ isfinal() {
         t2="
 "
         t=${t%%$t2*}
-        7za e -so $t 2>/dev/null
+        7za e -so "$t" 2>/dev/null
       fi
     else
       msg "use 7za_file${sep}contained_file to view a file in the archive"
@@ -705,7 +711,7 @@ isfinal() {
         t2="
 "
         t=${t%%$t2*}
-        7zr e -so $t 2>/dev/null
+        7zr e -so "$t" 2>/dev/null
       fi
     else
       msg "use 7za_file${sep}contained_file to view a file in the archive"
@@ -721,8 +727,8 @@ isfinal() {
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
   elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
-    msg "append $sep to filename to view the PDF source"
-    istemp pdftotext "$2" -
+      msg "append $sep to filename to view the PDF source"
+      istemp pdftotext "$2" -
   elif [[ "$PARSEHTML" = yes && "$1" = *PDF* ]] && cmd_exist pdftohtml; then
     msg "append $sep to filename to view the PDF source"
     t=$(nexttmp)
@@ -809,7 +815,7 @@ isfinal() {
     msg "append $sep to filename to view the PowerPoint source"
     name_ext="$(basename "$2")"
     name="${name_ext%%.*}"
-    output_file = "$TMPDIR"/"$name".md
+    output_file="$TMPDIR"/"$name".md
     pptx2md --disable_image --disable_wmf "$2" -o "$output_file" >/dev/null
     cat "$output_file"
   elif [[ "$1" = *Microsoft\ Word\ 2007* ||
@@ -858,10 +864,8 @@ isfinal() {
     if [[ "$2" != - ]]; then
       msg "append $sep to filename to view the raw data"
       isoinfo -d -i "$2"
-      joliet=`isoinfo -d -i "$2" | egrep '^Joliet'|cut -c1`
+      joliet=$(isoinfo -d -i "$2" | grep -E '^Joliet'|cut -c1)
       echo "================================= Content ======================================"
-      isoinfo -lR$joliet -i "$2"
-    fi
   elif [[ "$1" = *image\ data*  || "$1" = *JPEG\ file* || "$1" = *JPG\ file* ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
@@ -926,7 +930,7 @@ IFS=$sep a="$@"
 IFS=' '
 if [[ "$a" = "" ]]; then
   if [[ "$0" != /* ]]; then
-     pat=`pwd`/
+      pat=$(pwd)/
   fi
   if [[ "$SHELL" = *csh ]]; then
     echo "setenv LESSOPEN \"|$pat$0 %s\""
