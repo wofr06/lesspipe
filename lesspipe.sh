@@ -135,6 +135,9 @@ filetype () {
     type=" LZMA compressed data"
   elif [[ ("$type" = *Zip* || "$type" = *ZIP*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
     type=" Zip compressed Jar archive"
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.doc) ]] ||
+       [[ "$type" = *Microsoft\ Office\ Word* ]]; then
+       type=" Word document"
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.ppt) ]] ||
        [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
        type=" PowerPoint document"
@@ -143,6 +146,10 @@ filetype () {
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xls) ]] || 
        [[ "$type" = *Microsoft\ Excel* ]]; then
        type=" Excel document"
+  elif [[ "$type" = *Zip\ archive* && ("$name" = *.docx) ]]; then
+       type=" Microsoft Word 2007+"
+  elif [[ "$type" = *Zip\ archive* && ("$name" = *.pptx) ]]; then
+       type=" Microsoft PowerPoint 2007+"
   elif [[ "$type" = *Zip\ archive* && ("$name" = *.xlsx) ]]; then
        type=" Microsoft Excel 2007+"
   elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
@@ -770,7 +777,13 @@ isfinal() {
       msg "install pandoc to view human readable text"
       cat "$2"
     fi
-  elif [[ "$1" = *Microsoft\ Word* || "$1" = *Microsoft\ Office* ]]; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *Word\ document* ]] && cmd_exist wvHtml; then
+    msg "append $sep to filename to view the raw word document"
+    wvHtml "$2" | parsehtml -
+  elif [[ "$1" = *Word\ document* ]] && cmd_exist wvText; then
+    msg "append $sep to filename to view the raw word document"
+    wvText "$2"
+  elif [[ "$1" = *Word\ document* ]]; then
     if cmd_exist antiword; then
       msg "append $sep to filename to view the raw word document"
       antiword "$2"
