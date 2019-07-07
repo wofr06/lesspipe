@@ -448,10 +448,10 @@ matdump	N
 djvutxt		Y
 fastjar		N	# I do prefer unzip
 gpg		Y
-id3v2		Y	# id3v2 is preferred over mp3info if both selected
-mp3info		N	# code for mp3info is included anyway if id3v2 selected
-mp3info2	N	# code for mp3info2 is included anyway if id3v2 selected
 mediainfo	Y
+id3v2		  Y	# id3v2 is preferred over mp3info if both selected
+mp3info2	N	# code for mp3info2 is included anyway if id3v2 selected
+mp3info		N	# code for mp3info is included anyway if id3v2 selected
 identify	Y
 isoinfo		Y	# I would not want to see that
 o3tohtml	Y

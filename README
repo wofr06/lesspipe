@@ -191,7 +191,7 @@ Contents
  dvi		requires dvi2tty
  djvu		requires djvutxt
  ps		  requires pstotext or ps2ascii (from the gs package)
- mp3		requires id3v2 or mp3info or mp3info2
+ mp3, ogg		requires mediainfo or id3v2 or mp3info or mp3info2
  jpg, png, gif	requires identify
  mp4	  requires mediainfo
  iso images	requires isoinfo

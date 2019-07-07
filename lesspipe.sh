@@ -912,7 +912,7 @@ isfinal() {
   elif [[ "$1" = "image" ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
-  elif [[ "$1" = "video" ]] && cmd_exist mediainfo; then
+  elif [[ "$1" = "audio" || "$1" = "video" ]]&& cmd_exist mediainfo; then
     msg "append $sep to filename to view the raw data"
     mediainfo --Full "$2"
   elif [[ "$1" = "audio" ]]; then
