@@ -779,10 +779,10 @@ isfinal() {
     fi
   elif [[ "$PARSEHTML" = yes && "$1" = *Word\ document* ]] && cmd_exist wvHtml; then
     msg "append $sep to filename to view the raw word document"
-    wvHtml "$2" | parsehtml -
+    wvHtml "$2" - | parsehtml -
   elif [[ "$1" = *Word\ document* ]] && cmd_exist wvText; then
     msg "append $sep to filename to view the raw word document"
-    wvText "$2"
+    wvText "$2" -
   elif [[ "$1" = *Word\ document* ]]; then
     if cmd_exist antiword; then
       msg "append $sep to filename to view the raw word document"
