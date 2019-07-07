@@ -51,6 +51,7 @@ filecmd() {
   file -L -s -i "$@" 2> /dev/null | sed -n 's/.*charset=/;/p' | tr a-z A-Z
 }
 
+TMPDIR=${TMPDIR:-/tmp}
 sep=:						# file name separator
 altsep==					# alternate separator character
 if [[ -e "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
@@ -59,14 +60,14 @@ if [[ -e "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
   set "$xxx"
 fi
 if cmd_exist mktemp; then
-  tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/lesspipe.XXXXXXXXXX")
+  tmpdir=$(mktemp -d "$TMPDIR/lesspipe.XXXXXXXXXX")
 
   nexttmp () {
     # nexttmp -d returns a directory
     mktemp $1 "${tmpdir}/XXXXXXXX"
   }
 else
-  tmpdir=${TMPDIR:-/tmp}/lesspipe.$RANDOM
+  tmpdir=$TMPDIR/lesspipe.$RANDOM
   mkdir $tmpdir
 
   nexttmp () {
@@ -737,10 +738,26 @@ isfinal() {
       msg "install docx2txt.pl to view human readable text"
       cat "$2"
     fi
+  elif [[ "$1" = *OpenDocument\ Text* ]]; then
+    if cmd_exist odt2txt; then
+      msg "append $sep to filename to view the raw word document"
+      odt2txt "$2"
+    else
+      msg "install odt2txt to view human readable text"
+      cat "$2"
+    fi
   elif [[ "$1" = *Microsoft\ Word\ 2007* ]]; then
     if cmd_exist pandoc; then
       msg "append $sep to filename to view the raw word document"
       pandoc --from=docx --to=plain "$2"
+    else
+      msg "install pandoc to view human readable text"
+      cat "$2"
+    fi
+  elif [[ "$1" = *OpenDocument\ Text* ]]; then
+    if cmd_exist pandoc; then
+      msg "append $sep to filename to view the raw word document"
+      pandoc --from=odt --to=plain "$2"
     else
       msg "install pandoc to view human readable text"
       cat "$2"
@@ -751,24 +768,6 @@ isfinal() {
       pandoc --from=epub --to=plain "$2"
     else
       msg "install pandoc to view human readable text"
-      cat "$2"
-    fi
-  elif [[ "$1" = *OpenDocument\ Text* || "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]* ]]; then
-    if cmd_exist pandoc; then
-      msg "append $sep to filename to view the raw word document"
-      pandoc --from=odt --to=plain "$2"
-    else
-      msg "install pandoc to view human readable text"
-      cat "$2"
-    fi
-  elif [[ "$1" = *Microsoft\ [[:alpha:]]*\ 2007* ||
-    "$1" = *Rich\ Text\ Format$NOL_A_P* ||
-    ("$1" = *OpenDocument\ Text* || "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]*) ]]; then
-    if cmd_exist libreoffice; then
-      msg "append $sep to filename to view the raw word document"
-      libreoffice --headless --cat "$2"
-    else
-      msg "install LibreOffice to view human readable text"
       cat "$2"
     fi
   elif [[ "$1" = *Microsoft\ Word* || "$1" = *Microsoft\ Office* ]]; then
@@ -789,6 +788,45 @@ isfinal() {
     else
       msg "append $sep to filename to view the RTF source"
       istemp "unrtf --text" "$2" | sed -e "s/^### .*//" | fmt -s
+    fi
+  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv.pl; then
+    msg "append $sep to filename to view the spreadsheet source"
+    git-xlsx-textconv.pl "$2"
+  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv; then
+    msg "append $sep to filename to view the spreadsheet source"
+    git-xlsx-textconv "$2"
+  elif [[ "$1" = *PowerPoint\ 2007* ]] && cmd_exist pptx2md; then
+    msg "append $sep to filename to view the PowerPoint source"
+    name_ext="$(basename "$2")"
+    name="${name_ext%%.*}"
+    output_file = "$TMPDIR"/"$name".md
+    pptx2md --disable_image --disable_wmf "$2" -o "$output_file" >/dev/null
+    cat "$output_file"
+  elif [[ "$1" = *Microsoft\ Word\ 2007* ||
+    "$1" = *Rich\ Text\ Format$NOL_A_P* ||
+    "$1" = *OpenDocument\ Text*  ]]; then
+    if cmd_exist libreoffice; then
+      msg "append $sep to filename to view the raw word document"
+      libreoffice --headless --cat "$2"
+    else
+      msg "install LibreOffice to view human readable text"
+      cat "$2"
+    fi
+  elif [[ "$PARSEHTML" = yes &&
+    (("$1" = *Microsoft\ [[:alpha:]]*\ 2007* ||
+     "$1" = *Excel\ document* ||
+     "$1" = *PowerPoint\ document*) ||
+    ("$1" = *OpenDocument\ [CHMPST]* ||
+     "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]*)) ]]; then
+    if cmd_exist libreoffice; then
+      msg "append $sep to filename to view the raw word document"
+      libreoffice --headless --convert-to html --outdir "$TMPDIR" "$2" >/dev/null
+      name_ext="$(basename "$2")"
+      name="${name_ext%%.*}"
+      cat "$TMPDIR"/"$name".html | parsehtml -
+    else
+      msg "install LibreOffice to view human readable text"
+      cat "$2"
     fi
   elif [[ "$PARSEHTML" = yes && "$1" = *Excel\ document* ]] && cmd_exist xlhtml; then
     msg "append $sep to filename to view the spreadsheet source"
