@@ -871,19 +871,7 @@ isfinal() {
       isoinfo -d -i "$2"
       joliet=$(isoinfo -d -i "$2" | grep -E '^Joliet'|cut -c1)
       echo "================================= Content ======================================"
-  elif [[ "$1" = *image\ data*  || "$1" = *JPEG\ file* || "$1" = *JPG\ file* ]] && cmd_exist identify; then
-    msg "append $sep to filename to view the raw data"
-    identify -verbose "$2"
-  elif [[ "$1" = *MPEG\ *layer\ 3\ audio* || "$1" = *MPEG\ *layer\ III* || "$1" = *mp3\ file* || "$1" = *MP3* ]]; then
-    if cmd_exist id3v2; then
-      msg "append $sep to filename to view the raw data"
-      istemp "id3v2 -l" "$2"
-    elif cmd_exist mp3info2; then
-      msg "append $sep to filename to view the raw data"
-      mp3info2 "$2"
-    elif cmd_exist mp3info; then
-      msg "append $sep to filename to view the raw data"
-      mp3info "$2"
+      isoinfo -lR"$joliet" -i "$2"
     fi
   elif [[ "$1" = *bill\ of\ materials* ]] && cmd_exist lsbom; then
     msg "append $sep to filename to view the raw data"
@@ -915,6 +903,20 @@ isfinal() {
   elif [[ "$2" = *.crl ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl crl -hash -text -noout -in "$2"
+  elif [[ "$1" = *image\ data* ]] && cmd_exist identify; then
+    msg "append $sep to filename to view the raw data"
+    identify -verbose "$2"
+  elif [[ "$1" = *audio\ data* ]]; then
+    if cmd_exist id3v2; then
+      msg "append $sep to filename to view the raw data"
+      istemp "id3v2 --list" "$2"
+    elif cmd_exist mp3info2; then
+      msg "append $sep to filename to view the raw data"
+      mp3info2 "$2"
+    elif cmd_exist mp3info; then
+      msg "append $sep to filename to view the raw data"
+      mp3info "$2"
+    fi
   else
     set "plain text" "$2"
   fi
