@@ -134,10 +134,16 @@ filetype () {
     type=" LZMA compressed data"
   elif [[ ("$type" = *Zip* || "$type" = *ZIP*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
     type=" Zip compressed Jar archive"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.ppt) ]]; then
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.ppt) ]] ||
+       [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
        type=" PowerPoint document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xls) ]]; then
+  elif [[ "$type" = *Zip\ archive* && ("$name" = *.pptx) ]]; then
+       type=" Microsoft PowerPoint 2007+"
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xls) ]] || 
+       [[ "$type" = *Microsoft\ Excel* ]]; then
        type=" Excel document"
+  elif [[ "$type" = *Zip\ archive* && ("$name" = *.xlsx) ]]; then
+       type=" Microsoft Excel 2007+"
   elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
        type=" NetCDF Data Format data"
   elif [[ "$type" = *roff\ *,* && ("$name" = */[Mm]akefile || "$name" = */[Mm]akefile.* || "$name" = */BSDmakefile || "$name" = *.mk) ]]; then
