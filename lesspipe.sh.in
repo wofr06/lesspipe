@@ -140,22 +140,20 @@ filetype () {
     type=" LZMA compressed data"
   elif [[ ("$type" = *Zip* || "$type" = *ZIP*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
     type=" Zip compressed Jar archive"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.doc) ]] ||
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.do[st]) ]] ||
        [[ "$type" = *Microsoft\ Office\ Word* ]]; then
        type=" Word document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.ppt) ]] ||
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
        [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
        type=" PowerPoint document"
-  elif [[ "$type" = *Zip\ archive* && ("$name" = *.pptx) ]]; then
-       type=" Microsoft PowerPoint 2007+"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xls) ]] || 
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] || 
        [[ "$type" = *Microsoft\ Excel* ]]; then
        type=" Excel document"
-  elif [[ "$type" = *Zip\ archive* && ("$name" = *.docx) ]]; then
+  elif [[ "$type" = *Zip\ archive* && ("$name" = *.do[ct][xm]) ]]; then
        type=" Microsoft Word 2007+"
-  elif [[ "$type" = *Zip\ archive* && ("$name" = *.pptx) ]]; then
+  elif [[ "$type" = *Zip\ archive* && ("$name" = *.pp[st][xm]) ]]; then
        type=" Microsoft PowerPoint 2007+"
-  elif [[ "$type" = *Zip\ archive* && ("$name" = *.xlsx) ]]; then
+  elif [[ "$type" = *Zip\ archive* && ("$name" = *.xl[st][xmb]) ]]; then
        type=" Microsoft Excel 2007+"
   elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
        type=" NetCDF Data Format data"
