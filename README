@@ -17,6 +17,7 @@ the author by email.
 Contents
 ========
 
+ 0.  Motivation
  1.  Introduction
  2.  Usage
  3.  Required programs
@@ -36,6 +37,41 @@ Contents
  9.1   URLs to some utilities
  9.2   References
  10. Contributors
+
+0. Motivation
+===============
+
+ If you use
+
+ - the pager `less` in the command line,
+ - the version control system `git`,
+ - the text editor `Vim` or
+ - the mail client `mutt`,
+
+ then lesspipe.sh enables these programs to *read* non-text files, such as:
+
+ - PDFs,
+ - (Microsoft or LibreOffice) Office documents, or even
+ - media (such as [JPG or PNG] images, [MP3] audio or video) files
+
+ where *read* means,
+
+ - (format and) show the contained text (of a document or tag in a media file),
+   or
+ - show sensible file information (such as length of the video).
+
+ To enable `less` respectively `git`, `Vim` or `mutt` to read non-text files by
+ lesspipe.sh, see
+
+ - Section 2 on the Usage of lesspipe.sh, respectively
+ - the Wiki at https://github.com/wofr06/lesspipe/wiki
+
+  For the text and info extraction, lesspipe.sh will depend on external tools,
+  but many use cases are covered by an installation of
+
+  - LibreOffice and a common text browser (such as `lynx`),
+  - pdftotext, and
+  - mediainfo.
 
 1. Introduction
 ===============
