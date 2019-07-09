@@ -1177,7 +1177,7 @@ elif [[ "$1" = "mp3" ]]; then
     mp3info "$2"
 #endif 
 #ifdef mediainfo
-  elif [[ "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist mediainfo; then
+  elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist mediainfo; then
     msg "append $sep to filename to view the raw data"
     mediainfo --Full "$2"
 #endif 
