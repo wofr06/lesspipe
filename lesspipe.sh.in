@@ -129,35 +129,48 @@ filetype () {
   typeset return
 
   # file -b not supported by all versions of 'file'
-  type="$(filecmd "$1" | cut -d : -f 2-)"
+  type="$(filecmd "$1" | cut -d : -f 2- )"
   if [[ "$type" = " empty" ]]; then
     # exit if file returns "empty" (e.g., with "less archive:nonexisting_file")
     exit 1
+       # Open Office
+  elif [[ "$type" = *OpenDocument\ Text* ]]; then
+    return=" OpenDocument Text"
+  elif [[ "$type" = *OpenDocument\ * || "$type" = *OpenOffice\.org\ 1\.x\ * ]]; then
+      return=" OpenDocument"
+       # Microsoft Office <  2007
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.do[st]) ]] ||
+       [[ "$type" = *Microsoft\ Office\ Word* ]]; then
+       return=" Microsoft Word Document"
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
+       [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
+       return=" Microsoft PowerPoint Document"
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] || 
+       [[ "$type" = *Microsoft\ Excel* ]]; then
+       return=" Microsoft Excel Document"
+  elif [[ "$type" = *Microsoft\ Office\ Document* ]]; then
+       return=" Microsoft Office Document"
+       # Microsoft Office >= 2007
+  elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.do[ct][xm] ]] ||
+       [[ "$type" = *Microsoft\ Word\ 2007* ]]; then
+       return=" Microsoft Word 2007+"
+  elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.pp[st][xm] ]] ||
+       [[ "$type" = *Microsoft\ PowerPoint\ 2007* ]]; then
+       return=" Microsoft PowerPoint 2007+"
+  elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.xl[st][xmb] ]] ||
+       [[ "$type" = *Microsoft\ Excel\ 2007* ]]; then
+       return=" Microsoft Excel 2007+"
+  elif [[ "$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML ]] ||
+       [[ "$type" = *Microsoft\ *\ 2007* ]]; then
+       return=" Microsoft Office 2007"
+       # MP3
   elif [[ "$type" = *MPEG\ *layer\ 3\ audio* || "$type" = *MPEG\ *layer\ III* || "$type" = *mp3\ file* || "$type" = *MP3* ]]; then
     return="mp3"
-  elif [[ "$type" = *XML* && "$name" = *html ]]; then
-    return=" HTML document text"
-  elif [[ ("$type" = *HTML* || "$type" = *ASCII*) && "$name" = *xml ]]; then
-    return=" XML document text"
+       # Compressed Archives
   elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
     return=" LZMA compressed data"
   elif [[ ("$type" = *Zip* || "$type" = *ZIP*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
     return=" Zip compressed Jar archive"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.do[st]) ]] ||
-       [[ "$type" = *Microsoft\ Office\ Word* ]]; then
-       return=" Word document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
-       [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
-       return=" PowerPoint document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] || 
-       [[ "$type" = *Microsoft\ Excel* ]]; then
-       return=" Excel document"
-  elif [[ "$type" = *Zip\ archive* && ("$name" = *.do[ct][xm]) ]]; then
-       return=" Microsoft Word 2007+"
-  elif [[ "$type" = *Zip\ archive* && ("$name" = *.pp[st][xm]) ]]; then
-       return=" Microsoft PowerPoint 2007+"
-  elif [[ "$type" = *Zip\ archive* && ("$name" = *.xl[st][xmb]) ]]; then
-       return=" Microsoft Excel 2007+"
   elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
        return=" NetCDF Data Format data"
   elif [[ "$type" = *roff\ *,* && ("$name" = */[Mm]akefile || "$name" = */[Mm]akefile.* || "$name" = */BSDmakefile || "$name" = *.mk) ]]; then
@@ -165,6 +178,10 @@ filetype () {
        # preprocessor input text" probably due to its ".if" style
        # directives.
        return=" BSD makefile script,${type#*,}}"
+  elif [[ ("$type" = *HTML* || "$type" = *ASCII*) && "$name" = *xml ]]; then
+    return=" XML document text"
+  elif [[ "$type" = *XML* && "$name" = *html ]]; then
+    return=" HTML document text"
   fi
 
   if [[ -n "$return" ]]; then
@@ -174,7 +191,7 @@ filetype () {
 
   # file -b not supported by all versions of 'file'
   mime="$(file -i "$1" | cut -d : -f 2-)"
-  if [[ "$mime" = " text/*" ]]; then
+  if [[ "$mime" = \ text/* ]]; then
     return="text"
   elif [[ "$mime" = \ image/* ]]; then
     return="image"
@@ -1000,11 +1017,11 @@ isfinal() {
     fi
 #elif pandoc
 #ifdef wvText
-  elif [[ "$1" = *Word\ document* ]] && cmd_exist wvText; then
+  elif [[ "$1" = *Microsoft\ Word\ Document* ]] && cmd_exist wvText; then
     msg "append $sep to filename to view the raw word document"
     wvText "$2" -
 #ifdef antiword
-  elif [[ "$1" = *Word\ document* ]]; then
+  elif [[ "$1" = *Microsoft\ Word\ Document* ]]; then
     if cmd_exist antiword; then
       msg "append $sep to filename to view the raw word document"
       antiword "$2"
@@ -1017,7 +1034,7 @@ isfinal() {
     fi
 #elif catdoc
   # repeat same code as for antiword as both programs are equally suited
-  elif [[ "$1" = *Word\ document* ]]; then
+  elif [[ "$1" = *Microsoft\ Word\ Document* ]]; then
     if cmd_exist antiword; then
       msg "append $sep to filename to view the raw word document"
       antiword "$2"
@@ -1059,8 +1076,9 @@ isfinal() {
     cat "$output_file"
 #ifdef
 #ifdef libreoffice
-  elif [[ "$1" = *Microsoft\ Word\ 2007* ||
-    "$1" = *Rich\ Text\ Format$NOL_A_P* ||
+  elif [[ "$1" = *Rich\ Text\ Format$NOL_A_P* ||
+    "$1" = *Microsoft\ Word\ Document* ||
+    "$1" = *Microsoft\ Word\ 2007* ||
     "$1" = *OpenDocument\ Text*  ]]; then
     if cmd_exist libreoffice; then
       msg "append $sep to filename to view the raw word document"
@@ -1070,11 +1088,9 @@ isfinal() {
       cat "$2"
     fi
   elif [[ "$PARSEHTML" = yes &&
-    (("$1" = *Microsoft\ [[:alpha:]]*\ 2007* ||
-     "$1" = *Excel\ document* ||
-     "$1" = *PowerPoint\ document*) ||
-    ("$1" = *OpenDocument\ [CHMPST]* ||
-     "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]*)) ]]; then
+    ("$1" = *Microsoft\ *\ Document* ||
+     "$1" = *Microsoft\ *\ 2007* ||
+     "$1" = *OpenDocument*) ]]; then
     if cmd_exist libreoffice; then
       msg "append $sep to filename to view the raw word document"
       libreoffice --headless --convert-to html --outdir "$TMPDIR" "$2" >/dev/null
@@ -1087,17 +1103,17 @@ isfinal() {
     fi
 #elif libreoffice
 #ifdef xlhtml
-  elif [[ "$PARSEHTML" = yes && "$1" = *Excel\ document* ]] && cmd_exist xlhtml; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *Microsoft\ Excel\ Document* ]] && cmd_exist xlhtml; then
     msg "append $sep to filename to view the spreadsheet source"
     xlhtml -te "$2" | parsehtml -
 #endif 
 #ifdef ppthtml
-  elif [[ "$PARSEHTML" = yes && "$1" = *PowerPoint\ document* ]] && cmd_exist ppthtml; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *Microsoft\ PowerPoint\ Document* ]] && cmd_exist ppthtml; then
     msg "append $sep to filename to view the PowerPoint source"
     ppthtml "$2" | parsehtml -
 #endif
 #ifdef o3tohtml,unzip
-  elif [[ "$PARSEHTML" = yes && ("$1" = *OpenDocument\ [CHMPST]* || "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]*) ]] && cmd_exist unzip; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *OpenDocument* ]] && cmd_exist unzip; then
     if cmd_exist o3tohtml; then
       msg "append $sep to filename to view the OpenOffice or OpenDocument source"
       istemp "unzip -avp" "$2" content.xml | o3tohtml | parsehtml -
@@ -1108,7 +1124,7 @@ isfinal() {
       msg "install at least sxw2txt from the lesspipe package to see plain text in openoffice documents"
     fi
 #elif unzip
-  elif [[ "$PARSEHTML" = yes && ("$1" = *OpenDocument\ [CHMPST]* || "$1" = *OpenOffice\.org\ 1\.x\ [CIWdgpst]*) ]] && cmd_exist unzip; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *OpenOffice\ Document* ]] && cmd_exist unzip; then
     if cmd_exist sxw2txt; then
       msg "append $sep to filename to view the OpenOffice or OpenDocument source"
       istemp sxw2txt "$2"
