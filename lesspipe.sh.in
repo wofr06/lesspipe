@@ -129,18 +129,6 @@ filetype () {
   typeset return
 
   # file -b not supported by all versions of 'file'
-  mime="$(file -i "$1" | cut -d : -f 2-)"
-  if [[ "$mime" = " text/*" ]]; then
-    return="text"
-  elif [[ "$mime" = \ image/* ]]; then
-    return="image"
-  elif [[ "$mime" = \ audio/* ]]; then
-    return="audio"
-  elif [[ "$mime" = \ video/* ]]; then
-    return="video"
-  fi
-
-  # file -b not supported by all versions of 'file'
   type="$(filecmd "$1" | cut -d : -f 2-)"
   if [[ "$type" = " empty" ]]; then
     # exit if file returns "empty" (e.g., with "less archive:nonexisting_file")
@@ -177,8 +165,36 @@ filetype () {
        # preprocessor input text" probably due to its ".if" style
        # directives.
        return=" BSD makefile script,${type#*,}}"
-  elif [[ -z "$return" ]]; then
-       return="$type"
+  fi
+
+  if [[ -n "$return" ]]; then
+    echo "$return"
+    return
+  fi
+
+  # file -b not supported by all versions of 'file'
+  mime="$(file -i "$1" | cut -d : -f 2-)"
+  if [[ "$mime" = " text/*" ]]; then
+    return="text"
+  elif [[ "$mime" = \ image/* ]]; then
+    return="image"
+  elif [[ "$mime" = \ audio/* ]]; then
+    return="audio"
+  elif [[ "$mime" = \ video/* ]]; then
+    return="video"
+  fi
+
+  if [[ -n "$return" ]]; then
+    echo "$return"
+    return
+  fi
+
+  if [[ -n "$type" ]]; then
+    return="$type"
+  elif [[ -n "$mime" ]]; then
+    return="$mime"
+  else
+    return=""
   fi
 
   echo "$return"
