@@ -442,6 +442,7 @@ iconv		Y
 gpg		Y
 pdftohtml	Y
 pdftotext	Y
+pdfinfo	Y
 # other helper programs
 cabextract	Y
 matdump	N

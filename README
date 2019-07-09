@@ -185,7 +185,7 @@ Contents
  epub requires pandoc
  Debian 	requires ar, gzip and tar, shows more info if dpkg is installed
  html		requires html2text or elinks or links or lynx or w3m
- pdf		requires pdftotext or pdftohtml
+ pdf		requires pdftotext or pdftohtml or pdfinfo
  perl		requires pod2text
  rtf		requires pandoc or libreoffice or unrtf
  dvi		requires dvi2tty

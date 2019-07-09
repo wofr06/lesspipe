@@ -169,11 +169,11 @@ filetype () {
     return=" Zip compressed Jar archive"
   elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
        return=" NetCDF Data Format data"
+       # Sometimes a BSD makefile is identified as "troff or preprocessor input
+       # text" probably due to its ".if" style directives.
   elif [[ "$type" = *roff\ *,* && ("$name" = */[Mm]akefile || "$name" = */[Mm]akefile.* || "$name" = */BSDmakefile || "$name" = *.mk) ]]; then
-       # Sometimes a BSD makefile is identified as "troff or
-       # preprocessor input text" probably due to its ".if" style
-       # directives.
        return=" BSD makefile script,${type#*,}}"
+       # Correct HTML Detection
   elif [[ ("$type" = *HTML* || "$type" = *ASCII*) && "$name" = *xml ]]; then
     return=" XML document text"
   elif [[ "$type" = *XML* && "$name" = *html ]]; then
@@ -778,6 +778,9 @@ isfinal() {
     msg "append $sep to filename to view the PDF source"
     t=$(nexttmp)
     cat "$2" > "$t"; pdftohtml -stdout "$t" | parsehtml -
+  elif [[ "$1" = *PDF* ]] && cmd_exist pdfinfo; then
+      msg "append $sep to filename to view the PDF source"
+      istemp pdfinfo "$2"
   elif [[ "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist h5dump; then
     istemp h5dump "$2"
   elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then
