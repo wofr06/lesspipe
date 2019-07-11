@@ -480,6 +480,7 @@ less diagram.png
  odt2txt              https://github.com/dstosberg/odt2txt
  git-xlsx-textconv    https://github.com/tokuhirom/git-xlsx-textconv
  git-xlsx-textconv.pl https://github.com/yappo/p5-git-xlsx-textconv.pl
+ pptx2md              https://github.com/ssine/pptx2md
  id3v2                http://id3v2.sourceforge.net/
 
 9.2 References
