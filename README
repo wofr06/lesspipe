@@ -71,7 +71,7 @@ Contents
 
   - LibreOffice and a common text browser (such as `lynx`),
   - pdftotext, and
-  - mediainfo.
+  - mediainfo (or exiftool).
 
 1. Introduction
 ===============

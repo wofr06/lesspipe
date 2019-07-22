@@ -962,6 +962,9 @@ elif [[ "$1" = "mp3" ]]; then
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist mediainfo; then
     msg "append $sep to filename to view the raw data"
     mediainfo --Full "$2"
+  elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
+    msg "append $sep to filename to view the raw data"
+    exiftool "$2"
   elif [[ "$1" = "text" ]]; then
     cat "$2"
   elif [[ "$1" = *\ script* ]]; then
