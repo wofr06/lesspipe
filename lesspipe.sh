@@ -683,6 +683,10 @@ isfinal() {
   elif [[ "$1" = *Perl\ POD\ document\ text$NOL_A_P* ]] && cmd_exist perldoc; then
     msg "append $sep to filename to view the perl source"
     istemp perldoc "$2"
+  elif [[ "$1" = *\ script* ]]; then
+    cat "$2"
+  elif [[ "$1" = *text\ executable* ]]; then
+    cat "$2"
   elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
     if cmd_exist pstotext; then
       msg "append $sep to filename to view the postscript file"
@@ -966,10 +970,6 @@ elif [[ "$1" = "mp3" ]]; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
   elif [[ "$1" = "text" ]]; then
-    cat "$2"
-  elif [[ "$1" = *\ script* ]]; then
-    cat "$2"
-  elif [[ "$1" = *text\ executable* ]]; then
     cat "$2"
   else
     set "plain text" "$2"
