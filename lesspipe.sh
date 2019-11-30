@@ -773,7 +773,7 @@ isfinal() {
   elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
     if [[ "$PARSEHTML" = yes ]]; then
       msg "append $sep to filename to view the PDF source"
-      istemp pdftotext -htmlmeta "$2" - | parsehtml
+      istemp "pdftotext -htmlmeta" "$2" - | parsehtml -
     else
       msg "append $sep to filename to view the PDF source"
       istemp pdftotext "$2" -
