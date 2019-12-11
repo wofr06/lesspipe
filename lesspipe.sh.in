@@ -669,7 +669,7 @@ isfinal() {
       msg "append :. or :<filetype> to activate syntax highlighting"
     else
       lang=${3#$sep}
-      lang="-l ${lang#.}"
+      lang="-l${lang#.}"
       lang=${lang%%-l }
       if cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
