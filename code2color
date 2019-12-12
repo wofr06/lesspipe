@@ -290,6 +290,13 @@ sub main {
 
   }
 
+####
+#### trim leading trailing spaces
+####
+sub c2c_trim {
+    (my $s = $_[0]) =~ s/^\s+|\s+$//g;
+    return $s;
+}
 
 ####
 #### parse_passed_params
@@ -3266,7 +3273,7 @@ getopts('i:l:') || exit 2;
   $str = main(parse_passed_params( infile        => $ARGV[0] || '-',
              outfile       => '-',
 #             linenumbers   => 1 ,
-             langmode   => $opt_l ,
+             langmode   => c2c_trim($opt_l) ,
              outputformat  => 'xterm' ,
              # many other options
            ));
