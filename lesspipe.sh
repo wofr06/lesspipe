@@ -837,7 +837,7 @@ isfinal() {
     fi
   elif [[ "$1" = *Microsoft\ Word\ Document* ]] && cmd_exist wvText; then
     msg "append $sep to filename to view the raw word document"
-    wvText "$2" -
+    wvText "$2" /dev/stdout
   elif [[ "$1" = *Microsoft\ Word\ Document* ]]; then
     if cmd_exist antiword; then
       msg "append $sep to filename to view the raw word document"
