@@ -684,9 +684,9 @@ isfinal() {
     msg "append $sep to filename to view the perl source"
     istemp perldoc "$2"
   elif [[ "$1" = *\ script* ]]; then
-    cat "$2"
+    set "plain text" "$2"
   elif [[ "$1" = *text\ executable* ]]; then
-    cat "$2"
+    set "plain text" "$2"
   elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
     if cmd_exist pstotext; then
       msg "append $sep to filename to view the postscript file"
