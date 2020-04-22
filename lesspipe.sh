@@ -970,7 +970,12 @@ elif [[ "$1" = "mp3" ]]; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
   elif [[ "$1" = "text" ]]; then
-    cat "$2"
+    if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
+      cmd_exist mdcat; then
+      mdcat "$2"
+    else
+      cat "$2"
+    fi
   else
     set "plain text" "$2"
   fi
