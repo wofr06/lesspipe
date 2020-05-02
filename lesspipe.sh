@@ -183,6 +183,9 @@ filetype () {
   if [[ -n "$return" ]]; then
     echo "$return"
     return
+  elif [[ -n "$type" ]]; then
+    echo "$type"
+    return
   fi
 
   # file -b not supported by all versions of 'file'
@@ -202,9 +205,7 @@ filetype () {
     return
   fi
 
-  if [[ -n "$type" ]]; then
-    return="$type"
-  elif [[ -n "$mime" ]]; then
+  if [[ -n "$mime" ]]; then
     return="$mime"
   else
     return=""
