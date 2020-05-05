@@ -652,7 +652,7 @@ isfinal() {
     fi
   elif [[ "$1" = *roff* ]] && cmd_exist groff; then
     DEV=utf8
-    if [[ $LANG != *UTF*8* && $LANG != *utf*8* ]]; then
+    if [[ ! "$(echo $LANG | grep -iF 'utf-8')" ]]; then
       if [[ "$LANG" = ja* ]]; then
         DEV=nippon
       else
@@ -926,12 +926,12 @@ isfinal() {
   elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8$NOL_A_P* && $LANG != *UTF-8 ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-8$NOL_A_P* && ! "$(echo $LANG | grep -iF 'utf-8')" ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-8 "$2"
-  elif [[ "$1" = *ISO-8859$NOL_A_P* && $LANG != *ISO-8859-1 ]] && cmd_exist iconv -c; then
-    iconv -c -f ISO-8859-1 "$2"
-  elif [[ "$1" = *UTF-16$NOL_A_P* && $LANG != *UTF-16 ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-16$NOL_A_P* && ! "$(echo $LANG | grep -iF 'utf-16')" ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-16 "$2"
+  elif [[ "$1" = *ISO-8859$NOL_A_P* && ! "$(echo $LANG | grep -iF 'iso-8859-1')" ]] && cmd_exist iconv -c; then
+    iconv -c -f ISO-8859-1 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
@@ -953,7 +953,7 @@ isfinal() {
   elif [[ "$1" = "image" ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
-elif [[ "$1" = "mp3" ]]; then
+  elif [[ "$1" = "mp3" ]]; then
     if cmd_exist id3v2; then
       msg "append $sep to filename to view the raw data"
       istemp "id3v2 --list" "$2"
@@ -970,27 +970,20 @@ elif [[ "$1" = "mp3" ]]; then
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
-  elif [[ "$1" = "text" ]]; then
-    if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
-      cmd_exist mdcat; then
+  elif [[ "$1" = *Unicode\ text* ]]; then
+    [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
+      cmd_exist mdcat &&
       mdcat "$2"
-    else
+  elif [[ "$1" = "text" ]]; then
       cat "$2"
-    fi
   else
-    set "plain text" "$2"
-  fi
-  if [[ "$1" = *plain\ text* ]]; then
-    if cmd_exist code2color; then
-      code2color $PPID ${in_file:+"$in_file"} "$2"
-      if [[ $? = 0 ]]; then
-        return
-      fi
+    if [[ "$2" = - ]]; then
+      cat
+    else cmd_exist code2color &&
+      code2color $PPID ${in_file:+"$in_file"} "$2" &&
+      return
     fi
   fi
-  if [[ "$2" = - ]]; then
-    cat
-  fi  
 }
 
 IFS=$sep a="$@"
