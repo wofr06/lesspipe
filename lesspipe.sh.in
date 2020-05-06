@@ -684,6 +684,7 @@ isfinal() {
     return
   fi
 
+  LANG="$(echo $LANG | tr '[:upper:]' '[:lower:]')"
   # color requires -r or -R when calling less
   typeset COLOR
   if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
@@ -762,8 +763,7 @@ isfinal() {
 #ifdef groff
   elif [[ "$1" = *roff* ]] && cmd_exist groff; then
     DEV=utf8
-    if [[ $LANG != *UTF*8* && $LANG != *utf*8* ]]; then
-    if [[ ! "$(echo $LANG | grep -iF 'utf-8')" ]]; then
+    if [[ $LANG != *utf*8* ]]; then
       if [[ "$LANG" = ja* ]]; then
         DEV=nippon
       else
@@ -1161,11 +1161,11 @@ isfinal() {
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
 #ifdef iconv
-  elif [[ "$1" = *UTF-8$NOL_A_P* && ! "$(echo $LANG | grep -iF 'utf-8')" ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-8$NOL_A_P* && "$LANG" != *utf-8* ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-8 "$2"
-  elif [[ "$1" = *UTF-16$NOL_A_P* && ! "$(echo $LANG | grep -iF 'utf-16')" ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-16$NOL_A_P* && "$LANG" != *utf-16* ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-16 "$2"
-  elif [[ "$1" = *ISO-8859$NOL_A_P* && ! "$(echo $LANG | grep -iF 'iso-8859-1')" ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *ISO-8859$NOL_A_P* && "$LANG" != *iso-8859-1* ]] && cmd_exist iconv -c; then
     iconv -c -f ISO-8859-1 "$2"
 #endif
 #ifdef gpg
