@@ -609,7 +609,7 @@ isfinal() {
     COLOR="--color=always"
   fi
 
-  LANG="$(echo $LANG | tr '[:upper:]' '[:lower:]')"
+  lang="$(echo $LANG | tr '[:upper:]' '[:lower:]')"
   if [[ "$1" = *No\ such* ]]; then
     exit 1
   elif [[ "$1" = *directory* ]]; then
@@ -653,8 +653,8 @@ isfinal() {
     fi
   elif [[ "$1" = *roff* ]] && cmd_exist groff; then
     DEV=utf8
-    if [[ $LANG != *utf*8* ]]; then
-      if [[ "$LANG" = ja* ]]; then
+    if [[ $lang != *utf*8* ]]; then
+      if [[ "$lang" = ja* ]]; then
         DEV=nippon
       else
         DEV=latin1
@@ -927,11 +927,11 @@ isfinal() {
   elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8$NOL_A_P* && "$LANG" != *utf-8* ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-8$NOL_A_P* && "$lang" != *utf-8* ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-8 "$2"
-  elif [[ "$1" = *UTF-16$NOL_A_P* && "$LANG" != *utf-16* ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-16$NOL_A_P* && "$lang" != *utf-16* ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-16 "$2"
-  elif [[ "$1" = *ISO-8859$NOL_A_P* && "$LANG" != *iso-8859-1* ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *ISO-8859$NOL_A_P* && "$lang" != *iso-8859-1* ]] && cmd_exist iconv -c; then
     iconv -c -f ISO-8859-1 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
