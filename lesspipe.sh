@@ -975,6 +975,10 @@ isfinal() {
     [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
       cmd_exist mdcat &&
       mdcat "$2"
+  elif [[ "$1" = *text* ]]; then
+    [[ "$2" = *.log ]] &&
+      cmd_exist ccze &&
+      cat "$2" | ccze
   elif [[ "$1" = "text" ]]; then
       cat "$2"
   else
