@@ -978,7 +978,7 @@ isfinal() {
   elif [[ "$1" = *text* ]]; then
     [[ "$2" = *.log ]] &&
       cmd_exist ccze &&
-      cat "$2" | ccze
+      cat "$2" | ccze -A
   elif [[ "$1" = "text" ]]; then
       cat "$2"
   else
