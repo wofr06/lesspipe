@@ -971,16 +971,16 @@ isfinal() {
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
-  elif [[ "$1" = *Unicode\ text* ]]; then
-    [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
-      cmd_exist mdcat &&
-      mdcat "$2"
   elif [[ "$1" = *text* ]]; then
-    [[ "$2" = *.log ]] &&
-      cmd_exist ccze &&
+    if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
+      cmd_exist mdcat; then
+      mdcat "$2"
+    elif [[ "$2" = *.log ]] &&
+      cmd_exist ccze; then
       cat "$2" | ccze -A
-  elif [[ "$1" = "text" ]]; then
+    else
       cat "$2"
+    fi
   else
     if [[ "$2" = - ]]; then
       cat
