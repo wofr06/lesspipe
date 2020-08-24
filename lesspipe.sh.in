@@ -383,7 +383,7 @@ get_cmd () {
 #endif
 #ifdef zstd
     elif [[ "$1" = *Zstandard\ compressed* ]] && cmd_exist zstd; then
-      set -A cmd zstd -cdqM1073741824 "$2"
+      set -A cmd zstd -cdq "$2"
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
        *.zst) filen="${filen%.zst}";;
