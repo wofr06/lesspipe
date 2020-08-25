@@ -367,7 +367,7 @@ get_cmd () {
        *.txz) filen="${filen%.txz}.tar";;
       esac
     elif [[ "$1" = *Zstandard\ compressed* ]] && cmd_exist zstd; then
-      cmd=(zstd -cdq "$2")
+      cmd=(zstd -cdqM1073741824 "$2")
       if [[ "$2" != - ]]; then filen="$2"; fi
       case "$filen" in
        *.zst) filen="${filen%.zst}";;
