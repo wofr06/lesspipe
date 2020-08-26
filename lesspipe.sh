@@ -592,11 +592,16 @@ isfinal() {
       lang=${3#$sep}
       lang="-l${lang#.}"
       lang=${lang%%-l }
-      if cmd_exist code2color; then
-        code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
-        if [[ $? = 0 ]]; then
-          return
+      if cmd_exist bat; then
+        if [[ "$lang" = "-l" ]]; then
+          bat "$2"
+        else
+          bat "$lang" "$2"
         fi
+        [[ $? = 0 ]] && return
+      elif cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
+        [[ $? = 0 ]] && return
       fi
     fi
     cat "$2"
@@ -983,10 +988,18 @@ isfinal() {
     fi
   else
     if [[ "$2" = - ]]; then
-      cat
-    else cmd_exist code2color &&
-      code2color $PPID ${in_file:+"$in_file"} "$2" &&
-      return
+      if cmd_exist bat; then
+        bat
+      else
+        cat
+      fi
+    else
+      if cmd_exist bat; then
+        bat "$2"
+      elif cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} "$2"
+      fi
+      [[ $? = 0 ]] && return
     fi
   fi
 }
