@@ -160,7 +160,7 @@ filetype () {
   elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.xl[st][xmb] ]] ||
        [[ "$type" = *Microsoft\ Excel\ 2007* ]]; then
        return=" Microsoft Excel 2007+"
-  elif [[ "$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML ]] ||
+  elif [[ "$type" =  Microsoft\ OOXML ]] ||
        [[ "$type" = *Microsoft\ *\ 2007* ]]; then
        return=" Microsoft Office 2007"
        # MP3
