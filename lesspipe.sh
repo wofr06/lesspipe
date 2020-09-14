@@ -48,7 +48,7 @@ fi
 
 filecmd() {
   file -L -s "$@"
-  file -L -s -i "$@" 2> /dev/null | sed -n 's/.*charset=/;/p' | tr a-z A-Z
+  file -L -s -i "$@" 2> /dev/null | sed -n 's/.*charset=/;/p' | tr [:lower:] [:upper:]
 }
 
 TMPDIR=${TMPDIR:-/tmp}
@@ -959,7 +959,7 @@ isfinal() {
   elif [[ "$1" = "image" ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
-elif [[ "$1" = "mp3" ]]; then
+  elif [[ "$1" = "mp3" ]]; then
     if cmd_exist id3v2; then
       msg "append $sep to filename to view the raw data"
       istemp "id3v2 --list" "$2"
