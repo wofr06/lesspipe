@@ -603,6 +603,7 @@ isfinal() {
         code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
         [[ $? = 0 ]] && return
       fi
+    fi
     cat "$2"
     return
   fi
