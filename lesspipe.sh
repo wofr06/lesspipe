@@ -603,18 +603,17 @@ isfinal() {
         code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
         [[ $? = 0 ]] && return
       fi
-    fi
     cat "$2"
     return
   fi
 
+  lang="$(echo $LANG | tr '[:upper:]' '[:lower:]')"
   # color requires -r or -R when calling less
   typeset COLOR
   if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
     COLOR="--color=always"
   fi
 
-  lang="$(echo $LANG | tr '[:upper:]' '[:lower:]')"
   if [[ "$1" = *No\ such* ]]; then
     exit 1
   elif [[ "$1" = *directory* ]]; then
@@ -959,7 +958,7 @@ isfinal() {
   elif [[ "$1" = "image" ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
-  elif [[ "$1" = "mp3" ]]; then
+elif [[ "$1" = "mp3" ]]; then
     if cmd_exist id3v2; then
       msg "append $sep to filename to view the raw data"
       istemp "id3v2 --list" "$2"
@@ -993,11 +992,13 @@ isfinal() {
       else
         cat
       fi
-    else
+    else 
       if cmd_exist bat; then
         bat "$2"
+      # ifdef perl
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$2"
+      #endif
       fi
       [[ $? = 0 ]] && return
     fi

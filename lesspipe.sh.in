@@ -679,8 +679,8 @@ isfinal() {
           bat "$lang" "$2"
         fi
         [[ $? = 0 ]] && return
-      elif cmd_exist code2color &&
-        code2color $PPID ${in_file:+"$in_file"} "$lang" "$2" &&
+      elif cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
         [[ $? = 0 ]] && return
       fi
 #endif
@@ -1165,12 +1165,12 @@ isfinal() {
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
 #ifdef iconv
-  elif [[ "$1" = *UTF-8$NOL_A_P* && "$lang" != *utf-8* ]] && cmd_exist iconv -c; then
-    iconv -c -f UTF-8 "$2"
-  elif [[ "$1" = *UTF-16$NOL_A_P* && "$lang" != *utf-16* ]] && cmd_exist iconv -c; then
-    iconv -c -f UTF-16 "$2"
-  elif [[ "$1" = *ISO-8859$NOL_A_P* && "$lang" != *iso-8859-1* ]] && cmd_exist iconv -c; then
-    iconv -c -f ISO-8859-1 "$2"
+  elif [[ "$1" = *UTF-8$NOL_A_P* && "$lang" != *utf-8* ]] && cmd_exist iconv; then
+    iconv -f UTF-8 "$2"
+  elif [[ "$1" = *UTF-16$NOL_A_P* && "$lang" != *utf-16* ]] && cmd_exist iconv; then
+    iconv -f UTF-16 "$2"
+  elif [[ "$1" = *ISO-8859$NOL_A_P* && "$lang" != *iso-8859-1* ]] && cmd_exist iconv; then
+    iconv -f ISO-8859-1 "$2"
 #endif
 #ifdef gpg
   elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
@@ -1249,11 +1249,11 @@ elif [[ "$1" = "mp3" ]]; then
         cat
       fi
     else 
-      if cmd_exist bat
+      if cmd_exist bat; then
         bat "$2"
       # ifdef perl
-      elif cmd_exist code2color &&
-        code2color $PPID ${in_file:+"$in_file"} "$2" &&
+      elif cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} "$2"
       #endif
       fi
       [[ $? = 0 ]] && return
