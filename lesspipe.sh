@@ -984,7 +984,15 @@ isfinal() {
       cmd_exist ccze; then
       cat "$2" | ccze -A
     else
-      cat "$2"
+      if cmd_exist bat; then
+        bat "$2"
+      # ifdef perl
+      elif cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} "$2"
+      #endif
+      else
+        cat "$2"
+      fi
     fi
   else
     if [[ "$2" = - ]]; then
