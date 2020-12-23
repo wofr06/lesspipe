@@ -135,7 +135,7 @@ filetype () {
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] || 
        [[ "$type" = *Microsoft\ Excel* ]]; then
        return=" Microsoft Excel Document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* ]]; then
+  elif [[ "$type" = *Microsoft\ Office\ Document* || "$type" = *Composite\ Document\ File\ V2* ]]; then
        return=" Microsoft Office Document"
        # Microsoft Office >= 2007
   elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.do[ct][xm] ]] ||
@@ -693,14 +693,9 @@ isfinal() {
   elif [[ "$1" = *text\ executable* ]]; then
     set "plain text" "$2"
   elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
-    if cmd_exist pstotext; then
-      msg "append $sep to filename to view the postscript file"
-      nodash pstotext "$2"
-    elif cmd_exist ps2ascii; then
+    if cmd_exist ps2ascii; then
       msg "append $sep to filename to view the postscript file"
       istemp ps2ascii "$2"
-    else
-      msg "install pstotext or ps2ascii to view a textual representation of the file contents"
     fi
   elif [[ "$1" = *executable* ]]; then
     msg "append $sep to filename to view the raw file"
@@ -840,10 +835,10 @@ isfinal() {
       msg "install pandoc to view human readable text"
       cat "$2"
     fi
-  elif [[ "$1" = *Microsoft\ Word\ Document* ]] && cmd_exist wvText; then
+  elif [[ "$1" = *Microsoft\ Word\ Document* || "$1" = *Microsoft\ Office\ Document* ]] && cmd_exist wvText; then
     msg "append $sep to filename to view the raw word document"
     wvText "$2" /dev/stdout
-  elif [[ "$1" = *Microsoft\ Word\ Document* ]]; then
+  elif [[ "$1" = *Microsoft\ Word\ Document* || "$1" = *Microsoft\ Office\ Document* ]]; then
     if cmd_exist antiword; then
       msg "append $sep to filename to view the raw word document"
       antiword "$2"
@@ -927,7 +922,7 @@ isfinal() {
   elif [[ "$1" = *bill\ of\ materials* ]] && cmd_exist lsbom; then
     msg "append $sep to filename to view the raw data"
     lsbom -p MUGsf "$2"
-  elif [[ "$1" = *perl\ Storable$NOL_A_P* ]]; then
+  elif [[ "$1" = *perl.?[sS]torable$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
   elif [[ "$1" = *UTF-8$NOL_A_P* && "$lang" != *utf-8* ]] && cmd_exist iconv -c; then
