@@ -59,23 +59,14 @@ if [[ -e "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
   xxx="${1%=}"
   set "$xxx"
 fi
-if cmd_exist mktemp; then
-  tmpdir=$(mktemp -d "$TMPDIR/lesspipe.XXXXXXXXXX")
+tmpdir="$TMPDIR"/lesspipe."$RANDOM"
+mkdir "$tmpdir"
 
-  nexttmp () {
-    # nexttmp -d returns a directory
-    mktemp "$1" "${tmpdir}/XXXXXXXX"
-  }
-else
-  tmpdir="$TMPDIR"/lesspipe."$RANDOM"
-  mkdir "$tmpdir"
-
-  nexttmp () {
-    new="$tmpdir/lesspipe.$RANDOM"
-    [[ "$1" = -d ]] && mkdir "$new"
-    echo "$new"
-  }
-fi
+nexttmp () {
+  new="$tmpdir/lesspipe.$RANDOM"
+  [[ "$1" = -d ]] && mkdir "$new"
+  echo "$new"
+}
 [[ -d "$tmpdir" ]] || exit 1
 trap "rm -rf '$tmpdir'" 0
 trap - PIPE
@@ -976,7 +967,7 @@ isfinal() {
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
-  elif [[ "$1" = *text* ]]; then
+  elif [[ "$1" = *text* && "$2" != '-' ]]; then
     if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
       cmd_exist mdcat; then
       mdcat "$2"
