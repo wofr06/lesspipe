@@ -590,6 +590,13 @@ isfinal() {
           bat "$lang" "$2"
         fi
         [[ $? = 0 ]] && return
+      elif cmd_exist batcat; then
+        if [[ "$lang" = "-l" ]]; then
+          batcat "$2"
+        else
+          batcat "$lang" "$2"
+        fi
+        [[ $? = 0 ]] && return
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
         [[ $? = 0 ]] && return
@@ -977,6 +984,8 @@ isfinal() {
     else
       if cmd_exist bat; then
         bat "$2"
+      elif cmd_exist batcat; then
+        batcat "$2"
       # ifdef perl
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$2"
@@ -989,12 +998,16 @@ isfinal() {
     if [[ "$2" = - ]]; then
       if cmd_exist bat; then
         bat
+      elif cmd_exist batcat; then
+        batcat
       else
         cat
       fi
-    else 
+    else
       if cmd_exist bat; then
         bat "$2"
+      elif cmd_exist batcat; then
+        batcat "$2"
       # ifdef perl
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$2"
