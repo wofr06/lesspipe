@@ -980,7 +980,9 @@ isfinal() {
       cmd_exist ccze; then
       cat "$2" | ccze -A
     else
-      if cmd_exist bat; then
+      if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+        cat $2
+      elif cmd_exist bat; then
         bat $COLOR "$2"
       elif cmd_exist batcat; then
         batcat $COLOR "$2"
@@ -994,7 +996,9 @@ isfinal() {
     fi
   else
     if [[ "$2" = - ]]; then
-      if cmd_exist bat; then
+      if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+        cat
+      elif cmd_exist bat; then
         bat $COLOR
       elif cmd_exist batcat; then
         batcat $COLOR
