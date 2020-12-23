@@ -814,12 +814,12 @@ isfinal() {
 #ifdef ps2ascii
     if cmd_exist ps2ascii; then
       msg "append $sep to filename to view the postscript file"
-      istemp ps2ascii "$2"
+      nodash ps2ascii "$2"
     fi
 #elif pstotext
     if cmd_exist pstotext; then
       msg "append $sep to filename to view the postscript file"
-      nodash pstotext "$2"
+      istemp pstotext "$2"
     fi
 #else
     msg "install pstotext or ps2ascii to view a textual representation of the file contents"
@@ -991,7 +991,7 @@ isfinal() {
   elif [[ "$1" = *OpenDocument\ Text* ]]; then
     if cmd_exist odt2txt; then
       msg "append $sep to filename to view the raw word document"
-      odt2txt "$2"
+      istemp odt2txt "$2"
     else
       msg "install odt2txt to view human readable text"
       cat "$2"

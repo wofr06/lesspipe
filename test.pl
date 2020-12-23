@@ -47,7 +47,7 @@ while (<F>) {
     $res[0] =~ s/^pst0$//;
     shift @res while @res and $res[0] =~ /^\s*$/;
     # special case for directory listing
-    $res[0] = 'test' if $res =~ /-rw-r--r--.*test/;
+    $res[0] = 'test' if $res =~ /-rw-.*test/;
     $ok = $res[0] =~ /^\s*(\e\[36m)?test(\e\[0m)?\s*$/ if $res[0];
     # special case for nroff
     $ok = $res[0] =~ s/^test \(1\)\s+.*/test/ if $res[0] and ! $ok;
