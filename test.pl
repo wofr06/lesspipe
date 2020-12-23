@@ -53,6 +53,8 @@ while (<F>) {
     $ok = $res[0] =~ s/^test \(1\)\s+.*/test/ if $res[0] and ! $ok;
     # special case for perl storable
     $ok = $res[0] =~ s/^\$VAR1 = \\'test';$/test/ if $res[0] and ! $ok;
+	# special case for batcat
+	$ok = $res[0] = 'test' if $res[3] =~ /test/;
     # special case for mp3
     if ($res[1] and ! $ok) {
         $ok = $res[1] =~ s/.*Title.*:\s+test\b.*/test/;

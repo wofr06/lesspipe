@@ -592,9 +592,9 @@ isfinal() {
         [[ $? = 0 ]] && return
       elif cmd_exist batcat; then
         if [[ "$lang" = "-l" ]]; then
-          batcat "$2"
+          batcat $COLOR "$2"
         else
-          batcat "$lang" "$2"
+          batcat $COLOR "$lang" "$2"
         fi
         [[ $? = 0 ]] && return
       elif cmd_exist code2color; then
@@ -611,6 +611,8 @@ isfinal() {
   typeset COLOR
   if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
     COLOR="--color=always"
+  else
+	COLOR="--color=auto"
   fi
 
   if [[ "$1" = *No\ such* ]]; then
@@ -980,7 +982,7 @@ isfinal() {
       if cmd_exist bat; then
         bat "$2"
       elif cmd_exist batcat; then
-        batcat "$2"
+        batcat $COLOR "$2"
       # ifdef perl
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$2"
@@ -994,7 +996,7 @@ isfinal() {
       if cmd_exist bat; then
         bat
       elif cmd_exist batcat; then
-        batcat
+        batcat $COLOR
       else
         cat
       fi
@@ -1002,7 +1004,7 @@ isfinal() {
       if cmd_exist bat; then
         bat "$2"
       elif cmd_exist batcat; then
-        batcat "$2"
+        batcat $COLOR "$2"
       # ifdef perl
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$2"
