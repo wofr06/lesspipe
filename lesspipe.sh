@@ -572,6 +572,13 @@ unpack_cmd() {
 }
 
 isfinal() {
+  # color requires -r or -R when calling less
+  typeset COLOR
+  if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
+    COLOR="--color=always"
+  else
+	COLOR="--color=auto"
+  fi
   typeset t
   if [[ $3 = $sep$sep ]]; then
     cat "$2"
@@ -585,9 +592,9 @@ isfinal() {
       lang=${lang%%-l }
       if cmd_exist bat; then
         if [[ "$lang" = "-l" ]]; then
-          bat "$2"
+          bat $COLOR "$2"
         else
-          bat "$lang" "$2"
+          bat $COLOR "$lang" "$2"
         fi
         [[ $? = 0 ]] && return
       elif cmd_exist batcat; then
@@ -607,13 +614,6 @@ isfinal() {
   fi
 
   lang="$(echo $LANG | tr '[:upper:]' '[:lower:]')"
-  # color requires -r or -R when calling less
-  typeset COLOR
-  if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
-    COLOR="--color=always"
-  else
-	COLOR="--color=auto"
-  fi
 
   if [[ "$1" = *No\ such* ]]; then
     exit 1
@@ -971,7 +971,8 @@ isfinal() {
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
-  elif [[ "$1" = *text* && "$2" != '-' ]]; then
+  fi
+  if [[ "$1" = *text* && "$2" != '-' ]]; then
     if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
       cmd_exist mdcat; then
       mdcat "$2"
@@ -980,7 +981,7 @@ isfinal() {
       cat "$2" | ccze -A
     else
       if cmd_exist bat; then
-        bat "$2"
+        bat $COLOR "$2"
       elif cmd_exist batcat; then
         batcat $COLOR "$2"
       # ifdef perl
@@ -994,7 +995,7 @@ isfinal() {
   else
     if [[ "$2" = - ]]; then
       if cmd_exist bat; then
-        bat
+        bat $COLOR
       elif cmd_exist batcat; then
         batcat $COLOR
       else
@@ -1002,7 +1003,7 @@ isfinal() {
       fi
     else
       if cmd_exist bat; then
-        bat "$2"
+        bat $COLOR "$2"
       elif cmd_exist batcat; then
         batcat $COLOR "$2"
       # ifdef perl
