@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version in git
+- many changes since version 1.83, will be documented later
 Version 1.83 Jul 28 2015
 - shortcut for unreadable files, prefer pdftotext over pdftohtml (Peter Wu)
 - add bsdtar as a command to unpack rar files (coadde)
