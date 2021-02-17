@@ -160,7 +160,7 @@ filetype () {
        # Compressed Archives
   elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
     return=" LZMA compressed data"
-  elif [[ ("$type" = *Zip* || "$type" = *ZIP* || "$type" = *JAR*)) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
+  elif [[ ("$type" = *Zip* || "$type" = *ZIP* || "$type" = *JAR*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
     return=" Zip compressed Jar archive"
   elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
        return=" NetCDF Data Format data"
