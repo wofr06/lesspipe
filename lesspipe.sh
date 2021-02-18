@@ -1,5 +1,5 @@
 #!/bin/bash
-# lesspipe.sh, a preprocessor for less (version 1.83)
+# lesspipe.sh, a preprocessor for less (version 1.85)
 #===============================================================================
 ### THIS FILE IS GENERATED FROM lesspipe.sh.in, PLEASE GET THE ZIP FILE
 ### from https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
@@ -54,7 +54,7 @@ filecmd() {
 TMPDIR=${TMPDIR:-/tmp}
 sep=:						# file name separator
 altsep==					# alternate separator character
-if [[ -e "$1" && "$1" = *$sep* || "$1" = *$altsep ]]; then
+if [[ -e "$1" && "$1" = *$sep* || "$1" = *$sep*$altsep* ]]; then
   sep=$altsep
   xxx="${1%=}"
   set "$xxx"
@@ -156,7 +156,7 @@ filetype () {
        # Compressed Archives
   elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
     return=" LZMA compressed data"
-  elif [[ ("$type" = *Zip* || "$type" = *ZIP*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
+  elif [[ ("$type" = *Zip* || "$type" = *ZIP* || "$type" = *JAR*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
     return=" Zip compressed Jar archive"
   elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
        return=" NetCDF Data Format data"
