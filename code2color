@@ -3246,16 +3246,16 @@ return \%LANGUAGE;
 use Getopt::Std;
 getopts('i:l:') || exit 2;
   # external colorizer ?
-  if ( $ENV{LESSCOLORIZER} and basename($ENV{LESSCOLORIZER}) !~ /^code2color\s/ ) {
+  if ( $ENV{LESSCOLORIZER} and $ENV{LESSCOLORIZER} !~ {(/|^)code2color(\s|$)} ) {
     # for security reasons do accept only a limited set of colorizers
     die "$ENV{LESSCOLORIZER} is not an allowed colorizer, use one of ",
       join(', ',@colorizers), " instead\n"
-      if ! grep {basename($ENV{LESSCOLORIZER}) =~ /^$_\s/} @colorizers;
+      if ! grep {$ENV{LESSCOLORIZER} =~ {(/|^)$_(\s|$)}} @colorizers;
     die "$ENV{LESSCOLORIZER} not found or not an executable\n"
       if ! -x $ENV{LESSCOLORIZER}
       and ! grep { -x "$_/$ENV{LESSCOLORIZER}" } split /:/, $ENV{PATH};
     # call external colorizer
-    if (basename($ENV{LESSCOLORIZER}) =~ /^pygmentize\s/ ) {
+    if ($ENV{LESSCOLORIZER} =~ {(/|^)pygmentize(\s|$)} ) {
       # do not call pygmentize with - and use option -g
       @ARGV = grep {$_ ne '-'} @ARGV;
       unshift @ARGV, '-g';
