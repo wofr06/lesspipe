@@ -1236,7 +1236,7 @@ isfinal() {
       cat "$2" | ccze -A
     else
       if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
-        cat $2
+        cat "$2"
       elif cmd_exist bat; then
         bat $COLOR "$2"
       elif cmd_exist batcat; then
