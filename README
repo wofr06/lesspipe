@@ -233,7 +233,7 @@ Contents
  iso images	requires isoinfo
  MacOSX archive	requires lsbom
  MacOS X bom	requires lsbom
- MacOS X plist	requires plisutil
+ MacOS X plist	requires plistutil
  cab		requires cabextract (version 1.0 or above)
  gpg encrypted	requires gpg
  perl storable	requires perl (and the perl modules Storable and Data::Dumper)

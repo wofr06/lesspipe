@@ -938,9 +938,9 @@ isfinal() {
   elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
-  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plisutil; then
+  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plistutil; then
     msg "append $sep to filename to view the raw data"
-    plisutil -convert xml1 -o - "$2"
+    plistutil -convert xml1 -o - "$2"
   elif [[ "$2" = *.crt || "$2" = *.pem ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl x509 -hash -text -noout -in "$2"
