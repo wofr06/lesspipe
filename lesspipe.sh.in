@@ -6,21 +6,21 @@
 #===============================================================================
 #
 # Usage:   lesspipe.sh is called when the environment variable LESSOPEN is set:
-#	   LESSOPEN="|lesspipe.sh %s"; export LESSOPEN	(sh like shells)
-#	   setenv LESSOPEN "|lesspipe.sh %s"		(csh, tcsh)
-#	   Use the fully qualified path if lesspipe.sh is not in the search path
-#	   View files in multifile archives:
-#			less archive_file:contained_file
-#	   This can be used to extract ASCII files from a multifile archive:
-#			less archive_file:contained_file>extracted_file
-#	   As less is not good for extracting raw data use instead:
-#			lesspipe.sh archive_file:contained_file>extracted_file
+#          LESSOPEN="|lesspipe.sh %s"; export LESSOPEN  (sh like shells)
+#          setenv LESSOPEN "|lesspipe.sh %s"            (csh, tcsh)
+#          Use the fully qualified path if lesspipe.sh is not in the search path
+#          View files in multifile archives:
+#                       less archive_file:contained_file
+#          This can be used to extract ASCII files from a multifile archive:
+#                       less archive_file:contained_file>extracted_file
+#          As less is not good for extracting raw data use instead:
+#                       lesspipe.sh archive_file:contained_file>extracted_file
 #          Even a file in a multifile archive that itself is contained in yet
 #          another archive can be viewed this way:
-#			less super_archive:archive_file:contained_file
-#	   Display the last file in the file1:..:fileN chain in raw format:
-#	   Suppress input filtering:	less file1:..:fileN:   (append a colon)
-#	   Suppress decompression:	less file1:..:fileN::  (append 2 colons)
+#                       less super_archive:archive_file:contained_file
+#          Display the last file in the file1:..:fileN chain in raw format:
+#          Suppress input filtering:    less file1:..:fileN:   (append a colon)
+#          Suppress decompression:      less file1:..:fileN::  (append 2 colons)
 #
 # Required programs and supported formats: see the separate file README
 # License: GPL (see file LICENSE)
@@ -53,8 +53,8 @@ filecmd() {
 }
 
 TMPDIR=${TMPDIR:-/tmp}
-sep=:						# file name separator
-altsep==					# alternate separator character
+sep=:                                           # file name separator
+altsep==                                        # alternate separator character
 # if the separator is part of the file name then altsep is used
 if [[ -e "$1" && "$1" = *$sep* || "$1" = *$sep*$altsep* ]]; then
   sep=$altsep
@@ -136,7 +136,7 @@ filetype () {
 elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
   [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
 return=" Microsoft PowerPoint Document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] || 
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] ||
     [[ "$type" = *Microsoft\ Excel* ]]; then
   return=" Microsoft Excel Document"
 elif [[ "$type" = *Microsoft\ Office\ Document* || "$type" = *Composite\ Document\ File\ V2* ]]; then
@@ -253,13 +253,13 @@ show () {
     if cmd_exist lsbom; then
       if [[ ! -f "$file1" ]]; then
         if [[ "$type" = *directory* ]]; then
-	  if [[ "$file1" = *.pkg ]]; then
-	    if [[ -f "$file1/Contents/Archive.bom" ]]; then
-	      type="bill of materials"
-	      file1="$file1/Contents/Archive.bom"
-	      msg "This is a Mac OS X archive directory, showing its contents (bom file)"
-	    fi
-	  fi
+          if [[ "$file1" = *.pkg ]]; then
+            if [[ -f "$file1/Contents/Archive.bom" ]]; then
+              type="bill of materials"
+              file1="$file1/Contents/Archive.bom"
+              msg "This is a Mac OS X archive directory, showing its contents (bom file)"
+            fi
+          fi
         fi
       fi
     fi
@@ -403,7 +403,7 @@ get_cmd () {
   rsave="$rest1"
   rest1="$rest2"
   if [[ "$file2" != "" ]]; then
-    if [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
+    if [[ "$1" = *\ tar* || "$1" = *\   tar* ]]; then
       set -A cmd istar "$2" "$file2"
     elif [[ "$1" = *Debian* ]]; then
       data="$(ar t "$2"|grep data.tar)"
@@ -422,7 +422,7 @@ get_cmd () {
 #elif rpmunpack,cpio
     elif [[ "$1" = *RPM* ]] && cmd_exist cpio && cmd_exist rpmunpack; then
       set -A cmd isrpm "$2" "$file2"
-#endif 
+#endif
 #ifdef fastjar
     elif [[ "$1" = *Jar\ archive* || "$1" = *Java\ archive* ]] && cmd_exist fastjar; then
       set -A cmd isjar "$2" "$file2"
@@ -430,7 +430,7 @@ get_cmd () {
 #ifdef unzip
     elif [[ "$1" = *Zip* || "$1" = *ZIP* || "$1" = *JAR* ]] && cmd_exist unzip; then
       set -A cmd istemp "unzip -avp" "$2" "$file2"
-#endif 
+#endif
 #ifdef unrar
     elif [[ "$1" = *RAR\ archive* ]]; then
       if cmd_exist unrar; then
@@ -446,7 +446,7 @@ get_cmd () {
 #elif bsdtar
     elif [[ "$1" = *RAR\ archive* ]] && cmd_exist bsdtar; then
       set -A cmd istemp "bsdtar Oxf" "$2" "$file2"
-#endif 
+#endif
 #ifdef 7za
     elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
       set -A cmd istemp "7za e -so" "$2" "$file2"
@@ -459,7 +459,7 @@ get_cmd () {
 #ifdef cabextract
     elif [[ "$1" = *[Cc]abinet* ]] && cmd_exist cabextract; then
       set -A cmd iscab "$2" "$file2"
-#endif 
+#endif
     elif [[ "$1" = *\ ar\ archive* ]]; then
       set -A cmd istemp "ar p" "$2" "$file2"
 #ifdef isoinfo
@@ -652,7 +652,7 @@ isfinal() {
   if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
     COLOR="--color=always"
   else
-	COLOR="--color=auto"
+        COLOR="--color=auto"
   fi
   typeset t
   if [[ $3 = $sep$sep ]]; then
@@ -709,7 +709,7 @@ isfinal() {
     else
       "${cmd[@]}"
     fi
-  elif [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
+  elif [[ "$1" = *\ tar* || "$1" = *\   tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
 #ifdef tarcolor
     if [[ -n $COLOR ]] && cmd_exist tarcolor; then
@@ -855,7 +855,7 @@ isfinal() {
     elif cmd_exist bsdtar; then
       msg "use rar_file${sep}contained_file to view a file in the archive"
       istemp "bsdtar tvf" "$2"
-    fi 
+    fi
 #elif rar
   elif [[ "$1" = *RAR\ archive* ]] && cmd_exist rar; then
     msg "use rar_file${sep}contained_file to view a file in the archive"
@@ -934,7 +934,7 @@ isfinal() {
   elif [[ "$1" = *\ DVI* ]] && cmd_exist dvi2tty; then
     msg "append $sep to filename to view the raw DVI file"
     isdvi "$2"
-#endif 
+#endif
   elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
@@ -1066,12 +1066,12 @@ isfinal() {
   elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv.pl; then
     msg "append $sep to filename to view the spreadsheet source"
     git-xlsx-textconv.pl "$2"
-#endif 
+#endif
 #ifdef git-xlsx-textconv
   elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv; then
     msg "append $sep to filename to view the spreadsheet source"
     git-xlsx-textconv "$2"
-#endif 
+#endif
 #ifdef pptx2md
   elif [[ "$1" = *PowerPoint\ 2007* ]] && cmd_exist pptx2md; then
     msg "append $sep to filename to view the PowerPoint source"
@@ -1112,7 +1112,7 @@ isfinal() {
   elif [[ "$PARSEHTML" = yes && "$1" = *Microsoft\ Excel\ Document* ]] && cmd_exist xlhtml; then
     msg "append $sep to filename to view the spreadsheet source"
     xlhtml -te "$2" | parsehtml -
-#endif 
+#endif
 #ifdef ppthtml
   elif [[ "$PARSEHTML" = yes && "$1" = *Microsoft\ PowerPoint\ Document* ]] && cmd_exist ppthtml; then
     msg "append $sep to filename to view the PowerPoint source"
@@ -1147,7 +1147,7 @@ isfinal() {
       echo "================================= Content ======================================"
       isoinfo -lR"$joliet" -i "$2"
     fi
-#endif 
+#endif
 #ifdef lsbom
   elif [[ "$1" = *bill\ of\ materials* ]] && cmd_exist lsbom; then
     msg "append $sep to filename to view the raw data"
@@ -1192,7 +1192,7 @@ isfinal() {
   elif [[ "$1" = "image" ]] && cmd_exist identify; then
     msg "append $sep to filename to view the raw data"
     identify -verbose "$2"
-#endif 
+#endif
 #ifdef id3v2
   elif [[ "$1" = "mp3" ]]; then
     if cmd_exist id3v2; then
@@ -1213,7 +1213,7 @@ isfinal() {
   elif [[ "$1" = "mp3" ]] && cmd_exist mp3info; then
     msg "append $sep to filename to view the raw data"
     mp3info "$2"
-#endif 
+#endif
 #ifdef mediainfo
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist mediainfo; then
     msg "append $sep to filename to view the raw data"
@@ -1222,7 +1222,7 @@ isfinal() {
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
-#endif 
+#endif
   fi
 
   if [[ "$1" = *text* ]]; then

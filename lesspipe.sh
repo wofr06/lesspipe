@@ -7,21 +7,21 @@
 #===============================================================================
 #
 # Usage:   lesspipe.sh is called when the environment variable LESSOPEN is set:
-#	   LESSOPEN="|lesspipe.sh %s"; export LESSOPEN	(sh like shells)
-#	   setenv LESSOPEN "|lesspipe.sh %s"		(csh, tcsh)
-#	   Use the fully qualified path if lesspipe.sh is not in the search path
-#	   View files in multifile archives:
-#			less archive_file:contained_file
-#	   This can be used to extract ASCII files from a multifile archive:
-#			less archive_file:contained_file>extracted_file
-#	   As less is not good for extracting raw data use instead:
-#			lesspipe.sh archive_file:contained_file>extracted_file
+#          LESSOPEN="|lesspipe.sh %s"; export LESSOPEN  (sh like shells)
+#          setenv LESSOPEN "|lesspipe.sh %s"            (csh, tcsh)
+#          Use the fully qualified path if lesspipe.sh is not in the search path
+#          View files in multifile archives:
+#                       less archive_file:contained_file
+#          This can be used to extract ASCII files from a multifile archive:
+#                       less archive_file:contained_file>extracted_file
+#          As less is not good for extracting raw data use instead:
+#                       lesspipe.sh archive_file:contained_file>extracted_file
 #          Even a file in a multifile archive that itself is contained in yet
 #          another archive can be viewed this way:
-#			less super_archive:archive_file:contained_file
-#	   Display the last file in the file1:..:fileN chain in raw format:
-#	   Suppress input filtering:	less file1:..:fileN:   (append a colon)
-#	   Suppress decompression:	less file1:..:fileN::  (append 2 colons)
+#                       less super_archive:archive_file:contained_file
+#          Display the last file in the file1:..:fileN chain in raw format:
+#          Suppress input filtering:    less file1:..:fileN:   (append a colon)
+#          Suppress decompression:      less file1:..:fileN::  (append 2 colons)
 #
 # Required programs and supported formats: see the separate file README
 # License: GPL (see file LICENSE)
@@ -52,8 +52,13 @@ filecmd() {
 }
 
 TMPDIR=${TMPDIR:-/tmp}
-sep=:						# file name separator
-altsep==					# alternate separator character
+
+# file name separator
+sep=:
+
+# alternate separator character
+altsep==
+
 if [[ -e "$1" && "$1" = *$sep* || "$1" = *$sep*$altsep* ]]; then
   sep=$altsep
   xxx="${1%=}"
@@ -132,7 +137,7 @@ filetype () {
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
        [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
        return=" Microsoft PowerPoint Document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] || 
+  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] ||
        [[ "$type" = *Microsoft\ Excel* ]]; then
        return=" Microsoft Excel Document"
   elif [[ "$type" = *Microsoft\ Office\ Document* || "$type" = *Composite\ Document\ File\ V2* ]]; then
@@ -248,13 +253,13 @@ show () {
     if cmd_exist lsbom; then
       if [[ ! -f "$file1" ]]; then
         if [[ "$type" = *directory* ]]; then
-	  if [[ "$file1" = *.pkg ]]; then
-	    if [[ -f "$file1/Contents/Archive.bom" ]]; then
-	      type="bill of materials"
-	      file1="$file1/Contents/Archive.bom"
-	      msg "This is a Mac OS X archive directory, showing its contents (bom file)"
-	    fi
-	  fi
+          if [[ "$file1" = *.pkg ]]; then
+            if [[ -f "$file1/Contents/Archive.bom" ]]; then
+              type="bill of materials"
+              file1="$file1/Contents/Archive.bom"
+              msg "This is a Mac OS X archive directory, showing its contents (bom file)"
+            fi
+          fi
         fi
       fi
     fi
@@ -382,7 +387,7 @@ get_cmd () {
   rsave="$rest1"
   rest1="$rest2"
   if [[ "$file2" != "" ]]; then
-    if [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
+    if [[ "$1" = *\ tar* || "$1" = *\   tar* ]]; then
       cmd=(istar "$2" "$file2")
     elif [[ "$1" = *Debian* ]]; then
       data="$(ar t "$2"|grep data.tar)"
@@ -574,7 +579,7 @@ isfinal() {
   if [[ $(tput colors) -ge 8 && ("$LESS" = *-*r* || "$LESS" = *-*R*) ]]; then
     COLOR="--color=always"
   else
-	COLOR="--color=auto"
+        COLOR="--color=auto"
   fi
   typeset t
   if [[ $3 = $sep$sep ]]; then
@@ -628,7 +633,7 @@ isfinal() {
     else
       "${cmd[@]}"
     fi
-  elif [[ "$1" = *\ tar* || "$1" = *\	tar* ]]; then
+  elif [[ "$1" = *\ tar* || "$1" = *\   tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
     if [[ -n $COLOR ]] && cmd_exist tarcolor; then
       $tarcmd tvf "$2" | tarcolor
@@ -721,7 +726,7 @@ isfinal() {
     elif cmd_exist bsdtar; then
       msg "use rar_file${sep}contained_file to view a file in the archive"
       istemp "bsdtar tvf" "$2"
-    fi 
+    fi
   elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7za; then
     typeset res
     res=$(istemp "7za l" "$2")

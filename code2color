@@ -33,32 +33,32 @@ if ( $ARGV[0] =~ /^\d+$/  and $ARGV[1] ) {
       $psargs = '-f';
     }
     eval "use Proc::ProcessTable $procvers";
-    if ( $@ ) { 
+    if ( $@ ) {
       my $p = `ps -p $PPID $psargs`;
       exit 1 if $p =~ /\bless\s+/ and $p !~ /less\s+-\w*r\w*\b/is;
       if ( $p !~ /\bless\s+/ ) {
-	if ($p =~ /\d+\s+(\d+)/) {
-	  $PPID = $1;
-	} else {
-	  $PPID = $1 if $p =~ /(\d+)/;
-	}
-	my $p2 = `ps -p $PPID $psargs`;
-	exit 1 if $p2 !~ /less\s+-\w*r\w*\b/is;
+        if ($p =~ /\d+\s+(\d+)/) {
+          $PPID = $1;
+        } else {
+          $PPID = $1 if $p =~ /(\d+)/;
+        }
+        my $p2 = `ps -p $PPID $psargs`;
+        exit 1 if $p2 !~ /less\s+-\w*r\w*\b/is;
       }
     } else {
       my $pt = new Proc::ProcessTable;
       for (@{$pt->table}) {
-	next unless $_->pid eq $PPID;
-	$p = $_->cmndline;
-	exit 1 if $p =~ /\bless\s+/ and $p !~ /less\s+-\w*r\w*\b/i;
-	if ( $p !~ /\bless\s+/ ) {
-	  $PPID = $_->ppid;
-	  for (@{$pt->table}) {
-	    next unless $_->pid eq $PPID;
-	    $p = $_->cmndline;
-	    exit 1 if $p !~ /less\s+-\w*r\w*\b/i;
-	  }
-	}
+        next unless $_->pid eq $PPID;
+        $p = $_->cmndline;
+        exit 1 if $p =~ /\bless\s+/ and $p !~ /less\s+-\w*r\w*\b/i;
+        if ( $p !~ /\bless\s+/ ) {
+          $PPID = $_->ppid;
+          for (@{$pt->table}) {
+            next unless $_->pid eq $PPID;
+            $p = $_->cmndline;
+            exit 1 if $p !~ /less\s+-\w*r\w*\b/i;
+          }
+        }
       }
     }
   }
@@ -156,34 +156,34 @@ sub main {
     # undefine the input record separator so everything gets loaded in one turn
     local $/ = undef;  # don't propogate this change outside this package.
 
-    # Only set %STYLESHEET and %LANGUAGE if they haven't been 
-    # already set in a previous call ( if, say, we're running 
-    # in a persistent environment under mod_perl) 
+    # Only set %STYLESHEET and %LANGUAGE if they haven't been
+    # already set in a previous call ( if, say, we're running
+    # in a persistent environment under mod_perl)
     # or if the langfile is passed in explicitly.
     if ( $params{'langfile'} or ! $STYLE_AND_LANGUAGE_FLAG ) {
       $STYLE_AND_LANGUAGE_FLAG = 1;  # now they will be defined.
-      
+
       print STDERR "getting patterns...\n"  if ($params{'verbose'});
       # building up the database
       # newer entries overwrite old ones
       my @CONFIG_FILES;
       push @CONFIG_FILES, "/etc/code2html.config";
-      push @CONFIG_FILES, 
+      push @CONFIG_FILES,
         $ENV{'HOME'}."/.code2html.config"   if $ENV{'HOME'};
-      push @CONFIG_FILES, 
+      push @CONFIG_FILES,
         split(/:/,$ENV{'CODE2HTML_CONFIG'}) if $ENV{'CODE2HTML_CONFIG'};
-      push @CONFIG_FILES, 
+      push @CONFIG_FILES,
         split(/:/,$params{'langfile'})      if $params{'langfile'};
-      
-      %STYLESHEET = %{ &get_default_stylesheet } ; 
-      %LANGUAGE   = %{ &get_default_database   } ; 
+
+      %STYLESHEET = %{ &get_default_stylesheet } ;
+      %LANGUAGE   = %{ &get_default_database   } ;
 
       for (@CONFIG_FILES) {
         if ( -r $_){
-          # if I use `do $_` instead of scalar eval... 
-          #  %LANGUAGE is not exported and imported correctly 
+          # if I use `do $_` instead of scalar eval...
+          #  %LANGUAGE is not exported and imported correctly
           # (read: at all) (PP)
-          unless (scalar eval `cat $_`) {     
+          unless (scalar eval `cat $_`) {
             warn "couldn't parse $_: $@" if $@;
           };
         };
@@ -192,29 +192,29 @@ sub main {
 
     # set outputformat
     #   When called as a package, "die" is impolite. Changed to "return".
-    # die "Outputformat $params{'outputformat'} not defined" 
+    # die "Outputformat $params{'outputformat'} not defined"
     # unless defined $STYLESHEET{$params{'outputformat'}};
-    return "Outputformat $params{'outputformat'} not defined" 
+    return "Outputformat $params{'outputformat'} not defined"
       unless defined $STYLESHEET{$params{'outputformat'}};
 
     my %STYLE = % { $STYLESHEET{$params{'outputformat'}} };
-      
+
     # load alternate template if given
     if (($params{'template'} ne "") && ( ! $params{'noheader'} )) {
-#         open (FILE, $params{'template'}) || 
+#         open (FILE, $params{'template'}) ||
 #           die ("Could not open template file $params{'template'}: $!");
-      open (FILE, $params{'template'}) || 
+      open (FILE, $params{'template'}) ||
         return ("Could not open template file $params{'template'}: $!");
       $STYLE{'template'} = <FILE>;
       close (FILE);
     };
 
-    # set up the global ENTITIES variables ( the scalar and the hash ) 
+    # set up the global ENTITIES variables ( the scalar and the hash )
     # from the STYLE definition
     $ENTITIES =     $ { $STYLE{'entities'} }{'listofchars'};
     %ENTITIES = % { $ { $STYLE{'entities'} }{'replace_by' } };
 
-    # modify the header and footer so that the template variables 
+    # modify the header and footer so that the template variables
     # are set correcly
 
     unless ($STYLE{'template'} =~ /^(.*)%%code%%(.*)$/s) {
@@ -228,24 +228,24 @@ sub main {
     $STYLE{'header'} =~ s/%%version%%/$vernr/g;
     $STYLE{'footer'} =~ s/%%version%%/$vernr/g;
 
-    # load the input file and set params{'langmode'} 
+    # load the input file and set params{'langmode'}
     # if it is not already. this is done by probing a
     # set of rules defined in %LANGUAGE
     my $code_ref;
     print STDERR "loading input file...\n"    if ($params{'verbose'});
-    $code_ref = &get_input_file(\%params, 
-                                \%LANGUAGE, 
-                                $params{'langmode'}, 
+    $code_ref = &get_input_file(\%params,
+                                \%LANGUAGE,
+                                $params{'langmode'},
                                 $params{'alt_langmode'});
 
     return 0 if ! ref $code_ref;
     # select the rules for out language.
-    my $language_rules_ref = 
+    my $language_rules_ref =
       $LANGUAGE{ lc($params{'langmode'}) }->{'patterns'};
 
     print STDERR "applying stylesheet...\n"      if ($params{'verbose'});
     # Apply the Stylesheets
-    # set 'starttag' and 'endtag' for every rule according to 
+    # set 'starttag' and 'endtag' for every rule according to
     # its 'style' value the tags are defined in the stylesheet
     &apply_stylesheets_to_rules( $language_rules_ref, \%STYLE );
 
@@ -254,7 +254,7 @@ sub main {
 
     my $snippetlist_ref = [] ;
     print STDERR "creating snippet-list...\n"    if $params{'verbose'};
-    &create_snippetlist( $language_rules_ref, 
+    &create_snippetlist( $language_rules_ref,
                          $$code_ref, $snippetlist_ref, \%STYLE);
 
     print STDERR "getting html converted code ...\n"  if $params{'verbose'};
@@ -277,7 +277,7 @@ sub main {
         print $html;
       }
       else {
-        open(FILEHANDLE, '>'.$params{outfile}) or 
+        open(FILEHANDLE, '>'.$params{outfile}) or
           return( " Couldn't open output file " . $params{outfile} . "$!");
 
         print FILEHANDLE $html;
@@ -331,7 +331,7 @@ sub parse_passed_params {
                );
   $RESULT{title} = $RESULT{infile} if $RESULT{infile} && !$RESULT{title};
   $RESULT{title} = 'Code2HTML' unless $RESULT{title};
-  if ( $RESULT{linenumbers} and 
+  if ( $RESULT{linenumbers} and
        $RESULT{linenumbers} !~ m/^none|normal|linked$/ ) {
     $RESULT{linenumbers} = 'normal';
   };
@@ -345,7 +345,7 @@ sub parse_passed_params {
 sub checkTabulator
 {
     my ($line, $TABSTOP) = @_;
-    
+
     while ((my $at = index($line, "\t")) != -1)
       {
           my $cnt = ($TABSTOP - ($at % $TABSTOP));
@@ -367,7 +367,7 @@ sub get_input_file
     # in/out : $langmode;
     # in/out : $alt_langmode;
     # returns: input file
-    
+
       my %PARAMS       = %{$_[0]};
       my %LANGUAGE     = %{$_[1]};
       my $langmode     = $_[2];
@@ -381,18 +381,18 @@ sub get_input_file
         }
       else
         {
-	    if ($PARAMS{'infile'} eq '-') {
-		*FILEHANDLE = *STDIN;
-	    } else {
-                open(FILEHANDLE, $PARAMS{'infile'}) 
+            if ($PARAMS{'infile'} eq '-') {
+                *FILEHANDLE = *STDIN;
+            } else {
+                open(FILEHANDLE, $PARAMS{'infile'})
                 || return("While opening '$PARAMS{'infile'}' for input: ".$!."\n");
-	    }
-	    local $/=undef;
+            }
+            local $/=undef;
             $code = <FILEHANDLE>;
             close(FILEHANDLE);
-	    $PARAMS{'infile'} = $opt_i || $PARAMS{'infile'};
+            $PARAMS{'infile'} = $opt_i || $PARAMS{'infile'};
         };
-      
+
       if ($PARAMS{'replacetabs'} != 0)
         {
             $code = join (
@@ -403,9 +403,9 @@ sub get_input_file
                           my @dummy = split(/\n/, $code)
                          );
         };
-      
 
-      
+
+
       if ( not $langmode )
         {
             my $test_code = substr($code, 0, $LANG_TEST_LENGTH);
@@ -415,11 +415,11 @@ sub get_input_file
 
             for (keys %LANGUAGE)
               {
-                  if (  (($LANGUAGE{$_}->{'filename'} ne '') 
-                         && ($PARAMS{'infile'} 
+                  if (  (($LANGUAGE{$_}->{'filename'} ne '')
+                         && ($PARAMS{'infile'}
                              =~  m/$LANGUAGE{$_}->{filename}/))  ||
-                        (($LANGUAGE{$_}->{'regex'}    ne '') 
-                         && ($test_code  =~  m/$LANGUAGE{$_}->{regex}/   ))   
+                        (($LANGUAGE{$_}->{'regex'}    ne '')
+                         && ($test_code  =~  m/$LANGUAGE{$_}->{regex}/   ))
                      )
                     {
                         $langmode = $_;
@@ -431,7 +431,7 @@ sub get_input_file
               {
                   if ( not $alt_langmode )
                     {
-                      warn("Guessing language mode failed. " . 
+                      warn("Guessing language mode failed. " .
                            "Using fallback mode: '$alt_langmode'\n");
                       $langmode = $alt_langmode;
                       $alt_langmode = '';
@@ -447,7 +447,7 @@ sub get_input_file
                   # warn("using '$langmode'\n");
               };
         };
-      
+
       $_[2] = $langmode;
       $_[3] = $alt_langmode;
       print "==> append : to filename to switch off syntax highlighting\n"
@@ -460,8 +460,8 @@ sub get_input_file
 ####################### put_headers #######################################
 ###########################################################################
 sub put_headers
-{       
-      my $html;    
+{
+      my $html;
       my %PARAMS = %{shift()};
       my $STYLE_REF = shift();
 
@@ -509,16 +509,16 @@ sub create_snippetlist
     ## FWIW, I pronounce '@res' REEZE, as in the plural of '$re'.
     ##
     my @res ;
-    
+
     my $pos ;
-    
+
     for ( @$regexps_ref ) {
         pos( $code ) = 0 ;
 #++$m ;
         next unless $code =~ m/($_->{regex})/gms ;
 
         $pos = pos( $code ) ;
-#       $res[@res] = [ 
+#       $res[@res] = [
 #                     $_->{regex},
 #                     $ { $ { $$style_ref{'tags'} } { $_->{style} } } { 'start' },
 #                     $ { $ { $$style_ref{'tags'} } { $_->{style} } } { 'stop' },
@@ -527,7 +527,7 @@ sub create_snippetlist
 #                     $pos,
 #                     scalar( @res ),
 #                    ] ;
-        $res[@res] = [ 
+        $res[@res] = [
                       $_->{regex},
                       $_->{starttag},
                       $_->{endtag},
@@ -537,11 +537,11 @@ sub create_snippetlist
                       scalar( @res ),
                      ] ;
     }
-    
+
     ## 90% of all child regexes end up with 0 or 1 regex that needs to be
     ## worried about. Trimming out the 0's speeds things up a bit and
     ## makes the below loop simpler, since there's always at least
-    ## 1 regexp.  It donsn't speed things up much by itself: the percentage 
+    ## 1 regexp.  It donsn't speed things up much by itself: the percentage
     ## of times this fires is really small.  But it does simplify the loop
     ## below and speed it up.
     unless ( @res ) {
@@ -549,9 +549,9 @@ sub create_snippetlist
         push @$snippetlist_ref, $code ;
         return ;
     }
-    
+
     @res = sort { $a->[4] <=> $b->[4] || $a->[6] <=> $b->[6] } @res ;
-    
+
     ## Add a dummy at the end, which makes the logic below simpler / faster.
     $res[@res] = [
                   undef,
@@ -562,7 +562,7 @@ sub create_snippetlist
                   $length,
                   scalar( @res ),
                  ] ;
-    
+
     ## These are declared here for (minor) speed improvement.
     my $re ;
     my $match_spos ;
@@ -575,7 +575,7 @@ sub create_snippetlist
     my $rest ;
     my $i ;
     my $l ;
-    
+
 my @changed_res ;
 my $j ;
 
@@ -583,16 +583,16 @@ my $j ;
 MAIN:
     while ( $pos < $length ) {
         $re = $res[0] ;
-        
+
         $match_spos = $re->[4] ;
         $match_pos  = $re->[5] ;
-        
+
         if ( $match_spos > $pos ) {
             $prefix  = substr( $code, $pos, $match_spos - $pos ) ;
             $prefix  =~ s/($ENTITIES)/$ENTITIES{$1}/ge ;
             push @$snippetlist_ref, $prefix ;
         }
-        
+
         if ( $match_pos > $match_spos ) {
             $snippet = substr( $code, $match_spos, $match_pos - $match_spos ) ;
             if ( @{$re->[3]} ) {
@@ -605,9 +605,9 @@ MAIN:
                 push @$snippetlist_ref, $re->[1], $snippet, $re->[2];
             }
         }
-        
+
         $pos = $match_pos ;
-        
+
         ##
         ## Hand coded optimizations.  Luckily, the cases that arise most often
         ## are the easiest to tune.
@@ -636,9 +636,9 @@ MAIN:
             else {
                 $re->[5] = $re_pos  = pos( $code ) ;
                 $re->[4] = $re_spos = $re_pos - length( $1 ) ;
-                
+
                 ## Walk down the array looking for $re's new home.
-                ## The first few loop iterations are unrolled and done manually 
+                ## The first few loop iterations are unrolled and done manually
                 ## for speed, which handles 85 to 90% of the cases where only
                 ## $re needs to be moved.
                 ##
@@ -652,7 +652,7 @@ MAIN:
                 $re_num = $re->[6] ;
                 if ( ( $re_spos <=> $res[1]->[4] || $re_num <=> $res[1]->[6] ) <= 0 ) {
 #++$o{'1'} ;
-                    next 
+                    next
                 }
                 $res[0] = $res[1] ;
 
@@ -662,21 +662,21 @@ MAIN:
                     next ;
                 }
                 $res[1] = $res[2] ;
-                
+
                 if ( ( $re_spos <=> $res[3]->[4] || $re_num <=> $res[3]->[6] ) <= 0 ) {
 #++$o{'3'} ;
                     $res[2] = $re ;
                     next ;
                 }
                 $res[2] = $res[3] ;
-                
+
                 if ( ( $re_spos <=> $res[4]->[4] || $re_num <=> $res[4]->[6] ) <= 0 ) {
 #++$o{'3'} ;
                     $res[3] = $re ;
                     next ;
                 }
                 $res[3] = $res[4] ;
-                
+
                 if ( ( $re_spos <=> $res[5]->[4] || $re_num <=> $res[5]->[6] ) <= 0 ) {
 #++$o{'4'} ;
                     $res[4] = $re ;
@@ -689,7 +689,7 @@ MAIN:
                 $l = $#res ;
                 for ( ; $i < $l ; ++$i ) {
                     last
-                      if ( 
+                      if (
                           ( $re_spos <=> $res[$i]->[4] || $re_num <=> $res[$i]->[6] )
                           <= 0
                          ) ;
@@ -698,10 +698,10 @@ MAIN:
 #++$p{sprintf( "%2d", $i )} ;
                 $res[$i-1] = $re ;
             }
-            
+
             next ;
         }
-        
+
 # =cut
 
         ##
@@ -734,7 +734,7 @@ MAIN:
             @changed_res = ( $re ) ;
             $i = 1 ;
         }
-        
+
         ## If the optimizations above are in, the second one always
         ## needs to be tweaked, too.
         $re = $res[$i] ;
@@ -755,7 +755,7 @@ MAIN:
             $re->[5] = $re_pos  = pos( $code ) ;
             $re->[4] = $re_spos = $re_pos - length( $1 ) ;
             if ( @changed_res &&
-                 ( $changed_res[0]->[4] <=> $re_spos || 
+                 ( $changed_res[0]->[4] <=> $re_spos ||
                    $changed_res[0]->[6] <=> $re->[6]
                  ) > 0
                ) {
@@ -766,7 +766,7 @@ MAIN:
             }
             ++$i ;
         }
-        
+
         for ( ; ; ++$i ) {
             local $_ = $res[$i] ;
 #++$m ;
@@ -789,17 +789,17 @@ MAIN:
 
             $_->[5] = $re_pos  = pos( $code ) ;
             $_->[4] = $re_spos = $re_pos - length( $1 ) ;
-            
+
             ## Insertion sort in to @changed_res
             $re_num = $_->[6] ;
             for ( $j = $#changed_res ; $j > -1 ; --$j ) {
                 last
-                  if ( 
-                      ( $changed_res[$j]->[4] <=> $re_spos || 
-                        $changed_res[$j]->[6] <=> $re_num 
+                  if (
+                      ( $changed_res[$j]->[4] <=> $re_spos ||
+                        $changed_res[$j]->[6] <=> $re_num
                       ) < 0
                      ) ;
-                $changed_res[$j+1] = $changed_res[$j] ; 
+                $changed_res[$j+1] = $changed_res[$j] ;
             }
             $changed_res[$j+1] = $_ ;
         }
@@ -829,16 +829,16 @@ sub put_output {
 
     my $result;
 
-    my $prefix = ''; 
-    $prefix = $params->{'line_number_prefix'}.'_'  
+    my $prefix = '';
+    $prefix = $params->{'line_number_prefix'}.'_'
       if $params->{'line_number_prefix'};
 
-    $result = &{ $ { $$STYLE_REF{'linenumbers'}} {$params->{'linenumbers'}} 
+    $result = &{ $ { $$STYLE_REF{'linenumbers'}} {$params->{'linenumbers'}}
                }(join ('', @$snippetlist_ref), $prefix);
 
     # print FILEHANDLE $result unless $params->{'dont_print_output'} ;
     # print FILEHANDLE $$STYLE_REF{'footer'}  unless $params->{'noheader'};
-    
+
     $result .= $$STYLE_REF{'footer'} unless $params->{noheader};
 
     return $result;
@@ -855,8 +855,8 @@ my %STYLESHEET;
 
 
 ##########
-########## different color modes for html. 
-# those are named html-dark, html-nobc and html-light. 
+########## different color modes for html.
+# those are named html-dark, html-nobc and html-light.
 # html-light is also named html
 # the only difference between html-light and html-nobc is
 # that html-light defines a body background and text color.
@@ -891,10 +891,10 @@ if ($@) {
 $STYLESHEET{'xterm'} =  { 'template'       => '%%code%%',
                          'content-type' => 'text/html',
                          'linenumbers'  => {
-                                            'none'          => sub { 
+                                            'none'          => sub {
                                                                     return $_[0];
                                                                    },
-                                            'normal'        => sub { 
+                                            'normal'        => sub {
                                                                    # o as the first parameter is the joined snippetlist
                                                                    # o the second is an optional prefix, needed if more than one block
                                                                    #   in a file is highlighted. needed in patch-mode. may be empty
@@ -905,12 +905,12 @@ $STYLESHEET{'xterm'} =  { 'template'       => '%%code%%',
                                                                    my $format = qq{%${lengthofnr}u %s\n} ;
                                                                    join ('', map (  {$nr++; sprintf ( $format , $nr, $_ )} @lines));
                                                                    },
-                                             'linked'       => sub { 
+                                             'linked'       => sub {
                                                                    # is not defined for xterm output, therefore do nothing
                                                                     return $_[0];
                                                                    },
                                            },
-                         'tags'         => { 
+                         'tags'         => {
                                             'comment'                => { 'start' => $blue,
                                                                           'stop'  => $reset },
                                             'doc comment'            => { 'start' => "$bold$blue",
@@ -998,8 +998,8 @@ $STYLESHEET{'html-light'} =  { 'template'       =>
 <pre>
 %%code%%
 </pre>
-<p align=right><small><font color=gray>syntax highlighted by 
-<a href="http://www.palfrader.org/code2html"><font 
+<p align=right><small><font color=gray>syntax highlighted by
+<a href="http://www.palfrader.org/code2html"><font
 color=gray>Code2HTML</font></a>, v. %%version%%</font></small></p>
 </body>
 </html>
@@ -1014,10 +1014,10 @@ color=gray>Code2HTML</font></a>, v. %%version%%</font></small></p>
                                                               }
                                            },
                          'linenumbers'  => {
-                                            'none'          => sub { 
+                                            'none'          => sub {
                                                                     return $_[0];
                                                                    },
-                                            'normal'        => sub { 
+                                            'normal'        => sub {
                                                                    # o as the first parameter is the joined snippetlist
                                                                    # o the second is an optional prefix, needed if more than one block
                                                                    #   in a file is highlighted. needed in patch-mode. may be empty
@@ -1029,18 +1029,18 @@ color=gray>Code2HTML</font></a>, v. %%version%%</font></small></p>
                                                                    my $format = qq{<a name="$_[1]line%u">%${lengthofnr}u</a> %s\n} ;
                                                                    join ('', map (  {$nr++; sprintf ( $format , $nr, $nr, $_ )} @lines));
                                                                    },
-                                             'linked'       => sub { 
+                                             'linked'       => sub {
                                                                    # this should do the same as above only with linenumbers that link to themselves
                                                                    # If this style does not support this, use the same as above.
                                                                    my @lines = split ( /\n/, $_[0] );
 
-                                                                   my $nr = 0; 
+                                                                   my $nr = 0;
                                                                    my $lengthofnr = length(@lines);
                                                                    my $format = qq{<a name="$_[1]line%u" href="#$_[1]line%u">%$ {lengthofnr}u</a> %s\n};
                                                                    join ('', map (  {$nr++; sprintf ( $format , $nr, $nr, $nr, $_ )} @lines));
                                                                    }
                                            },
-                         'tags'         => { 
+                         'tags'         => {
                                             'comment'                => { 'start' => '<font color="#444444">',
                                                                           'stop'  => '</font>' },
                                             'doc comment'            => { 'start' => '<font color="#444444"><i>',
@@ -1055,27 +1055,27 @@ color=gray>Code2HTML</font></a>, v. %%version%%</font></small></p>
                                                                           'stop'  => '</font>' },
                                             'numeric'                => { 'start' => '<font color="#FF0000">',
                                                                           'stop'  => '</font>' },
-                                            
+
                                             'identifier'             => { 'start' => '<font color="#2040a0">',
                                                                           'stop'  => '</font>' },
                                             'predefined identifier'  => { 'start' => '<font color="#2040a0"><strong>',
                                                                           'stop'  => '</strong></font>' },
-                                     
+
                                             'type'                   => { 'start' => '<font color="#2040a0"><strong>',
                                                                           'stop'  => '</strong></font>' },
                                             'predefined type'        => { 'start' => '<font color="#2040a0"><strong>',
                                                                           'stop'  => '</strong></font>' },
-                                            
+
                                             'reserved word'          => { 'start' => '<strong>',
                                                                           'stop'  => '</strong>' },
                                             'library function'       => { 'start' => '<font color="a52a2a"><strong>',
                                                                           'stop'  => '</strong></font>' },
-                                            
+
                                             'include'                => { 'start' => '<font color="0000ff"><strong>',
                                                                           'stop'  => '</strong></font>' },
                                             'preprocessor'           => { 'start' => '<font color="0000ff"><strong>',
                                                                           'stop'  => '</strong></font>' },
-                                            
+
                                             'braces'                 => { 'start' => '<font color="4444FF"><strong>',
                                                                           'stop'  => '</strong></font>' },
                                             'symbol'                 => { 'start' => '<font color="4444FF">',
@@ -1087,10 +1087,10 @@ color=gray>Code2HTML</font></a>, v. %%version%%</font></small></p>
                                                                           'stop'  => '</font>' },
                                             'function header args'   => { 'start' => '<font color="2040a0">',
                                                                           'stop'  => '</font>' },
-                                            
+
                                             'regex'                  => { 'start' => '<font color="b000d0">',
                                                                           'stop'  => '</font>' },
-                                            
+
                                             'text'                   => { 'start' => '<i>',
                                                                           'stop'  => '</i>'},
 
@@ -1136,8 +1136,8 @@ ${ $STYLESHEET{'html-nobg'}} {'template'} = '<html>
 <pre>
 %%code%%
 </pre>
-<p align=right><small><font color=gray>syntax highlighted by 
-<a href="http://www.palfrader.org/code2html"><font 
+<p align=right><small><font color=gray>syntax highlighted by
+<a href="http://www.palfrader.org/code2html"><font
 color=gray>Code2HTML</font></a>, v. %%version%%</font></small></p>
 </body>
 </html>
@@ -1145,7 +1145,7 @@ color=gray>Code2HTML</font></a>, v. %%version%%</font></small></p>
 
 
 # html-dark is a modification of html-light
-# in such a way, that the body tag does define 
+# in such a way, that the body tag does define
 # different colors and that the <font> colors are different.
 
 %{$STYLESHEET{'html-dark'}} = %{$STYLESHEET{'html-light'}};
@@ -1157,8 +1157,8 @@ ${ $STYLESHEET{'html-dark'}} {'template'} = '<html>
 <pre>
 %%code%%
 </pre>
-<p align=right><small><font color=gray>syntax highlighted by 
-<a href="http://www.palfrader.org/code2html"><font 
+<p align=right><small><font color=gray>syntax highlighted by
+<a href="http://www.palfrader.org/code2html"><font
 color=gray>Code2HTML</font></a>, v. %%version%%</font></small></p>
 </body>
 </html>
@@ -1178,27 +1178,27 @@ ${ $STYLESHEET{'html-dark'}} {'tags'} = {
                                                                           'stop'  => '</font>' },
                                             'numeric'                => { 'start' => '<font color="#FF0000">',
                                                                           'stop'  => '</font>' },
-                                           
+
                                             'identifier'             => { 'start' => '<font color="#B0B0B0">',
                                                                           'stop'  => '</font>' },
                                             'predefined identifier'  => { 'start' => '<font color="#2040a0"><strong>',
                                                                           'stop'  => '</strong></font>' },
-                                     
+
                                             'type'                   => { 'start' => '<font color="#2040a0"><strong>',
                                                                           'stop'  => '</strong></font>' },
                                             'predefined type'        => { 'start' => '<font color="#2040a0"><strong>',
                                                                           'stop'  => '</strong></font>' },
-                                            
+
                                             'reserved word'          => { 'start' => '<strong>',
                                                                           'stop'  => '</strong>' },
                                             'library function'       => { 'start' => '<font color="a52a2a"><strong>',
                                                                           'stop'  => '</strong></font>' },
-                                            
+
                                             'include'                => { 'start' => '<font color="#00FF00">',
                                                                           'stop'  => '</font>' },
                                             'preprocessor'           => { 'start' => '<font color="#00FF00">',
                                                                           'stop'  => '</font>' },
-                                            
+
                                             'braces'                 => { 'start' => '<font color="darkCyan"><strong>',
                                                                           'stop'  => '</strong></font>' },
                                             'symbol'                 => { 'start' => '<font color="darkCyan">',
@@ -1210,10 +1210,10 @@ ${ $STYLESHEET{'html-dark'}} {'tags'} = {
                                                                           'stop'  => '</font>' },
                                             'function header args'   => { 'start' => '<font color="2040a0">',
                                                                           'stop'  => '</font>' },
-                                            
+
                                             'regex'                  => { 'start' => '<font color="b000d0">',
                                                                           'stop'  => '</font>' },
-                                            
+
                                             'text'                   => { 'start' => '<i>',
                                                                           'stop'  => '</i>'},
 
@@ -1261,8 +1261,8 @@ $LANGUAGE{'plain'}      = {
                             'regex'      => '',
                             'patterns'   => []
                           };
- 
- 
+
+
 
 
 
@@ -1477,21 +1477,21 @@ $LANGUAGE{'awk'}       =  {
                                               }
                                             ]
                            };
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # taken from nedit
 # modified by PP
 $LANGUAGE{'c'}          = {
@@ -1565,7 +1565,7 @@ $LANGUAGE{'c'}          = {
                                                                   {
                                                                     'name'       => 'esc character',
                                                                     'regex'      => '\\\\.',
-                                                                    'style'      => 'esc character', 
+                                                                    'style'      => 'esc character',
                                                                     'childregex' => []
                                                                   }
                                                                 ]
@@ -1600,7 +1600,7 @@ $LANGUAGE{'c'}          = {
                                                 'style'      => 'symbol',
                                                 'childregex' => []
                                               },
-                                              { 
+                                              {
                                                 'name'       => 'identifiers',
                                                 'regex'      => '([a-zA-Z_][a-zA-Z_0-9]*)',
                                                 'style'      => 'identifier',
@@ -1608,21 +1608,21 @@ $LANGUAGE{'c'}          = {
                                               }
                                             ]
                           };
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # taken from nedit
 # modified by PP
 $LANGUAGE{'c++'}        = {
@@ -1772,36 +1772,36 @@ $LANGUAGE{'gpasm'}      = {
                                               {
                                                 'name'       => 'args',
                                                 'regex'      => '^.*$',
-					        'style'      => 'symbol',
+                                                'style'      => 'symbol',
                                                 'childregex' => [
-						 {
-						     'name'       => 'comment',
-						     'regex'      => ';.*?$',
-					             'style'      => 'comment',
+                                                 {
+                                                     'name'       => 'comment',
+                                                     'regex'      => ';.*?$',
+                                                     'style'      => 'comment',
                                                      'childregex' => []
                                                  },
                                                  {
                                                      'name'       => 'labels',
                                                      'regex'      => '^[A-Za-z_][A-Za-z_0-9]*:?',
-					             'style'      => 'identifier',
+                                                     'style'      => 'identifier',
                                                      'childregex' => []
                                                  },
 
                                                  {
                                                      'name'       => 'menonics',
                                                      'regex'      => '^[ \t]+[A-Za-z_][A-Za-z_0-9]*',
-					             'style'      => 'reserved word',
+                                                     'style'      => 'reserved word',
                                                      'childregex' => []
                                                  },
                                               {
                                                 'name'       => 'string',
                                                 'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
-					        'style'      => 'string',
+                                                'style'      => 'string',
                                                 'childregex' => [
                                                                   {
                                                                     'name'       => 'esc character',
                                                                     'regex'      => '\\\\.',
-					                            'style'      => 'esc character',
+                                                                    'style'      => 'esc character',
                                                                     'childregex' => []
                                                                   }
                                                                 ]
@@ -1833,7 +1833,6 @@ $LANGUAGE{'groff'}      = {
                                               }
                                             ]
                           };
- 
 
 
 
@@ -1845,9 +1844,10 @@ $LANGUAGE{'groff'}      = {
 
 
 
- 
- 
- 
+
+
+
+
 # taken from nedit
 # modified by PP
 $LANGUAGE{'html'}       = {
@@ -1900,9 +1900,9 @@ $LANGUAGE{'html'}       = {
                                             ]
                        };
 
- 
- 
-# Added May 17, 2002, Jim M. 
+
+
+# Added May 17, 2002, Jim M.
 $LANGUAGE{'xml'}       = {
                             'filename'   => '(?i)\\.(xml|xps|xsl|axp|ppd)?$',
                             'regex'      => '',
@@ -1952,7 +1952,6 @@ $LANGUAGE{'xml'}       = {
                                               }
                                             ]
                        };
- 
 
 
 
@@ -1965,8 +1964,9 @@ $LANGUAGE{'xml'}       = {
 
 
 
- 
- 
+
+
+
 # taken from nedit
 # modified by PP
 $LANGUAGE{'java'}       = {
@@ -2069,20 +2069,20 @@ $LANGUAGE{'java'}       = {
                                               }
                                             ]
                           };
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # taken from nedit
 # modified by PP
 $LANGUAGE{'javascript'} = {
@@ -2143,7 +2143,7 @@ $LANGUAGE{'javascript'} = {
                                                                     'childregex' => []
                                                                   }
                                                                 ]
-                                              },  
+                                              },
                                               {
                                                 'name'       => 'built in object type',
                                                 'regex'      => '\\b(anchor|Applet|Area|Array|button|checkbox|Date|document|elements|FileUpload|form|frame|Function|hidden|history|Image|link|location|Math|navigator|Option|password|Plugin|radio|reset|select|string|submit|text|textarea|window)\\b',
@@ -2216,7 +2216,7 @@ $LANGUAGE{'js'}         = $LANGUAGE{'javascript'};
 
 $LANGUAGE{'lisp'}       = {
                             'filename' => '\\.(lsp|l)$',
-			    'regex' => '',
+                            'regex' => '',
                             'patterns' => [
                                {
                                  'name'       => 'parens',
@@ -2506,20 +2506,20 @@ $LANGUAGE{'pas'}        = {
                           };
 $LANGUAGE{'pascal'}     = $LANGUAGE{'pas'};
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # taken from nedit
 # modified by PP
 # modified by BS
@@ -2664,7 +2664,7 @@ $LANGUAGE{'perl'}       = {
                                               }
                                             ]
                           };
- 
+
 
 
 
@@ -2763,7 +2763,7 @@ $LANGUAGE{'pov'}        = {
                                                                   {
                                                                     'name'       => 'esc character',
                                                                     'regex'      => '\\\\.',
-                                                                    'style'      => 'esc character', 
+                                                                    'style'      => 'esc character',
                                                                     'childregex' => []
                                                                   }
                                                                 ]
@@ -2792,7 +2792,7 @@ $LANGUAGE{'pov'}        = {
                                                 'style'      => 'symbol',
                                                 'childregex' => []
                                               },
-                                              { 
+                                              {
                                                 'name'       => 'identifiers',
                                                 'regex'      => '([a-zA-Z_][a-zA-Z_0-9]*)',
                                                 'style'      => 'identifier',
@@ -2801,11 +2801,11 @@ $LANGUAGE{'pov'}        = {
                                             ]
                             };
 $LANGUAGE{'povray'}     = $LANGUAGE{'pov'};
-   
- 
 
 
-# by Tom Good 
+
+
+# by Tom Good
 $LANGUAGE{'python'}        = {
                             'filename'   => '(?i)\\.py$',
                             'regex'      => '^\\s*#\\s*![^\\s]*python',
@@ -2813,27 +2813,27 @@ $LANGUAGE{'python'}        = {
                                               {
                                                 'name'       => 'python comment',
                                                 'regex'      => '#.*?$',
-					        'style'      => 'comment',
+                                                'style'      => 'comment',
                                                 'childregex' => []
                                               },
-					      {
+                                              {
                                                 'name'       => 'single quote string',
                                                 'regex'      => '\'.*?\'',
-					        'style'      => 'string',
+                                                'style'      => 'string',
                                                 'childregex' => []
                                               },
-                                                            
+
                                               {
                                                 'name'       => 'string',
                                                 'regex'      => '""|"\\\\\\\\"|".*?([^\\\\](\\\\\\\\)*)"',
                                                 'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
                                                 'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
-					        'style'      => 'string',
+                                                'style'      => 'string',
                                                 'childregex' => [
                                                                   {
                                                                     'name'       => 'esc character',
                                                                     'regex'      => '\\\\.',
-					                            'style'      => 'esc character',
+                                                                    'style'      => 'esc character',
                                                                     'childregex' => []
                                                                   }
                                                                 ]
@@ -2841,12 +2841,12 @@ $LANGUAGE{'python'}        = {
                                               {
                                                 'name'       => 'character constant',
                                                 'regex'      => '\'(\\\\)?.\'',
-					        'style'      => 'character',
+                                                'style'      => 'character',
                                                 'childregex' => [
                                                                   {
                                                                     'name'       => 'esc character',
                                                                     'regex'      => '\\\\.',
-					                            'style'      => 'esc character',
+                                                                    'style'      => 'esc character',
                                                                     'childregex' => []
                                                                   }
                                                                 ]
@@ -2854,62 +2854,62 @@ $LANGUAGE{'python'}        = {
                                               {
                                                 'name'       => 'numeric constant',
                                                 'regex'      => '\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?\\b',
-					        'style'      => 'numeric',
+                                                'style'      => 'numeric',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'keyword',
                                                 'regex'      => '\\b(and|assert|break|class|continue|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\b',
-					        'style'      => 'reserved word',
+                                                'style'      => 'reserved word',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'braces',
                                                 'regex'      => '[\\{\\}]',
-					        'style'      => 'braces',
+                                                'style'      => 'braces',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'symbols',
                                                 'regex'      => '([\\*\\-\\+=:;%&\\|<>\\(\\)\\[\\]!])',
-					        'style'      => 'symbol',
+                                                'style'      => 'symbol',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'identifiers',
                                                 'regex'      => '([a-zA-Z_][a-zA-Z_0-9]*)',
-					        'style'      => 'identifier',
+                                                'style'      => 'identifier',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'function',
                                                 'regex'      => '[\\t ]*def[\\t ]+([a-zA-Z0-9_]+)[\\t \\(]+.*?[\\n{]',
-					        'style'      => 'function header',
+                                                'style'      => 'function header',
                                                 'childregex' => [
                                                                   {
                                                                     'name'       => 'function args',
                                                                     'regex'      => '\\(.*?\\)',
-					                            'style'      => 'function header args',
+                                                                    'style'      => 'function header args',
                                                                     'childregex' => []
                                                                   },
                                                                   {
                                                                     'name'       => 'function name',
                                                                     'regex'      => '[\\t ][a-zA-Z0-9_]+',
-					                            'style'      => 'function header name',
+                                                                    'style'      => 'function header name',
                                                                     'childregex' => []
                                                                   }
                                                                 ]
-                                              },  
+                                              },
                                               {
                                                 'name'       => 'library functions',
                                                 'regex'      => '\\b(__import__|abs|apply|buffer|callable|chr|cmp|coerce|compile|complex|delatter|dir|divmod|eval|execfile|filter|float|getattr|globals|hasattr|hash|hex|id|input|int|intern|isinstance|issubclass|len|list|locals|long|map|max|min|oct|open|ord|pow|range|raw_input|reduce|reload|repr|round|setattr|slice|str|tuple|type|unichr|unicode|vars|xrange|zip)\\b',
-					        'style'      => 'library function',
+                                                'style'      => 'library function',
                                                 'childregex' => []
                                               },
                                             ]
                           };
 
- 
+
 
 # by Joshua Swink <jswink AT pacbell.net>
 $LANGUAGE{'ruby'}       = {
@@ -3149,8 +3149,8 @@ $LANGUAGE{'sql'}        = {
                                             ]
                             };
 
-   
- 
+
+
 
 # enhanced by W. Friebel
 $LANGUAGE{'patch'}        = {
@@ -3198,45 +3198,45 @@ $LANGUAGE{'patch'}        = {
 #
 
 $LANGUAGE{'shellscript'} = {
-	'filename' => '\\.(sh|shell)$',
-	'regex' => '^\\s*#\\s*![^\\s]*(sh|bash|ash|zsh|ksh)',
-	'patterns' => [ {
-		'name' => 'comment',
-#		'regex' => '^[ \t]*[^$]?\#[^!]?.*?$',
-		'regex' => '(^| )#([^\\!].)*?$',
-		'style' => 'comment',
-		'childregex' => []
-	}, {
-		'name' => 'identifier',
-		'regex' => '[a-zA-Z][a-zA-Z0-9_]*=',
-		'style' => 'identifier',
-		'childregex' => [ {
-			'name' => 'identifier',
-			'regex' => '[a-zA-Z][a-zA-Z0-9_]*',
-			'style' => 'identifier',
-			'childregex' => []
-		} ]
-	}, {
-		'name' => 'identifier',
-		'regex' => '\\$([0-9#\\*]|[a-zA-Z][a-zA-Z0-9_]*)',
-		'style' => 'identifier',
-		'childregex' => []
-	}, {
-		'name' => 'interpreter line',
-		'regex' => '^[ \t]*#!.*?$',
-		'style' => 'preprocessor',
-		childregex => []
-	}, {
-		'name' => 'string',
-		'regex' => '""|"(\\\\"|[^\\"])*"',
-		'style' => 'string',
-		childregex => [ {
-			'name' => 'identifier',
-			'regex' => '\\$([0-9#\\*]|[a-zA-Z][a-zA-Z0-9_]*)',
-			'style' => 'identifier',
-			'childregex' => []
-		} ]
-	} ]
+        'filename' => '\\.(sh|shell)$',
+        'regex' => '^\\s*#\\s*![^\\s]*(sh|bash|ash|zsh|ksh)',
+        'patterns' => [ {
+                'name' => 'comment',
+#               'regex' => '^[ \t]*[^$]?\#[^!]?.*?$',
+                'regex' => '(^| )#([^\\!].)*?$',
+                'style' => 'comment',
+                'childregex' => []
+        }, {
+                'name' => 'identifier',
+                'regex' => '[a-zA-Z][a-zA-Z0-9_]*=',
+                'style' => 'identifier',
+                'childregex' => [ {
+                        'name' => 'identifier',
+                        'regex' => '[a-zA-Z][a-zA-Z0-9_]*',
+                        'style' => 'identifier',
+                        'childregex' => []
+                } ]
+        }, {
+                'name' => 'identifier',
+                'regex' => '\\$([0-9#\\*]|[a-zA-Z][a-zA-Z0-9_]*)',
+                'style' => 'identifier',
+                'childregex' => []
+        }, {
+                'name' => 'interpreter line',
+                'regex' => '^[ \t]*#!.*?$',
+                'style' => 'preprocessor',
+                childregex => []
+        }, {
+                'name' => 'string',
+                'regex' => '""|"(\\\\"|[^\\"])*"',
+                'style' => 'string',
+                childregex => [ {
+                        'name' => 'identifier',
+                        'regex' => '\\$([0-9#\\*]|[a-zA-Z][a-zA-Z0-9_]*)',
+                        'style' => 'identifier',
+                        'childregex' => []
+                } ]
+        } ]
 };
 
 $LANGUAGE{'sh'} = $LANGUAGE{'shellscript'};
@@ -3284,8 +3284,8 @@ __END__
   use Code2HTML;
   $html = code2html( $sourcecode );
   # or
-  code2html( infile        => 'file.java' , 
-             outfile       => 'file.html', 
+  code2html( infile        => 'file.java' ,
+             outfile       => 'file.html',
              linenumbers   => 1 ,
              langmode      => 'perl' ,
              # many other options
@@ -3298,7 +3298,7 @@ either as a simple code2html() function call, or as an Apache handler.
 
 This package is an adaptation of Peter Palfrader's code2html application.
 
-The statement 
+The statement
 
  use Code2HTML;
 
@@ -3318,7 +3318,7 @@ exports the function code2html(), which takes the following arguments
                         linenumbers     => 1,           # turn on linenumbers
                         linknumbers     => 1,           # linenumber links
                         line_number_prefix => '-',      # linenumber anchors
-                        replacetabs     => 8,           # tabs to spaces 
+                        replacetabs     => 8,           # tabs to spaces
 
                         noheader        => '',          # don't use template
                         template        => 'filename',  # override template
@@ -3327,9 +3327,9 @@ exports the function code2html(), which takes the following arguments
                         content_type    => 1,           # output httpd header
                   );
 
-All input parameters are optional except the source code 
+All input parameters are optional except the source code
 specification, which must be defined by either input or infile keys, or
-by passing exactly one argument which will then be taken to be the 
+by passing exactly one argument which will then be taken to be the
 source code.
 
  input          source code to be converted (or set source -infile)
@@ -3346,10 +3346,10 @@ source code.
 
  langfile       filename of file with alternative syntax definitions
 
- outfile        name of file to put html in.  If omitted, 
+ outfile        name of file to put html in.  If omitted,
                 just return html in $html=code2html(...)
 
- outputformat   style of output html.  Available formats are 
+ outputformat   style of output html.  Available formats are
                 html (default), html-dark, html-light, html-nobg.
 
  replacetabs    replace tabs in source with given number of spaces
@@ -3357,7 +3357,7 @@ source code.
  title          set title of output html page
 
  content_type   output a Content-Type httpd header
- 
+
  linenumbers    print line numbers in source code listing
 
 =head1 AUTHOR

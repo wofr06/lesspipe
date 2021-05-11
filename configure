@@ -61,7 +61,7 @@ while (<DATA>) {
     $answer{$1} = $2 if /^(\S+)\s+(\S+)/;
 }
 
-my $mode = $opt_ask ? "" : 
+my $mode = $opt_ask ? "" :
            $opt_yes ? "--yes" :
            $opt_fixed ? "--fixed" :
            "--default";
@@ -75,21 +75,21 @@ MODE = $mode
 .PHONY: install
 
 all:
-	./configure --prefix=\$(PREFIX) --nomake \$(MODE)
+        ./configure --prefix=\$(PREFIX) --nomake \$(MODE)
 test:
-	./test.pl
+        ./test.pl
 install:
-	mkdir -p \$(DESTDIR)\$(PREFIX)/bin
-	mkdir -p \$(DESTDIR)\$(PREFIX)/share/man/man1
-	cp ./code2color ./sxw2txt ./tarcolor ./lesspipe.sh \$(DESTDIR)\$(PREFIX)/bin
-	cp ./lesspipe.1 \$(DESTDIR)\$(PREFIX)/share/man/man1
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesspipe.sh
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/sxw2txt
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/code2color
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/tarcolor
+        mkdir -p \$(DESTDIR)\$(PREFIX)/bin
+        mkdir -p \$(DESTDIR)\$(PREFIX)/share/man/man1
+        cp ./code2color ./sxw2txt ./tarcolor ./lesspipe.sh \$(DESTDIR)\$(PREFIX)/bin
+        cp ./lesspipe.1 \$(DESTDIR)\$(PREFIX)/share/man/man1
+        chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesspipe.sh
+        chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/sxw2txt
+        chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/code2color
+        chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/tarcolor
 clean:
-	mv Makefile Makefile.old
-	rm -f lesspipe.sh
+        mv Makefile Makefile.old
+        rm -f lesspipe.sh
 EOF
   close OUT;
 }
@@ -169,7 +169,7 @@ while (<IN>) {
     my @progs = split /,/;
     # check if @progs existing and executable ($in == 1)
     $in = inpath ("Include code anyway", @progs);
-	$anyin = $in;
+        $anyin = $in;
     # line #elif prog1, prog2, ... seen, store prog1, prog2, ... in @progs
   } elsif (/^#elif\s+(.*)/ ) {
     $in = 1 - $anyin;
@@ -181,7 +181,7 @@ while (<IN>) {
     my @progs = split /,/;
     # check if @progs existing and executable ($in == 1)
     $in = inpath ("Include code anyway", @progs);
-	$anyin = $in;
+        $anyin = $in;
     # line #endif encountered, clear list of replacement strings %rep
   } elsif (/^#else\b/ ) {
     $in = 1 - $anyin;
@@ -209,7 +209,7 @@ chmod 0755, "lesspipe.sh.tmp";
 rename "lesspipe.sh.tmp", "lesspipe.sh";
 print "lesspipe.sh with", $ifsyntax eq "n" ? 'out' : '',
       " syntax highlighting created\n";
-print "Please make sure to copy lesspipe.sh ", 
+print "Please make sure to copy lesspipe.sh ",
       $ifsyntax ne 'n' ? "and code2color " : "", "to $opt_prefix/bin\n";
 
 sub inpath {
@@ -231,8 +231,8 @@ sub inpath {
       #next unless m|^/|; # consider only absolute PATH elements
       # skip bzip2 and cabextract if version not at least 1.0
       if (exists $optstr{$prog} and -x "$_/$prog") {
-	my $vs = `$_/$prog $optstr{$prog} 2>&1`;
-	$vs = $1 if $vs =~ /\b(\d+\.\d+)\b/;
+        my $vs = `$_/$prog $optstr{$prog} 2>&1`;
+        $vs = $1 if $vs =~ /\b(\d+\.\d+)\b/;
         if ($vs < 1.0) {
             print "$prog version $vs unuseable, need at least 1.0\n";
             $which_one = "$_/";
@@ -264,10 +264,10 @@ sub inpath {
       my $yesno = get_answer($string, $prog);
       $have{$prog} = $yesno if ! $have{$prog} and $yesno =~ /^[yn]$/i;
       if (exists $optstr{$prog} and $have{$prog} =~ /^\//) {
-	my $vs = `$have{$prog} $optstr{$prog}` if -x $have{$prog};
-	$vs = $1 if $vs =~ /\b(\d+\.\d+)\b/;
+        my $vs = `$have{$prog} $optstr{$prog}` if -x $have{$prog};
+        $vs = $1 if $vs =~ /\b(\d+\.\d+)\b/;
         if ($vs < 1.0) {
-	    $have{$prog} = "";
+            $have{$prog} = "";
             print "$prog version $vs unuseable, need at least 1.0\n";
         }
       }
@@ -296,11 +296,11 @@ sub get_answer {
     $yesno = 'N' if ! $yesno or $yesno =~ /^n/i;
     if ( $yesno =~ m|^/| ) {
       if ( -x $yesno ) {
-	$have{$prog} = $yesno;
-	$yesno = 'y';
+        $have{$prog} = $yesno;
+        $yesno = 'y';
       } else {
-	print "Program $prog not found (or at least not executable)\n";
-	$yesno = '';
+        print "Program $prog not found (or at least not executable)\n";
+        $yesno = '';
       }
     }
   }
@@ -371,9 +371,9 @@ sub check_shell_vers {
     if ( $name eq 'bash' or $name eq 'sh' ) {
       my $tst = `$file -c \'if [[ -n 1 && -n 2 ]];then true;fi 2>&1\'`;
       if ( $tst ) {
-	print "skipping unuseable shell $shell, error msg was $tst";
-	push @bad, $shell;
-	next;
+        print "skipping unuseable shell $shell, error msg was $tst";
+        push @bad, $shell;
+        next;
       }
     }
     $selected_shell = $name if ! $selected_shell;
@@ -392,81 +392,101 @@ sub check_shell_vers {
   return $selected_shell;
 }
 __END__
+
+
 # the answers configured here do only apply when ./configure --fixed is used
-#sample lines (without the comment sign #):
-#sample_prog	/opt/apps/bin/sample_prog
-#skip_prog	N
-#take_prog	Y
+# sample lines (without the comment sign)
+#sample_prog    /opt/apps/bin/sample_prog
+#skip_prog      N
+#take_prog      Y
+#file           /usr/bin/file   # it is better to let configure do the checks
 
-#file		/usr/bin/file	# it is better to let configure do the checks
-HILITE		Y		# we do want syntax highlighting for --fixed
-LESS_ADVANCED_PREPROCESSOR N	# always interpret textlike files (html, ...)
 
+HILITE          Y               # we do want syntax highlighting for --fixed
+LESS_ADVANCED_PREPROCESSOR N    # always interpret textlike files (html, ...)
+
+#
 # compression programs
-bzip2		Y	# include bzip2 and unzip code, it is fairly essential
-unzip		Y
-rar		Y
-unrar		Y
-lzip		N	# default for lzma, lzip, xz, 7za should probably be N
-lzma		Y
-xz		Y
-7za		Y
-7zr		N	# included in 7za code
-zstd		Y
-brotli		Y
-lz4		Y
+#
+bzip2           Y       # include bzip2 and unzip code, it is fairly essential
+unzip           Y
+rar             Y
+unrar           Y
+lzip            N       # default for lzma, lzip, xz, 7za should probably be N
+lzma            Y
+xz              Y
+7za             Y
+7zr             N       # included in 7za code
+zstd            Y
+brotli          Y
+lz4             Y
+
+#
 # essential utilities
-cpio		Y
-elinks		Y	# only one of html2text, elinks, links, lynx, w3m needed
-groff		Y
-html2text	Y	# rarely found but is a good alternative to elinks
-iconv		Y
-links		Y
-lynx		Y
-nm		Y
-rpm		Y
-rpmunpack	N	# fallback for rpm2cpio only, code inserted anyway
-rpm2cpio	Y
-w3m		Y
+#
+cpio            Y
+elinks          Y       # only one of html2text, elinks, links, lynx, w3m needed
+groff           Y
+html2text       Y       # rarely found but is a good alternative to elinks
+iconv           Y
+links           Y
+lynx            Y
+nm              Y
+rpm             Y
+rpmunpack       N       # fallback for rpm2cpio only, code inserted anyway
+rpm2cpio        Y
+w3m             Y
+
+#
 # code for these programs should be included in lesspipe.sh
-doc2txt.pl	Y	  # to view Microsoft Word 2007+ files
-pandoc	    Y	      # to view Microsoft Word 2007+ files
-libreoffice	Y	  # to view Microsoft Office 2007+ files
-antiword	Y	# one of antiword or catdoc or wvText should be installed
-catdoc		Y
-wvText		Y
-dvi2tty		Y	# nice to have
-pstotext	Y	# pstotext is better than the fallback ps2ascii
-ps2ascii	N	# ps2ascii code is already in the pstotext part
-iconv		Y
-gpg		Y
-pdftohtml	Y
-pdftotext	Y
-pdfinfo	Y
+#
+doc2txt.pl      Y         # to view Microsoft Word 2007+ files
+pandoc          Y         # to view Microsoft Word 2007+ files
+libreoffice     Y         # to view Microsoft Office 2007+ files
+antiword        Y         # one of antiword or catdoc or wvText should be installed
+catdoc          Y
+wvText          Y
+dvi2tty         Y         # nice to have
+pstotext        Y         # pstotext is better than the fallback ps2ascii
+ps2ascii        N         # ps2ascii code is already in the pstotext part
+iconv           Y
+gpg             Y
+pdftohtml       Y
+pdftotext       Y
+pdfinfo         Y
+
+#
 # other helper programs
-cabextract	Y
-matdump	N
-djvutxt		Y
-fastjar		N	# I do prefer unzip
-gpg		Y
-mediainfo	Y
-exiftool	N # is mediainfo or exiftool better?
-id3v2		  Y	# id3v2 is preferred over mp3info if both selected
-mp3info2	N	# code for mp3info2 is included anyway if id3v2 selected
-mp3info		N	# code for mp3info is included anyway if id3v2 selected
-identify	Y
-isoinfo		Y	# I would not want to see that
-o3tohtml	Y
-openssl		Y
-perldoc		Y
-ppthtml		Y
-unrtf		Y
-xlhtml		Y
+#
+cabextract      Y
+matdump         N
+djvutxt         Y
+fastjar         N       # I do prefer unzip
+gpg             Y
+mediainfo       Y
+exiftool        N       # (exiftool allows to dig deeper, mediainfo is more versatile)
+id3v2           Y       # id3v2 is preferred over mp3info if both selected
+mp3info2        N       # code for mp3info2 is included anyway if id3v2 selected
+mp3info         N       # code for mp3info is included anyway if id3v2 selected
+identify        Y
+isoinfo         Y       # I would not want to see that
+o3tohtml        Y
+openssl         Y
+perldoc         Y
+ppthtml         Y
+unrtf           Y
+xlhtml          Y
+
+#
 # for specific operating systems
-dpkg		Y	# for debian systems, fallback is tar+g(un)zip
-### please change to Y on MacOSX
-lsbom		N	# we are not on MacOSX
-plisutil		N	# we are not on MacOSX
-bsd_cpio	N	# we are not on MacOSX
-tarcolor	Y	# to colorize tar listings
+#
+dpkg            Y       # for debian systems, fallback is tar+g(un)zip
+
+#
+# please change to Y on MacOSX
+#
+lsbom           N       # we are not on MacOSX
+plisutil        N       # we are not on MacOSX
+bsd_cpio        N       # we are not on MacOSX
+tarcolor        Y       # to colorize tar listings
 
