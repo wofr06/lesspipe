@@ -474,7 +474,7 @@ less diagram.png
  lzip                 http://download.savannah.gnu.org/releases/lzip/
  dvi2tty              http://www.ctan.org/tex-archive/dviware/dvi2tty/
  unrtf                http://ftp.gnu.org/gnu/unrtf/
- docx2txt.pl          https://github.com/arthursucks/docx2txt
+ docx2txt             https://github.com/arthursucks/docx2txt
  pandoc               http://pandoc.org
  libreoffice          http://www.libreoffice.org
  odt2txt              https://github.com/dstosberg/odt2txt

@@ -795,11 +795,11 @@ isfinal() {
     msg "append $sep to filename to view the DjVu source"
     djvutxt "$2"
   elif [[ "$1" = *Microsoft\ Word\ 2007* ]]; then
-    if cmd_exist docx2txt.pl; then
+    if cmd_exist docx2txt; then
       msg "append $sep to filename to view the raw word document"
-      docx2txt.pl "$2" -
+      docx2txt "$2" -
     else
-      msg "install docx2txt.pl to view human readable text"
+      msg "install docx2txt to view human readable text"
       cat "$2"
     fi
   elif [[ "$1" = *OpenDocument\ Text* ]]; then
