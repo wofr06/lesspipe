@@ -75,21 +75,21 @@ MODE = $mode
 .PHONY: install
 
 all:
-        ./configure --prefix=\$(PREFIX) --nomake \$(MODE)
+	./configure --prefix=\$(PREFIX) --nomake \$(MODE)
 test:
-        ./test.pl
+	./test.pl
 install:
-        mkdir -p \$(DESTDIR)\$(PREFIX)/bin
-        mkdir -p \$(DESTDIR)\$(PREFIX)/share/man/man1
-        cp ./code2color ./sxw2txt ./tarcolor ./lesspipe.sh \$(DESTDIR)\$(PREFIX)/bin
-        cp ./lesspipe.1 \$(DESTDIR)\$(PREFIX)/share/man/man1
-        chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesspipe.sh
-        chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/sxw2txt
-        chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/code2color
-        chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/tarcolor
+	mkdir -p \$(DESTDIR)\$(PREFIX)/bin
+	mkdir -p \$(DESTDIR)\$(PREFIX)/share/man/man1
+	cp ./code2color ./sxw2txt ./tarcolor ./lesspipe.sh \$(DESTDIR)\$(PREFIX)/bin
+	cp ./lesspipe.1 \$(DESTDIR)\$(PREFIX)/share/man/man1
+	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesspipe.sh
+	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/sxw2txt
+	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/code2color
+	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/tarcolor
 clean:
-        mv Makefile Makefile.old
-        rm -f lesspipe.sh
+	mv Makefile Makefile.old
+	rm -f lesspipe.sh
 EOF
   close OUT;
 }

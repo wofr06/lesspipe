@@ -53,14 +53,20 @@ filecmd() {
 }
 
 TMPDIR=${TMPDIR:-/tmp}
-sep=:                                           # file name separator
-altsep==                                        # alternate separator character
+
+# file name separator
+sep=:
+
+# alternate separator character
+altsep==
+
 # if the separator is part of the file name then altsep is used
 if [[ -e "$1" && "$1" = *$sep* || "$1" = *$sep*$altsep* ]]; then
   sep=$altsep
   xxx="${1%=}"
   set "$xxx"
 fi
+
 tmpdir="$TMPDIR"/lesspipe."$RANDOM"
 mkdir "$tmpdir"
 
@@ -403,7 +409,7 @@ get_cmd () {
   rsave="$rest1"
   rest1="$rest2"
   if [[ "$file2" != "" ]]; then
-    if [[ "$1" = *\ tar* || "$1" = *\   tar* ]]; then
+    if [[ "$1" = *\ tar* || "$1" = *\ tar* ]]; then
       set -A cmd istar "$2" "$file2"
     elif [[ "$1" = *Debian* ]]; then
       data="$(ar t "$2"|grep data.tar)"
@@ -709,7 +715,7 @@ isfinal() {
     else
       "${cmd[@]}"
     fi
-  elif [[ "$1" = *\ tar* || "$1" = *\   tar* ]]; then
+  elif [[ "$1" = *\ tar* || "$1" = *\ tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
 #ifdef tarcolor
     if [[ -n $COLOR ]] && cmd_exist tarcolor; then

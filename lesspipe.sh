@@ -42,9 +42,6 @@ PATH=$PATH:$dir
 cmd_exist () {
   command -v "$1" > /dev/null 2>&1 && return 0 || return 1
 }
-if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-   NOL_A_P=_NO_L_A_P
-fi
 
 filecmd() {
   file -L -s "$@"
@@ -53,10 +50,8 @@ filecmd() {
 
 TMPDIR=${TMPDIR:-/tmp}
 
-# file name separator
 sep=:
 
-# alternate separator character
 altsep==
 
 if [[ -e "$1" && "$1" = *$sep* || "$1" = *$sep*$altsep* ]]; then
@@ -64,6 +59,7 @@ if [[ -e "$1" && "$1" = *$sep* || "$1" = *$sep*$altsep* ]]; then
   xxx="${1%=}"
   set "$xxx"
 fi
+
 tmpdir="$TMPDIR"/lesspipe."$RANDOM"
 mkdir "$tmpdir"
 
@@ -108,11 +104,13 @@ filetype () {
   if [[ "$1" = - ]]; then
     name="$filen"
   fi
+  # ifdef brotli
   if [[ ("$name" = *.br || "$name" = *.bro || "$name" = *.tbr) ]]; then
     # In current format, brotli can only be detected by extension
     echo " brotli compressed data"
     return
   fi
+  # endif
   if [[ "$1" = - ]]; then
     dd bs=40000 count=1 > "$tmpdir/file" 2>/dev/null
     set "$tmpdir/file" "$2"
@@ -125,86 +123,85 @@ filetype () {
   if [[ "$type" = " empty" ]]; then
     # exit if file returns "empty" (e.g., with "less archive:nonexisting_file")
     exit 1
-       # Open Office
+    # Open Office
   elif [[ "$type" = *OpenDocument\ Text* ]]; then
     return=" OpenDocument Text"
   elif [[ "$type" = *OpenDocument\ * || "$type" = *OpenOffice\.org\ 1\.x\ * ]]; then
-      return=" OpenDocument"
-       # Microsoft Office <  2007
+    return=" OpenDocument"
+    # Microsoft Office <  2007
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.do[st]) ]] ||
-       [[ "$type" = *Microsoft\ Office\ Word* ]]; then
-       return=" Microsoft Word Document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
-       [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
-       return=" Microsoft PowerPoint Document"
+    [[ "$type" = *Microsoft\ Office\ Word* ]]; then
+  return=" Microsoft Word Document"
+elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
+  [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
+return=" Microsoft PowerPoint Document"
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] ||
-       [[ "$type" = *Microsoft\ Excel* ]]; then
-       return=" Microsoft Excel Document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* || "$type" = *Composite\ Document\ File\ V2* ]]; then
-       return=" Microsoft Office Document"
-       # Microsoft Office >= 2007
-  elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.do[ct][xm] ]] ||
-       [[ "$type" = *Microsoft\ Word\ 2007* ]]; then
-       return=" Microsoft Word 2007+"
+    [[ "$type" = *Microsoft\ Excel* ]]; then
+  return=" Microsoft Excel Document"
+elif [[ "$type" = *Microsoft\ Office\ Document* || "$type" = *Composite\ Document\ File\ V2* ]]; then
+  return=" Microsoft Office Document"
+  # Microsoft Office >= 2007
+elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.do[ct][xm] ]] ||
+  [[ "$type" = *Microsoft\ Word\ 2007* ]]; then
+return=" Microsoft Word 2007+"
   elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.pp[st][xm] ]] ||
-       [[ "$type" = *Microsoft\ PowerPoint\ 2007* ]]; then
-       return=" Microsoft PowerPoint 2007+"
-  elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.xl[st][xmb] ]] ||
-       [[ "$type" = *Microsoft\ Excel\ 2007* ]]; then
-       return=" Microsoft Excel 2007+"
+    [[ "$type" = *Microsoft\ PowerPoint\ 2007* ]]; then
+  return=" Microsoft PowerPoint 2007+"
+elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.xl[st][xmb] ]] ||
+  [[ "$type" = *Microsoft\ Excel\ 2007* ]]; then
+return=" Microsoft Excel 2007+"
   elif [[ "$type" =  Microsoft\ OOXML ]] ||
-       [[ "$type" = *Microsoft\ *\ 2007* ]]; then
-       return=" Microsoft Office 2007"
-       # MP3
-  elif [[ "$type" = *MPEG\ *layer\ 3\ audio* || "$type" = *MPEG\ *layer\ III* || "$type" = *mp3\ file* || "$type" = *MP3* ]]; then
-    return="mp3"
-       # Compressed Archives
-  elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
-    return=" LZMA compressed data"
-  elif [[ ("$type" = *Zip* || "$type" = *ZIP* || "$type" = *JAR*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
-    return=" Zip compressed Jar archive"
-  elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
-       return=" NetCDF Data Format data"
-       # Sometimes a BSD makefile is identified as "troff or preprocessor input
-       # text" probably due to its ".if" style directives.
-  elif [[ "$type" = *roff\ *,* && ("$name" = */[Mm]akefile || "$name" = */[Mm]akefile.* || "$name" = */BSDmakefile || "$name" = *.mk) ]]; then
-       return=" BSD makefile script,${type#*,}}"
-       # Correct HTML Detection
-  elif [[ ("$type" = *HTML* || "$type" = *ASCII*) && "$name" = *xml ]]; then
-    return=" XML document text"
-  elif [[ "$type" = *XML* && "$name" = *html ]]; then
-    return=" HTML document text"
-  fi
+    [[ "$type" = *Microsoft\ *\ 2007* ]]; then
+  return=" Microsoft Office 2007"
+  # MP3
+elif [[ "$type" = *MPEG\ *layer\ 3\ audio* || "$type" = *MPEG\ *layer\ III* || "$type" = *mp3\ file* || "$type" = *MP3* ]]; then
+  return="mp3"
+  # Compressed Archives
+elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
+  return=" LZMA compressed data"
+elif [[ ("$type" = *Zip* || "$type" = *ZIP* || "$type" = *JAR*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
+  return=" Zip compressed Jar archive"
+elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
+  return=" NetCDF Data Format data"
+  # Sometimes a BSD makefile is identified as "troff or preprocessor input
+  # text" probably due to its ".if" style directives.
+elif [[ "$type" = *roff\ *,* && ("$name" = */[Mm]akefile || "$name" = */[Mm]akefile.* || "$name" = */BSDmakefile || "$name" = *.mk) ]]; then
+  return=" BSD makefile script,${type#*,}}"
+  # Correct HTML Detection
+elif [[ ("$type" = *HTML* || "$type" = *ASCII*) && "$name" = *xml ]]; then
+  return=" XML document text"
+elif [[ "$type" = *XML* && "$name" = *html ]]; then
+  return=" HTML document text"
+fi
 
-  if [[ -n "$return" ]]; then
-    echo "$return"
-    return
-  fi
-
-  # file -b not supported by all versions of 'file'
-  mime="$(file -i "$1" | cut -d : -f 2-)"
-  if [[ "$mime" = \ text/* ]]; then
-    return="text"
-  elif [[ "$mime" = \ image/* ]]; then
-    return="image"
-  elif [[ "$mime" = \ audio/* ]]; then
-    return="audio"
-  elif [[ "$mime" = \ video/* ]]; then
-    return="video"
-  fi
-
-  if [[ -n "$return" ]]; then
-    echo "$return"
-    return
-  fi
-
-  if [[ -n "$mime" ]]; then
-    return="$mime"
-  else
-    return=""
-  fi
-
+if [[ -n "$return" ]]; then
   echo "$return"
+  return
+fi
+
+mime="$(file -i "$1" | cut -d : -f 2-)"
+if [[ "$mime" = \ text/* ]]; then
+  return="text"
+elif [[ "$mime" = \ image/* ]]; then
+  return="image"
+elif [[ "$mime" = \ audio/* ]]; then
+  return="audio"
+elif [[ "$mime" = \ video/* ]]; then
+  return="video"
+fi
+
+if [[ -n "$return" ]]; then
+  echo "$return"
+  return
+fi
+
+if [[ -n "$mime" ]]; then
+  return="$mime"
+else
+  return=""
+fi
+
+echo "$return"
 }
 
 show () {
@@ -387,7 +384,7 @@ get_cmd () {
   rsave="$rest1"
   rest1="$rest2"
   if [[ "$file2" != "" ]]; then
-    if [[ "$1" = *\ tar* || "$1" = *\   tar* ]]; then
+    if [[ "$1" = *\ tar* || "$1" = *\ tar* ]]; then
       cmd=(istar "$2" "$file2")
     elif [[ "$1" = *Debian* ]]; then
       data="$(ar t "$2"|grep data.tar)"
@@ -400,10 +397,6 @@ get_cmd () {
         istemp "ar p" "$2" "$data" | $("${cmd2[@]}") > "$t"
       fi
       cmd=(istar "$t" "$file2")
-    elif [[ "$1" = *RPM* ]] && cmd_exist cpio && ( cmd_exist rpm2cpio || cmd_exist rpmunpack ); then
-      cmd=(isrpm "$2" "$file2")
-    elif [[ "$1" = *Jar\ archive* || "$1" = *Java\ archive* ]] && cmd_exist fastjar; then
-      cmd=(isjar "$2" "$file2")
     elif [[ "$1" = *Zip* || "$1" = *ZIP* || "$1" = *JAR* ]] && cmd_exist unzip; then
       cmd=(istemp "unzip -avp" "$2" "$file2")
     elif [[ "$1" = *RAR\ archive* ]]; then
@@ -418,8 +411,6 @@ get_cmd () {
       cmd=(istemp "7za e -so" "$2" "$file2")
     elif [[ "$1" = *7-zip\ archive* || "$1" = *7z\ archive* ]] && cmd_exist 7zr; then
       cmd=(istemp "7zr e -so" "$2" "$file2")
-    elif [[ "$1" = *[Cc]abinet* ]] && cmd_exist cabextract; then
-      cmd=(iscab "$2" "$file2")
     elif [[ "$1" = *\ ar\ archive* ]]; then
       cmd=(istemp "ar p" "$2" "$file2")
     elif [[ "$1" = *ISO\ 9660* ]] && cmd_exist isoinfo; then
@@ -431,15 +422,6 @@ get_cmd () {
   fi
 }
 
-iscab () {
-  typeset t
-  if [[ "$1" = - ]]; then
-    t=$(nexttmp)
-    cat > "$t"
-    set "$t" "$2"
-  fi
-  cabextract -pF "$2" "$1"
-}
 
 istar () {
   $tarcmd Oxf "$1" "$2" 2>/dev/null
@@ -512,26 +494,6 @@ isrpm () {
   fi
 }
 
-isjar () {
-  case "$2" in
-    /*) echo "lesspipe can't unjar files with absolute paths" >&2
-      exit 1
-      ;;
-    ../*) echo "lesspipe can't unjar files with ../ paths" >&2
-      exit 1
-      ;;
-  esac
-  typeset d
-  d=$(nexttmp -d)
-  [[ -d "$d" ]] || exit 1
-  cat "$1" | (
-    cd "$d" || return
-    fastjar -x "$2"
-    if [[ -f "$2" ]]; then
-      cat "$2"
-    fi
-  )
-}
 
 #parsexml () { nodash "elinks -dump -default-mime-type text/xml" "$1"; }
 parsehtml () {
@@ -545,11 +507,6 @@ parsehtml () {
     lynx -dump -force_html "$1" && return
   elif cmd_exist w3m; then
     nodash "w3m -dump -T text/html" "$1"
-  elif cmd_exist elinks; then
-    nodash "elinks -dump -force-html" "$1"
-  elif cmd_exist links; then
-    if [[ "$1" = - ]]; then set - -stdin; fi
-    links -dump -force_html "$1"
   fi
 }
 
@@ -586,31 +543,6 @@ isfinal() {
     cat "$2"
     return
   elif [[ $3 = $sep* ]]; then
-    if [[ $3 = "$sep" ]]; then
-      msg "append :. or :<filetype> to activate syntax highlighting"
-    else
-      lang=${3#$sep}
-      lang="-l${lang#.}"
-      lang=${lang%%-l }
-      if cmd_exist bat; then
-        if [[ "$lang" = "-l" ]]; then
-          bat $COLOR "$2"
-        else
-          bat $COLOR "$lang" "$2"
-        fi
-        [[ $? = 0 ]] && return
-      elif cmd_exist batcat; then
-        if [[ "$lang" = "-l" ]]; then
-          batcat $COLOR "$2"
-        else
-          batcat $COLOR "$lang" "$2"
-        fi
-        [[ $? = 0 ]] && return
-      elif cmd_exist code2color; then
-        code2color $PPID ${in_file:+"$in_file"} "$lang" "$2"
-        [[ $? = 0 ]] && return
-      fi
-    fi
     cat "$2"
     return
   fi
@@ -633,30 +565,12 @@ isfinal() {
     else
       "${cmd[@]}"
     fi
-  elif [[ "$1" = *\ tar* || "$1" = *\   tar* ]]; then
+  elif [[ "$1" = *\ tar* || "$1" = *\ tar* ]]; then
     msg "use tar_file${sep}contained_file to view a file in the archive"
     if [[ -n $COLOR ]] && cmd_exist tarcolor; then
       $tarcmd tvf "$2" | tarcolor
     else
       $tarcmd tvf "$2"
-    fi
-  elif [[ "$1" = *RPM* ]]; then
-    header="use RPM_file${sep}contained_file to view a file in the RPM"
-    if cmd_exist rpm; then
-      echo "$header"
-      istemp "rpm -qivp" "$2"
-      header="";
-    fi
-    if cmd_exist cpio && cmd_exist rpm2cpio; then
-      echo $header
-      echo "================================= Content ======================================"
-      istemp rpm2cpio "$2" 2>/dev/null|cpio -i -tv 2>/dev/null
-    elif cmd_exist cpio && cmd_exist rpmunpack; then
-      echo $header
-      echo "================================= Content ======================================"
-      cat "$2" | rpmunpack | gzip -cd | cpio -i -tv 2>/dev/null
-    else
-      msg "please install rpm2cpio or rpmunpack to see the contents of RPM files"
     fi
   elif [[ "$1" = *roff* ]] && cmd_exist groff; then
     DEV=utf8
@@ -689,14 +603,14 @@ isfinal() {
     istemp "ar p" "$2" "$data" | $("${cmd2[@]}") | $tarcmd tvf -
   # do not display all perl text containing pod using perldoc
   #elif [[ "$1" = *Perl\ POD\ document\ text* || "$1" = *Perl5\ module\ source\ text* ]]; then
-  elif [[ "$1" = *Perl\ POD\ document\ text$NOL_A_P* ]] && cmd_exist perldoc; then
+  elif [[ "$1" = *Perl\ POD\ document\ text* ]] && cmd_exist perldoc; then
     msg "append $sep to filename to view the perl source"
     istemp perldoc "$2"
   elif [[ "$1" = *\ script* ]]; then
     set "plain text" "$2"
   elif [[ "$1" = *text\ executable* ]]; then
     set "plain text" "$2"
-  elif [[ "$1" = *PostScript$NOL_A_P* ]]; then
+  elif [[ "$1" = *PostScript* ]]; then
     if cmd_exist ps2ascii; then
       msg "append $sep to filename to view the postscript file"
       nodash ps2ascii "$2"
@@ -710,9 +624,6 @@ isfinal() {
   elif [[ "$1" = *shared* ]] && cmd_exist nm; then
     msg "This is a dynamic library, showing the output of nm"
     istemp nm "$2"
-  elif [[ "$1" = *Jar\ archive* ]] && cmd_exist fastjar; then
-    msg "use jar_file${sep}contained_file to view a file in the archive"
-    nodash "fastjar -tf" "$2"
   elif [[ "$1" = *Zip* || "$1" = *ZIP* || "$1" = *JAR* ]] && cmd_exist unzip; then
     msg "use zip_file${sep}contained_file to view a file in the archive"
     istemp "unzip -lv" "$2"
@@ -765,13 +676,10 @@ isfinal() {
       msg "use 7za_file${sep}contained_file to view a file in the archive"
       echo "$res"
     fi
-  elif [[ "$1" = *[Cc]abinet* ]] && cmd_exist cabextract; then
-    msg "use cab_file${sep}contained_file to view a file in the cabinet"
-    istemp "cabextract -l" "$2"
   elif [[ "$1" = *\ DVI* ]] && cmd_exist dvi2tty; then
     msg "append $sep to filename to view the raw DVI file"
     isdvi "$2"
-  elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *HTML* ]]; then
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
   elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
@@ -789,13 +697,6 @@ isfinal() {
   elif [[ "$1" = *PDF* ]] && cmd_exist pdfinfo; then
       msg "append $sep to filename to view the PDF source"
       istemp pdfinfo "$2"
-  elif [[ "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist h5dump; then
-    istemp h5dump "$2"
-  elif [[ "$1" = *NetCDF* || "$1" = *Hierarchical\ Data\ Format* ]] && cmd_exist ncdump; then
-    istemp ncdump "$2"
-  elif [[ "$1" = *Matlab\ v[0-9.]*\ mat-file* ]] && cmd_exist matdump; then
-    msg "append $sep to filename to view the raw data"
-    matdump -d "$2"
   elif [[ "$1" = *DjVu* ]] && cmd_exist djvutxt; then
     msg "append $sep to filename to view the DjVu source"
     djvutxt "$2"
@@ -853,7 +754,7 @@ isfinal() {
       msg "install antiword or catdoc to view human readable text"
       cat "$2"
     fi
-  elif [[ "$1" = *Rich\ Text\ Format$NOL_A_P* ]]  && cmd_exist unrtf; then
+  elif [[ "$1" = *Rich\ Text\ Format* ]]  && cmd_exist unrtf; then
     if [[ "$PARSEHTML" = yes ]]; then
       msg "append $sep to filename to view the RTF source"
       istemp "unrtf --html" "$2" | parsehtml -
@@ -861,12 +762,6 @@ isfinal() {
       msg "append $sep to filename to view the RTF source"
       istemp "unrtf --text" "$2" | sed -e "s/^### .*//" | fmt -s
     fi
-  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv.pl; then
-    msg "append $sep to filename to view the spreadsheet source"
-    git-xlsx-textconv.pl "$2"
-  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv; then
-    msg "append $sep to filename to view the spreadsheet source"
-    git-xlsx-textconv "$2"
   elif [[ "$1" = *PowerPoint\ 2007* ]] && cmd_exist pptx2md; then
     msg "append $sep to filename to view the PowerPoint source"
     name_ext="$(basename "$2")"
@@ -874,7 +769,7 @@ isfinal() {
     output_file="$TMPDIR"/"$name".md
     pptx2md --disable_image --disable_wmf "$2" -o "$output_file" >/dev/null
     cat "$output_file"
-  elif [[ "$1" = *Rich\ Text\ Format$NOL_A_P* ||
+  elif [[ "$1" = *Rich\ Text\ Format* ||
     "$1" = *Microsoft\ Word\ Document* ||
     "$1" = *Microsoft\ Word\ 2007* ||
     "$1" = *OpenDocument\ Text*  ]]; then
@@ -899,17 +794,8 @@ isfinal() {
       msg "install LibreOffice to view human readable text"
       cat "$2"
     fi
-  elif [[ "$PARSEHTML" = yes && "$1" = *Microsoft\ Excel\ Document* ]] && cmd_exist xlhtml; then
-    msg "append $sep to filename to view the spreadsheet source"
-    xlhtml -te "$2" | parsehtml -
-  elif [[ "$PARSEHTML" = yes && "$1" = *Microsoft\ PowerPoint\ Document* ]] && cmd_exist ppthtml; then
-    msg "append $sep to filename to view the PowerPoint source"
-    ppthtml "$2" | parsehtml -
-  elif [[ "$PARSEHTML" = yes && "$1" = *OpenDocument* ]] && cmd_exist unzip; then
-    if cmd_exist o3tohtml; then
-      msg "append $sep to filename to view the OpenOffice or OpenDocument source"
-      istemp "unzip -avp" "$2" content.xml | o3tohtml | parsehtml -
-    elif cmd_exist sxw2txt; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *OpenOffice\ Document* ]] && cmd_exist unzip; then
+    if cmd_exist sxw2txt; then
       msg "append $sep to filename to view the OpenOffice or OpenDocument source"
       istemp sxw2txt "$2"
     else
@@ -926,14 +812,14 @@ isfinal() {
   elif [[ "$1" = *bill\ of\ materials* ]] && cmd_exist lsbom; then
     msg "append $sep to filename to view the raw data"
     lsbom -p MUGsf "$2"
-  elif [[ "$1" = *perl.?[sS]torable$NOL_A_P* ]]; then
+  elif [[ "$1" = *perl.?[sS]torable* ]]; then
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8$NOL_A_P* && "$lang" != *utf-8* ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-8* && "$lang" != *utf-8* ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-8 "$2"
-  elif [[ "$1" = *UTF-16$NOL_A_P* && "$lang" != *utf-16* ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *UTF-16* && "$lang" != *utf-16* ]] && cmd_exist iconv -c; then
     iconv -c -f UTF-16 "$2"
-  elif [[ "$1" = *ISO-8859$NOL_A_P* && "$lang" != *iso-8859-1* ]] && cmd_exist iconv -c; then
+  elif [[ "$1" = *ISO-8859* && "$lang" != *iso-8859-1* ]] && cmd_exist iconv -c; then
     iconv -c -f ISO-8859-1 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
@@ -941,6 +827,9 @@ isfinal() {
   elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plistutil; then
     msg "append $sep to filename to view the raw data"
     plistutil -convert xml1 -o - "$2"
+  elif [[ "$1" = *data* ]]; then
+    msg "append $sep to filename to view the raw data"
+    nodash strings "$2"
   elif [[ "$2" = *.crt || "$2" = *.pem ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl x509 -hash -text -noout -in "$2"
@@ -970,51 +859,48 @@ isfinal() {
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
-  elif [[ "$1" = *data$NOL_A_P* ]]; then
-    msg "append $sep to filename to view the raw data"
-    nodash strings "$2"
   fi
 
   if [[ "$1" = *text* ]]; then
     if [[ "$2" != '-' ]]; then
       if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
         cmd_exist mdcat; then
-        mdcat "$2"
-      elif [[ "$2" = *.log ]] &&
-        cmd_exist ccze; then
-        cat "$2" | ccze -A
-      else
-        if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
-          cat "$2"
-        elif cmd_exist bat; then
-          bat $COLOR "$2"
-        elif cmd_exist batcat; then
-          batcat $COLOR "$2"
-        # ifdef perl
-        elif cmd_exist code2color; then
-          code2color $PPID ${in_file:+"$in_file"} "$2"
-        #endif
-        else
-          cat "$2"
-        fi
-      fi
+      mdcat "$2"
+    elif [[ "$2" = *.log ]] &&
+      cmd_exist ccze; then
+    cat "$2" | ccze -A
+  else
+    if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+      cat "$2"
+    elif cmd_exist bat; then
+      bat $COLOR "$2"
+    elif cmd_exist batcat; then
+      batcat $COLOR "$2"
+      # ifdef perl
+    elif cmd_exist code2color; then
+      code2color $PPID ${in_file:+"$in_file"} "$2"
+      #endif
     else
-      # if [[ "$2" = - ]]; then
-        if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
-          cat
-        elif cmd_exist bat; then
-          bat $COLOR
-        elif cmd_exist batcat; then
-          batcat $COLOR
-        # ifdef perl
-        elif cmd_exist code2color; then
-          code2color $PPID ${in_file:+"$in_file"} "$2"
-        #endif
-        else
-          cat
-        fi
-        [[ $? = 0 ]] && return
-      fi
+      cat "$2"
+    fi
+  fi
+else
+  # if [[ "$2" = - ]]; then
+  if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+    cat
+  elif cmd_exist bat; then
+    bat $COLOR
+  elif cmd_exist batcat; then
+    batcat $COLOR
+    # ifdef perl
+  elif cmd_exist code2color; then
+    code2color $PPID ${in_file:+"$in_file"} "$2"
+    #endif
+  else
+    cat
+  fi
+  [[ $? = 0 ]] && return
+fi
   fi
 
 }
@@ -1027,15 +913,9 @@ if [[ "$a" = "" ]]; then
   fi
   if [[ "$SHELL" = *csh ]]; then
     echo "setenv LESSOPEN \"|$pat$0 %s\""
-    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-      echo "setenv LESS_ADVANCED_PREPROCESSOR 1"
-    fi
   else
     echo "LESSOPEN=\"|$pat$0 %s\""
     echo "export LESSOPEN"
-    if [[ "$LESS_ADVANCED_PREPROCESSOR" = '' ]]; then
-      echo "LESS_ADVANCED_PREPROCESSOR=1; export LESS_ADVANCED_PREPROCESSOR"
-    fi
   fi
 else
   # check for pipes so that "less -f ... <(cmd) ..." works properly
