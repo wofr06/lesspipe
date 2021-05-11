@@ -174,9 +174,6 @@ filetype () {
   if [[ -n "$return" ]]; then
     echo "$return"
     return
-  elif [[ -n "$type" ]]; then
-    echo "$type"
-    return
   fi
 
   # file -b not supported by all versions of 'file'
@@ -939,9 +936,6 @@ isfinal() {
   elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
     msg "append $sep to filename to view the raw data"
     plutil -convert xml1 -o - "$2"
-  elif [[ "$1" = *data$NOL_A_P* ]]; then
-    msg "append $sep to filename to view the raw data"
-    nodash strings "$2"
   elif [[ "$2" = *.crt || "$2" = *.pem ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl x509 -hash -text -noout -in "$2"
@@ -971,53 +965,53 @@ isfinal() {
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
+  elif [[ "$1" = *data$NOL_A_P* ]]; then
+    msg "append $sep to filename to view the raw data"
+    nodash strings "$2"
   fi
-  if [[ "$1" = *text* && "$2" != '-' ]]; then
-    if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
-      cmd_exist mdcat; then
-      mdcat "$2"
-    elif [[ "$2" = *.log ]] &&
-      cmd_exist ccze; then
-      cat "$2" | ccze -A
-    else
-      if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
-        cat "$2"
-      elif cmd_exist bat; then
-        bat $COLOR "$2"
-      elif cmd_exist batcat; then
-        batcat $COLOR "$2"
-      # ifdef perl
-      elif cmd_exist code2color; then
-        code2color $PPID ${in_file:+"$in_file"} "$2"
-      #endif
+
+  if [[ "$1" = *text* ]]; then
+    if [[ "$2" != '-' ]]; then
+      if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
+        cmd_exist mdcat; then
+        mdcat "$2"
+      elif [[ "$2" = *.log ]] &&
+        cmd_exist ccze; then
+        cat "$2" | ccze -A
       else
-        cat "$2"
-      fi
-    fi
-  else
-    if [[ "$2" = - ]]; then
-      if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
-        cat
-      elif cmd_exist bat; then
-        bat $COLOR
-      elif cmd_exist batcat; then
-        batcat $COLOR
-      else
-        cat
+        if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+          cat "$2"
+        elif cmd_exist bat; then
+          bat $COLOR "$2"
+        elif cmd_exist batcat; then
+          batcat $COLOR "$2"
+        # ifdef perl
+        elif cmd_exist code2color; then
+          code2color $PPID ${in_file:+"$in_file"} "$2"
+        #endif
+        else
+          cat "$2"
+        fi
       fi
     else
-      if cmd_exist bat; then
-        bat $COLOR "$2"
-      elif cmd_exist batcat; then
-        batcat $COLOR "$2"
-      # ifdef perl
-      elif cmd_exist code2color; then
-        code2color $PPID ${in_file:+"$in_file"} "$2"
-      #endif
+      # if [[ "$2" = - ]]; then
+        if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+          cat
+        elif cmd_exist bat; then
+          bat $COLOR
+        elif cmd_exist batcat; then
+          batcat $COLOR
+        # ifdef perl
+        elif cmd_exist code2color; then
+          code2color $PPID ${in_file:+"$in_file"} "$2"
+        #endif
+        else
+          cat
+        fi
+        [[ $? = 0 ]] && return
       fi
-      [[ $? = 0 ]] && return
-    fi
   fi
+
 }
 
 IFS=$sep a="$@"
