@@ -1169,10 +1169,10 @@ isfinal() {
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
 #endif
-#ifdef plutil
-  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
+#ifdef plisutil
+  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plisutil; then
     msg "append $sep to filename to view the raw data"
-    plutil -convert xml1 -o - "$2"
+    plisutil -convert xml1 -o - "$2"
 #endif
   elif [[ "$1" = *data$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
