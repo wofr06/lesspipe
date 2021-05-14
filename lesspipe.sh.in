@@ -1231,42 +1231,39 @@ isfinal() {
         cat "$2"
       elif [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
         cmd_exist mdcat; then
-      mdcat "$2"
-    elif [[ "$2" = *.log ]] &&
-      cmd_exist ccze; then
-    cat "$2" | ccze -A
-  else
-    # ifdef perl
-    if cmd_exist code2color; then
-      code2color $PPID ${in_file:+"$in_file"} "$2"
+        mdcat "$2"
+      elif [[ "$2" = *.log ]] &&
+        cmd_exist ccze; then
+        cat "$2" | ccze -A
+      # ifdef perl
+      elif cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} "$2"
       #endif
-    elif cmd_exist bat; then
-      bat $COLOR "$2"
-    elif cmd_exist batcat; then
-      batcat $COLOR "$2"
+      elif cmd_exist bat; then
+        bat $COLOR "$2"
+      elif cmd_exist batcat; then
+        batcat $COLOR "$2"
+      else
+        cat "$2"
+      fi
     else
-      cat "$2"
-    fi
+      # if [[ "$2" = - ]]; then
+        if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+          cat
+        # ifdef perl
+        elif cmd_exist code2color; then
+          code2color $PPID ${in_file:+"$in_file"} "$2"
+        #endif
+        elif cmd_exist bat; then
+          bat $COLOR "$2"
+        elif cmd_exist batcat; then
+          batcat $COLOR "$2"
+        else
+          cat
+        fi
+        [[ $? = 0 ]] && return
+      fi
   fi
-else
-  # if [[ "$2" = - ]]; then
-  if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
-    cat
-    # ifdef perl
-  elif cmd_exist code2color; then
-    code2color $PPID ${in_file:+"$in_file"} "$2"
-    #endif
-  elif cmd_exist bat; then
-    bat $COLOR "$2"
-  elif cmd_exist batcat; then
-    batcat $COLOR "$2"
-  else
-    cat
-  fi
-  [[ $? = 0 ]] && return
-fi
-  fi
-
 }
 
 # calling show with arg1 arg2 ... is equivalent to calling with arg1:arg2:...

@@ -103,11 +103,13 @@ filetype () {
   if [[ "$1" = - ]]; then
     name="$filen"
   fi
+  # ifdef brotli
   if [[ ("$name" = *.br || "$name" = *.bro || "$name" = *.tbr) ]]; then
     # In current format, brotli can only be detected by extension
     echo " brotli compressed data"
     return
   fi
+  # endif
   if [[ "$1" = - ]]; then
     dd bs=40000 count=1 > "$tmpdir/file" 2>/dev/null
     set "$tmpdir/file" "$2"
@@ -120,86 +122,85 @@ filetype () {
   if [[ "$type" = " empty" ]]; then
     # exit if file returns "empty" (e.g., with "less archive:nonexisting_file")
     exit 1
-       # Open Office
+    # Open Office
   elif [[ "$type" = *OpenDocument\ Text* ]]; then
     return=" OpenDocument Text"
   elif [[ "$type" = *OpenDocument\ * || "$type" = *OpenOffice\.org\ 1\.x\ * ]]; then
-      return=" OpenDocument"
-       # Microsoft Office <  2007
+    return=" OpenDocument"
+    # Microsoft Office <  2007
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.do[st]) ]] ||
-       [[ "$type" = *Microsoft\ Office\ Word* ]]; then
-       return=" Microsoft Word Document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
-       [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
-       return=" Microsoft PowerPoint Document"
+    [[ "$type" = *Microsoft\ Office\ Word* ]]; then
+  return=" Microsoft Word Document"
+elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.pp[st]) ]] ||
+  [[ "$type" = *Microsoft\ Office\ PowerPoint* ]]; then
+return=" Microsoft PowerPoint Document"
   elif [[ "$type" = *Microsoft\ Office\ Document* && ("$name" = *.xl[mst]) ]] || 
-       [[ "$type" = *Microsoft\ Excel* ]]; then
-       return=" Microsoft Excel Document"
-  elif [[ "$type" = *Microsoft\ Office\ Document* || "$type" = *Composite\ Document\ File\ V2* ]]; then
-       return=" Microsoft Office Document"
-       # Microsoft Office >= 2007
-  elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.do[ct][xm] ]] ||
-       [[ "$type" = *Microsoft\ Word\ 2007* ]]; then
-       return=" Microsoft Word 2007+"
+    [[ "$type" = *Microsoft\ Excel* ]]; then
+  return=" Microsoft Excel Document"
+elif [[ "$type" = *Microsoft\ Office\ Document* || "$type" = *Composite\ Document\ File\ V2* ]]; then
+  return=" Microsoft Office Document"
+  # Microsoft Office >= 2007
+elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.do[ct][xm] ]] ||
+  [[ "$type" = *Microsoft\ Word\ 2007* ]]; then
+return=" Microsoft Word 2007+"
   elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.pp[st][xm] ]] ||
-       [[ "$type" = *Microsoft\ PowerPoint\ 2007* ]]; then
-       return=" Microsoft PowerPoint 2007+"
-  elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.xl[st][xmb] ]] ||
-       [[ "$type" = *Microsoft\ Excel\ 2007* ]]; then
-       return=" Microsoft Excel 2007+"
+    [[ "$type" = *Microsoft\ PowerPoint\ 2007* ]]; then
+  return=" Microsoft PowerPoint 2007+"
+elif [[ ("$type" = *Zip\ archive* || "$type" =  Microsoft\ OOXML) && "$name" = *.xl[st][xmb] ]] ||
+  [[ "$type" = *Microsoft\ Excel\ 2007* ]]; then
+return=" Microsoft Excel 2007+"
   elif [[ "$type" =  Microsoft\ OOXML ]] ||
-       [[ "$type" = *Microsoft\ *\ 2007* ]]; then
-       return=" Microsoft Office 2007"
-       # MP3
-  elif [[ "$type" = *MPEG\ *layer\ 3\ audio* || "$type" = *MPEG\ *layer\ III* || "$type" = *mp3\ file* || "$type" = *MP3* ]]; then
-    return="mp3"
-       # Compressed Archives
-  elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
-    return=" LZMA compressed data"
-  elif [[ ("$type" = *Zip* || "$type" = *ZIP* || "$type" = *JAR*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
-    return=" Zip compressed Jar archive"
-  elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
-       return=" NetCDF Data Format data"
-       # Sometimes a BSD makefile is identified as "troff or preprocessor input
-       # text" probably due to its ".if" style directives.
-  elif [[ "$type" = *roff\ *,* && ("$name" = */[Mm]akefile || "$name" = */[Mm]akefile.* || "$name" = */BSDmakefile || "$name" = *.mk) ]]; then
-       return=" BSD makefile script,${type#*,}}"
-       # Correct HTML Detection
-  elif [[ ("$type" = *HTML* || "$type" = *ASCII*) && "$name" = *xml ]]; then
-    return=" XML document text"
-  elif [[ "$type" = *XML* && "$name" = *html ]]; then
-    return=" HTML document text"
-  fi
+    [[ "$type" = *Microsoft\ *\ 2007* ]]; then
+  return=" Microsoft Office 2007"
+  # MP3
+elif [[ "$type" = *MPEG\ *layer\ 3\ audio* || "$type" = *MPEG\ *layer\ III* || "$type" = *mp3\ file* || "$type" = *MP3* ]]; then
+  return="mp3"
+  # Compressed Archives
+elif [[ "$type" != *lzip\ compressed* && ("$name" = *.lzma || "$name" = *.tlz) ]]; then
+  return=" LZMA compressed data"
+elif [[ ("$type" = *Zip* || "$type" = *ZIP* || "$type" = *JAR*) && ("$name" = *.jar || "$name" = *.xpi) ]]; then
+  return=" Zip compressed Jar archive"
+elif [[ "$type" = *Hierarchical\ Data\ Format* && ("$name" = *.nc4) ]]; then
+  return=" NetCDF Data Format data"
+  # Sometimes a BSD makefile is identified as "troff or preprocessor input
+  # text" probably due to its ".if" style directives.
+elif [[ "$type" = *roff\ *,* && ("$name" = */[Mm]akefile || "$name" = */[Mm]akefile.* || "$name" = */BSDmakefile || "$name" = *.mk) ]]; then
+  return=" BSD makefile script,${type#*,}}"
+  # Correct HTML Detection
+elif [[ ("$type" = *HTML* || "$type" = *ASCII*) && "$name" = *xml ]]; then
+  return=" XML document text"
+elif [[ "$type" = *XML* && "$name" = *html ]]; then
+  return=" HTML document text"
+fi
 
-  if [[ -n "$return" ]]; then
-    echo "$return"
-    return
-  fi
-
-  # file -b not supported by all versions of 'file'
-  mime="$(file -i "$1" | cut -d : -f 2-)"
-  if [[ "$mime" = \ text/* ]]; then
-    return="text"
-  elif [[ "$mime" = \ image/* ]]; then
-    return="image"
-  elif [[ "$mime" = \ audio/* ]]; then
-    return="audio"
-  elif [[ "$mime" = \ video/* ]]; then
-    return="video"
-  fi
-
-  if [[ -n "$return" ]]; then
-    echo "$return"
-    return
-  fi
-
-  if [[ -n "$mime" ]]; then
-    return="$mime"
-  else
-    return=""
-  fi
-
+if [[ -n "$return" ]]; then
   echo "$return"
+  return
+fi
+
+mime="$(file -i "$1" | cut -d : -f 2-)"
+if [[ "$mime" = \ text/* ]]; then
+  return="text"
+elif [[ "$mime" = \ image/* ]]; then
+  return="image"
+elif [[ "$mime" = \ audio/* ]]; then
+  return="audio"
+elif [[ "$mime" = \ video/* ]]; then
+  return="video"
+fi
+
+if [[ -n "$return" ]]; then
+  echo "$return"
+  return
+fi
+
+if [[ -n "$mime" ]]; then
+  return="$mime"
+else
+  return=""
+fi
+
+echo "$return"
 }
 
 show () {
@@ -936,6 +937,9 @@ isfinal() {
   elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
     msg "append $sep to filename to view the raw data"
     plutil -convert xml1 -o - "$2"
+  elif [[ "$1" = *data$NOL_A_P* ]]; then
+    msg "append $sep to filename to view the raw data"
+    nodash strings "$2"
   elif [[ "$2" = *.crt || "$2" = *.pem ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl x509 -hash -text -noout -in "$2"
@@ -965,9 +969,6 @@ isfinal() {
   elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
-  elif [[ "$1" = *data$NOL_A_P* ]]; then
-    msg "append $sep to filename to view the raw data"
-    nodash strings "$2"
   fi
 
   if [[ "$1" = *text* ]]; then
@@ -980,18 +981,16 @@ isfinal() {
       elif [[ "$2" = *.log ]] &&
         cmd_exist ccze; then
         cat "$2" | ccze -A
+      # ifdef perl
+      elif cmd_exist code2color; then
+        code2color $PPID ${in_file:+"$in_file"} "$2"
+      #endif
+      elif cmd_exist bat; then
+        bat $COLOR "$2"
+      elif cmd_exist batcat; then
+        batcat $COLOR "$2"
       else
-        # ifdef perl
-        if cmd_exist code2color; then
-          code2color $PPID ${in_file:+"$in_file"} "$2"
-        #endif
-        elif cmd_exist bat; then
-          bat $COLOR "$2"
-        elif cmd_exist batcat; then
-          batcat $COLOR "$2"
-        else
-          cat "$2"
-        fi
+        cat "$2"
       fi
     else
       # if [[ "$2" = - ]]; then
@@ -1011,7 +1010,6 @@ isfinal() {
         [[ $? = 0 ]] && return
       fi
   fi
-
 }
 
 IFS=$sep a="$@"
