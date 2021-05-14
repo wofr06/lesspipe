@@ -863,8 +863,12 @@ isfinal() {
 
   if [[ "$1" = *text* ]]; then
     if [[ "$2" != '-' ]]; then
-      if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
+      if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+        cat "$2"
+      elif [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
         cmd_exist mdcat; then
+        mdcat "$2"
+      elif [[ "$2" = *.log ]] &&
       mdcat "$2"
     elif [[ "$2" = *.log ]] &&
       cmd_exist ccze; then
@@ -881,26 +885,22 @@ isfinal() {
       code2color $PPID ${in_file:+"$in_file"} "$2"
       #endif
     else
-      cat "$2"
-    fi
-  fi
-else
-  # if [[ "$2" = - ]]; then
-  if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
-    cat
-  elif cmd_exist bat; then
-    bat $COLOR
-  elif cmd_exist batcat; then
-    batcat $COLOR
-    # ifdef perl
-  elif cmd_exist code2color; then
-    code2color $PPID ${in_file:+"$in_file"} "$2"
-    #endif
-  else
-    cat
-  fi
-  [[ $? = 0 ]] && return
-fi
+      # if [[ "$2" = - ]]; then
+        if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
+          cat
+        # ifdef perl
+        elif cmd_exist code2color; then
+          code2color $PPID ${in_file:+"$in_file"} "$2"
+        #endif
+        elif cmd_exist bat; then
+          bat $COLOR "$2"
+        elif cmd_exist batcat; then
+          batcat $COLOR "$2"
+        else
+          cat
+        fi
+        [[ $? = 0 ]] && return
+      fi
   fi
 
 }
