@@ -535,7 +535,7 @@ parsehtml () {
     msg "No suitable tool for HTML parsing found, install one of html2text, elinks, links, lynx or w3m"
     return
   elif cmd_exist html2text; then
-    if [[ "$1" = - ]]; then html2text; else html2text "$1"; fi
+    if [[ "$1" = - ]]; then html2text -utf8; else html2text -utf8 "$1"; fi
   elif cmd_exist lynx; then
     if [[ "$1" = - ]]; then set - -stdin; fi
     lynx -dump -force_html "$1" && return
