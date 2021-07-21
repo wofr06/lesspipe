@@ -939,23 +939,23 @@ isfinal() {
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
 #ifdef pdftotext
-  elif [[ "$1" = *PDF* ]] && cmd_exist pdftotext; then
+  elif [[ "$1" = *pdf* ]] && cmd_exist pdftotext; then
     if [[ "$PARSEHTML" = yes ]]; then
       msg "append $sep to filename to view the PDF source"
-      istemp "pdftotext -htmlmeta" "$2" - | parsehtml -
+      istemp "pdftotext -htmlmeta -nopgbrk -q --" "$2" - | parsehtml -
     else
       msg "append $sep to filename to view the PDF source"
-      istemp pdftotext "$2" -
+      istemp pdftotext -nopgbrk -q -- "$2" -
     fi
 #endif
 #ifdef pdftohtml
-  elif [[ "$PARSEHTML" = yes && "$1" = *PDF* ]] && cmd_exist pdftohtml; then
+  elif [[ "$PARSEHTML" = yes && "$1" = *pdf* ]] && cmd_exist pdftohtml; then
     msg "append $sep to filename to view the PDF source"
     t=$(nexttmp)
-    cat "$2" > "$t"; pdftohtml -stdout "$t" | parsehtml -
+    cat "$2" > "$t"; pdftohtml -i -noframes -nodrm -enc UTF-8 -stdout "$t" | parsehtml -
 #endif
 #ifdef pdfinfo
-  elif [[ "$1" = *PDF* ]] && cmd_exist pdfinfo; then
+  elif [[ "$1" = *pdf* ]] && cmd_exist pdfinfo; then
       msg "append $sep to filename to view the PDF source"
       istemp pdfinfo "$2"
 #ifdef h5dump
