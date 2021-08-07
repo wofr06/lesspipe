@@ -2,7 +2,14 @@
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
 Version in git
-- many changes since version 1.83, will be documented later
+- fix broken media file display (#54)
+- fix broken archive display (#57)
+- fix version number in files (#50)
+Version 1.86 Jul 21 2021
+- force html2text to use UTF8 instead of ASCII
+- fix pdf file type display
+Version 1.85 Aug 25 2020
+- addition of many new file formats and bug fixes
 Version 1.83 Jul 28 2015
 - shortcut for unreadable files, prefer pdftotext over pdftohtml (Peter Wu)
 - add bsdtar as a command to unpack rar files (coadde)
