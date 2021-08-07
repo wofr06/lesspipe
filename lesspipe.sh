@@ -176,6 +176,9 @@ fi
 if [[ -n "$return" ]]; then
   echo "$return"
   return
+elif [[ -n "$type" ]]; then
+  echo "$type"
+  return
 fi
 
 mime="$(file -i "$1" | cut -d : -f 2-)"
