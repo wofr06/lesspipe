@@ -940,9 +940,6 @@ isfinal() {
   elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
     msg "append $sep to filename to view the raw data"
     plutil -convert xml1 -o - "$2"
-  elif [[ "$1" = *data$NOL_A_P* ]]; then
-    msg "append $sep to filename to view the raw data"
-    nodash strings "$2"
   elif [[ "$2" = *.crt || "$2" = *.pem ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl x509 -hash -text -noout -in "$2"
@@ -952,26 +949,21 @@ isfinal() {
   elif [[ "$2" = *.crl ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl crl -hash -text -noout -in "$2"
-  elif [[ "$1" = "image" ]] && cmd_exist identify; then
-    msg "append $sep to filename to view the raw data"
-    identify -verbose "$2"
-  elif [[ "$1" = "mp3" ]]; then
-    if cmd_exist id3v2; then
+  elif [[ "$1" = *mp3* ]] && cmd_exist id3v2; then
       msg "append $sep to filename to view the raw data"
       istemp "id3v2 --list" "$2"
-    elif cmd_exist mp3info2; then
-      msg "append $sep to filename to view the raw data"
-      mp3info2 "$2"
-    elif cmd_exist mp3info; then
-      msg "append $sep to filename to view the raw data"
-      mp3info "$2"
-    fi
-  elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist mediainfo; then
+  elif [[ "$1" = *image* || "$1" = *mp3* || "$1" = *audio* || "$1" = *video* ]] && cmd_exist mediainfo; then
     msg "append $sep to filename to view the raw data"
     mediainfo --Full "$2"
-  elif [[ "$1" = "image" || "$1" = "mp3" || "$1" = "audio" || "$1" = "video" ]] && cmd_exist exiftool; then
+  elif [[ "$1" = *image* || "$1" = *mp3* || "$1" = *audio* || "$1" = *video* ]] && cmd_exist exiftool; then
     msg "append $sep to filename to view the raw data"
     exiftool "$2"
+  elif [[ "$1" = *image* ]] && cmd_exist identify; then
+    msg "append $sep to filename to view the raw data"
+    identify -verbose "$2"
+  elif [[ "$1" = *data$NOL_A_P* ]]; then
+    msg "append $sep to filename to view the raw data"
+    nodash strings "$2"
   fi
 
   if [[ "$1" = *text* ]]; then
