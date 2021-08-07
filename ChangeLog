@@ -1,7 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-Version in git
+Version 1.87 Aug 7 2021
 - fix broken media file display (#54)
 - fix broken archive display (#57)
 - fix version number in files (#50)
