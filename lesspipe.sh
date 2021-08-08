@@ -838,6 +838,14 @@ isfinal() {
       msg "install pandoc to view human readable text"
       cat "$2"
     fi
+elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
+    if cmd_exist pandoc; then
+      msg "append $sep to filename to view the raw Jupyter notebook"
+      pandoc --from=ipynb --to=plain "$2"
+    else
+      msg "install pandoc to view human readable text"
+      cat "$2"
+    fi
   elif [[ "$1" = *Microsoft\ Word\ Document* || "$1" = *Microsoft\ Office\ Document* ]] && cmd_exist wvText; then
     msg "append $sep to filename to view the raw word document"
     wvText "$2" /dev/stdout
