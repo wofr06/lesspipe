@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- make all tests in the test suite work
+- add support for mp4 files
 Version 1.87 Aug 7 2021
 - fix broken media file display (#54)
 - fix broken archive display (#57)

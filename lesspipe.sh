@@ -54,7 +54,7 @@ filecmd() {
 TMPDIR=${TMPDIR:-/tmp}
 sep=:						# file name separator
 altsep==					# alternate separator character
-if [[ -e "$1" && "$1" = *$sep* || "$1" = *$sep*$altsep* ]]; then
+if [[ -e "$1" && "$1" = *$sep* ]]; then
   sep=$altsep
   xxx="${1%=}"
   set "$xxx"
@@ -773,7 +773,7 @@ isfinal() {
   elif [[ "$PARSEHTML" = yes && "$1" = *HTML$NOL_A_P* ]]; then
     msg "append $sep to filename to view the HTML source"
     parsehtml "$2"
-  elif [[ "$1" = *pdf* ]] && cmd_exist pdftotext; then
+  elif [[ "$1" = *pdf* || "$1" = *PDF* ]] && cmd_exist pdftotext; then
     if [[ "$PARSEHTML" = yes ]]; then
       msg "append $sep to filename to view the PDF source"
       istemp "pdftotext -htmlmeta -nopgbrk -q --" "$2" - | parsehtml -
@@ -952,7 +952,7 @@ isfinal() {
   elif [[ "$1" = *mp3* ]] && cmd_exist id3v2; then
       msg "append $sep to filename to view the raw data"
       istemp "id3v2 --list" "$2"
-  elif [[ "$1" = *image* || "$1" = *mp3* || "$1" = *audio* || "$1" = *video* ]] && cmd_exist mediainfo; then
+  elif [[ "$1" = *image* || "$1" = *mp3* || "$1" = *MP4* || "$1" = *audio* || "$1" = *video* ]] && cmd_exist mediainfo; then
     msg "append $sep to filename to view the raw data"
     mediainfo --Full "$2"
   elif [[ "$1" = *image* || "$1" = *mp3* || "$1" = *audio* || "$1" = *video* ]] && cmd_exist exiftool; then

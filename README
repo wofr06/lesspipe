@@ -70,6 +70,7 @@ Contents
   but many use cases are covered by an installation of
 
   - LibreOffice and a common text browser (such as `lynx`),
+  - pandoc,
   - pdftotext, and
   - mediainfo (or exiftool).
 
