@@ -607,7 +607,10 @@ parsehtml () {
     return
 #ifdef html2text
   elif cmd_exist html2text; then
-    if [[ "$1" = - ]]; then html2text -from_encoding utf-8; else html2text -from_encoding utf-8 "$1"; fi
+    if [[ "$1" = - ]]; then html2text -utf8 2>/dev/null ||
+      html2text -from_encoding utf-8
+    else html2text -utf8 "$1" 2>/dev/null ||
+      html2text -from_encoding utf-8 "$1"; fi
 #ifdef lynx
   elif cmd_exist lynx; then
     if [[ "$1" = - ]]; then set - -stdin; fi
