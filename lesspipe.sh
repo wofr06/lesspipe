@@ -988,12 +988,12 @@ elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
       elif [[ "$2" = *.log ]] &&
         cmd_exist ccze; then
         cat "$2" | ccze -A
+      elif cmd_exist bat; then
+        bat $COLOR "$2"
       # ifdef perl
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$2"
       #endif
-      elif cmd_exist bat; then
-        bat $COLOR "$2"
       elif cmd_exist batcat; then
         batcat $COLOR "$2"
       else
@@ -1003,12 +1003,12 @@ elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
       # if [[ "$2" = - ]]; then
         if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
           cat
+        elif cmd_exist bat; then
+          bat $COLOR "$2"
         # ifdef perl
         elif cmd_exist code2color; then
           code2color $PPID ${in_file:+"$in_file"} "$2"
         #endif
-        elif cmd_exist bat; then
-          bat $COLOR "$2"
         elif cmd_exist batcat; then
           batcat $COLOR "$2"
         else
