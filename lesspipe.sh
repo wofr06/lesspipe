@@ -176,9 +176,10 @@ fi
 if [[ -n "$return" ]]; then
   echo "$return"
   return
-elif [[ -n "$type" ]]; then
-  echo "$type"
-  return
+# See https://github.com/wofr06/lesspipe/issues/55#issuecomment-905410262
+# elif [[ -n "$type" ]]; then
+#   echo "$type"
+#   return
 fi
 
 mime="$(file -i "$1" | cut -d : -f 2-)"
