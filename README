@@ -218,7 +218,7 @@ Contents
  MS Excel < 2007	requires xlhtml or libreoffice
  Microsoft Word (docx) >= 2007	requires pandoc or doc2txt.pl or libreoffice
  MS Powerpoint (pptx) >= 2007	requires pptx2md or libreoffice
- MS Excel (xlsx) >= 2007	requires git-xlsx-textconv or lgit-xlsx-textconv.pl or libreoffice
+ MS Excel (xlsx) >= 2007	requires xlscat from the Perl module Spreadsheet::Read or excel2csv or libreoffice
  epub requires pandoc
  Debian 	requires ar, gzip and tar, shows more info if dpkg is installed
  html		requires html2text or elinks or links or lynx or w3m

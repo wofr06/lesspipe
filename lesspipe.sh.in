@@ -1077,15 +1077,15 @@ elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
       istemp "unrtf --text" "$2" | sed -e "s/^### .*//" | fmt -s
     fi
 #endif
-#ifdef git-xlsx-textconv.pl
-  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv.pl; then
+#ifdef xlscat
+  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist xlscat; then
     msg "append $sep to filename to view the spreadsheet source"
-    git-xlsx-textconv.pl "$2"
-#endif 
-#ifdef git-xlsx-textconv
-  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv; then
+    xlscat "$2"
+#endif
+#ifdef excel2csv
+  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist excel2csv; then
     msg "append $sep to filename to view the spreadsheet source"
-    git-xlsx-textconv "$2"
+    excel2csv "$2" --trim
 #endif 
 #ifdef pptx2md
   elif [[ "$1" = *PowerPoint\ 2007* ]] && cmd_exist pptx2md; then

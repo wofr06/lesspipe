@@ -176,10 +176,6 @@ fi
 if [[ -n "$return" ]]; then
   echo "$return"
   return
-# See https://github.com/wofr06/lesspipe/issues/55#issuecomment-905410262
-# elif [[ -n "$type" ]]; then
-#   echo "$type"
-#   return
 fi
 
 mime="$(file -i "$1" | cut -d : -f 2-)"
@@ -872,12 +868,12 @@ elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
       msg "append $sep to filename to view the RTF source"
       istemp "unrtf --text" "$2" | sed -e "s/^### .*//" | fmt -s
     fi
-  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv.pl; then
+  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist xlscat; then
     msg "append $sep to filename to view the spreadsheet source"
-    git-xlsx-textconv.pl "$2"
-  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist git-xlsx-textconv; then
+    xlscat "$2"
+  elif [[ "$1" = *Excel\ 2007* ]] && cmd_exist excel2csv; then
     msg "append $sep to filename to view the spreadsheet source"
-    git-xlsx-textconv "$2"
+    excel2csv "$2" --trim
   elif [[ "$1" = *PowerPoint\ 2007* ]] && cmd_exist pptx2md; then
     msg "append $sep to filename to view the PowerPoint source"
     name_ext="$(basename "$2")"
