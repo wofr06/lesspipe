@@ -48,7 +48,7 @@ fi
 
 filecmd() {
   file -L -s "$@"
-  file -L -s -i "$@" 2> /dev/null | sed -n 's/.*charset=/;/p' | tr [:lower:] [:upper:]
+  file -L -s -i "$@" 2> /dev/null | sed -n 's/.*charset=/;/p' | tr '[:lower:]' '[:upper:]'
 }
 
 TMPDIR=${TMPDIR:-/tmp}
