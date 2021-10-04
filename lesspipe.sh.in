@@ -178,10 +178,6 @@ fi
 if [[ -n "$return" ]]; then
   echo "$return"
   return
-# See https://github.com/wofr06/lesspipe/issues/55#issuecomment-905410262
-# elif [[ -n "$type" ]]; then
-#   echo "$type"
-#   return
 fi
 
 # file -b not supported by all versions of 'file'
@@ -201,7 +197,9 @@ if [[ -n "$return" ]]; then
   return
 fi
 
-if [[ -n "$mime" ]]; then
+if [[ -n "$type" ]]; then
+  return="$type"
+elif [[ -n "$mime" ]]; then
   return="$mime"
 else
   return=""

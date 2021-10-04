@@ -194,7 +194,9 @@ if [[ -n "$return" ]]; then
   return
 fi
 
-if [[ -n "$mime" ]]; then
+if [[ -n "$type" ]]; then
+  return="$type"
+elif [[ -n "$mime" ]]; then
   return="$mime"
 else
   return=""
