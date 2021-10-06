@@ -48,7 +48,7 @@ fi
 
 filecmd() {
   file -L -s "$@"
-  file -L -s -i "$@" 2> /dev/null | sed -n 's/.*charset=/;/p' | tr [:lower:] [:upper:]
+  file -L -s --mime "$@" 2> /dev/null | sed -n 's/.*charset=/;/p' | tr [:lower:] [:upper:]
 }
 
 TMPDIR=${TMPDIR:-/tmp}
@@ -178,7 +178,7 @@ if [[ -n "$return" ]]; then
   return
 fi
 
-mime="$(file -i "$1" | cut -d : -f 2-)"
+mime="$(file --mime "$1" | cut -d : -f 2-)"
 if [[ "$mime" = \ text/* ]]; then
   return="text"
 elif [[ "$mime" = \ image/* ]]; then
