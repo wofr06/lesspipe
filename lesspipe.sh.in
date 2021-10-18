@@ -243,7 +243,23 @@ show () {
   rest2="${rest11#$file2}"
   rest11="$rest1"
 
-  if cmd_exist html2text || cmd_exist elinks || cmd_exist links || cmd_exist lynx || cmd_exist w3m; then
+  if false \
+#ifdef html2text
+  || cmd_exist html2text \
+#endif
+#ifdef elinks
+  || cmd_exist elinks \
+#endif
+#ifdef links
+  || cmd_exist links \
+#endif
+#ifdef lynx
+  || cmd_exist lynx \
+#endif
+#ifdef w3m
+  || cmd_exist w3m
+#endif
+  ;then
     PARSEHTML=yes
   else
     PARSEHTML=no
@@ -610,6 +626,7 @@ parsehtml () {
       html2text -from_encoding utf-8
     else html2text -utf8 "$1" 2>/dev/null ||
       html2text -from_encoding utf-8 "$1"; fi
+#endif
 #ifdef lynx
   elif cmd_exist lynx; then
     if [[ "$1" = - ]]; then set - -stdin; fi
