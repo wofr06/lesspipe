@@ -257,7 +257,7 @@ show () {
   || cmd_exist lynx \
 #endif
 #ifdef w3m
-  || cmd_exist w3m
+  || cmd_exist w3m \
 #endif
   ;then
     PARSEHTML=yes
