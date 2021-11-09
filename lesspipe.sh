@@ -33,6 +33,7 @@
 #setopt KSH_ARRAYS SH_WORD_SPLIT 2>/dev/null
 set +o noclobber
 tarcmd='tar'
+bat_theme='--theme GitHub'
 
 dir=${LESSOPEN#\|}
 dir=${dir%%lesspipe.sh*\%s}
@@ -71,22 +72,12 @@ nexttmp () {
 trap "rm -rf '$tmpdir'" 0
 trap - PIPE
 
-unset iconv
-iconv() {
-  if [[ -z "$iconv" ]]; then
-    arg=$(printf "%s$(command iconv --help 2>/dev/null | \
-      sed -n 's/.*\(--.*-subst=\)\(FORMATSTRING\).*/\1\\033[7m?\\033[m/p' | \
-      tr \\n ' ')")
-    if [[ -n "$arg" ]]; then
-      iconv="command iconv -c $arg  -t //TRANSLIT"
-    else
-      iconv="command iconv -c"
-    fi
-  fi
-  if $iconv "$@" > /dev/null 2>&1; then
+doconv() {
+  qm=\033[7m?\033[m # inverted question mark
+  rep=-c
+  echo ""|iconv --byte-subst $3 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
     msg "append $sep to filename to view the $2 encoded data"
-    $iconv "$@"
-  fi
+  iconv $rep  -t //TRANSLIT $3
 }
 
 msg () {
@@ -598,16 +589,16 @@ isfinal() {
       lang=${lang%%-l }
       if cmd_exist bat; then
         if [[ "$lang" = "-l" ]]; then
-          bat $COLOR "$2"
+          bat $bat_theme $COLOR "$2"
         else
-          bat $COLOR "$lang" "$2"
+          bat $bat_theme $COLOR "$lang" "$2"
         fi
         [[ $? = 0 ]] && return
       elif cmd_exist batcat; then
         if [[ "$lang" = "-l" ]]; then
-          batcat $COLOR "$2"
+          batcat $bat_theme $COLOR "$2"
         else
-          batcat $COLOR "$lang" "$2"
+          batcat $bat_theme $COLOR "$lang" "$2"
         fi
         [[ $? = 0 ]] && return
       elif cmd_exist code2color; then
@@ -941,12 +932,14 @@ elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
   elif [[ "$1" = *perl.?[sS]torable$NOL_A_P* ]]; then
     msg "append $sep to filename to view the raw data"
     perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2"
-  elif [[ "$1" = *UTF-8$NOL_A_P* && "$lang" != *utf-8* ]] && cmd_exist iconv -c; then
-    iconv -c -f UTF-8 "$2"
-  elif [[ "$1" = *UTF-16$NOL_A_P* && "$lang" != *utf-16* ]] && cmd_exist iconv -c; then
-    iconv -c -f UTF-16 "$2"
-  elif [[ "$1" = *ISO-8859$NOL_A_P* && "$lang" != *iso-8859-1* ]] && cmd_exist iconv -c; then
-    iconv -c -f ISO-8859-1 "$2"
+  elif [[ "$1" = *UTF-8$NOL_A_P* && "$lang" != *utf-8* ]] && cmd_exist iconv; then
+	doconv -f UTF-8 "$2"
+    return
+  elif [[ "$1" = *UTF-16$NOL_A_P* && "$lang" != *utf-16* ]] && cmd_exist iconv; then
+	doconv -f UTF-16 "$2"
+    return
+  elif [[ "$1" = *ISO-8859$NOL_A_P* && "$lang" != *iso-8859-1* ]] && cmd_exist iconv; then
+	doconv -f ISO-8859-1 "$2"
   elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
@@ -981,39 +974,33 @@ elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
 
   if [[ "$1" = *text* ]]; then
     if [[ "$2" != '-' ]]; then
-      if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
-        cat "$2"
-      elif [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
+      if [[ "$2" = *.md || "$2" = *.MD || "$2" = *.mkd || "$2" = *.markdown ]] &&
         cmd_exist mdcat; then
         mdcat "$2"
       elif [[ "$2" = *.log ]] &&
         cmd_exist ccze; then
         cat "$2" | ccze -A
       elif cmd_exist bat; then
-        bat $COLOR "$2"
+        bat $bat_theme $COLOR "$2"
       # ifdef perl
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$2"
       #endif
       elif cmd_exist batcat; then
-        batcat $COLOR "$2"
-      else
-        cat "$2"
+        batcat $bat_theme $COLOR "$2"
       fi
     else
       # if [[ "$2" = - ]]; then
         if [[ "$1" = *ASCII\ text* || "$1" = *Unicode\ text* ]]; then
           cat
         elif cmd_exist bat; then
-          bat $COLOR "$2"
+          bat $bat_theme $COLOR "$2"
         # ifdef perl
         elif cmd_exist code2color; then
           code2color $PPID ${in_file:+"$in_file"} "$2"
         #endif
         elif cmd_exist batcat; then
-          batcat $COLOR "$2"
-        else
-          cat
+          batcat $bat_theme $COLOR "$2"
         fi
         [[ $? = 0 ]] && return
       fi
