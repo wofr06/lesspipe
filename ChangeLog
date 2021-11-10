@@ -1,6 +1,10 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 1.91 Nov 10 2021
+- testsuite works, most files get colored properly
+Versions 1.88 - 1.90
+- attempts to make colorization work and pass tests in the testsuite
 - make all tests in the test suite work
 - add support for mp4 files
 Version 1.87 Aug 7 2021
