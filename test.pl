@@ -22,6 +22,7 @@ use vars qw(%ENV);
 
 my ($debug, $noaction, $fname, @numtest);
 $fname = 'lesspipe.sh';
+$fname = 'reco.sh';
 while ($ARGV[0]) {
 	if ($ARGV[0] =~ /^\-([dn]$)/) {
 		$debug = 1 if $1 =~ /d/;
@@ -55,6 +56,7 @@ while (<DATA>) {
   }
   my $res = `$cmd 2>&1`;
   my $ok = 0;
+  my $ignore = 0;
   my $lines = 0;
   # zsh|bash|ksh style|file not found
   if ($res =~ /command not found: (\S+)|(\S+):\s+command not found|(\S+):\s+not found|no such file or directory: .*?([^\/]+)\b$/m) {
@@ -62,22 +64,34 @@ while (<DATA>) {
     $ok = 1;
   } else {
 	$ok = comp($res, $comp);
-	$sumok++ if $ok;
-	my $needed;
-	$needed = $1 if $comment =~ s/[#,]? needs (.*)//;
-	my $ignore = is_not_exec($needed) if $needed and ! $ok;
-    $retcode++ if ! $ok and ! $ignore;
-    $sumnok++ if !$ok and ! $ignore;
-	$sumignore++ if $ignore;
+	my $needed = $1 if $comment =~ s/[#,]? needs (.*)//;
+	$needed =~ s/ or /|/g;
+	$needed =~ s/ and /,/g;
+	my @needed = split /\s*\|\s*/, $needed;
+	$ignore = 1 if @needed;
+	for my $andargs (@needed) {
+		my $good = 1;
+		for (split /\s*,\s*/, $andargs) {
+			$good = 0 if is_not_exec($_);
+		}
+		$ignore = 0 if $good;
+	}
+	if ($ignore) {
+		$sumignore++;
+	} elsif ($ok) {
+		$sumok++;
+	} else {
+		$sumnok++;
+	}
   }
   print "result:$res" if $ok and $debug;
-  printf "%2d %6s %s\n", $num, $ok? $ok : 'NOT ok', $comment;
+  printf "%2d %6s %s\n", $num, $ignore ? 'ignore' : $ok ? $ok: 'NOT ok', $comment;
   print "\t   failing command: $cmd\n" if ! $ok;
 }
 
 $duration = time() - $duration;
 print "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $duration seconds\n" if ! $noaction;
-exit $retcode;
+exit $sumnok;
 
 sub is_not_exec {
   my $arg = shift;
@@ -126,7 +140,7 @@ less testok/a\ b.tgz:testok/a\`data.gz	# check special chars # needs gzip
 = test
 less testok/a\ b.tgz:testok/a=ar.gz:a=b  # current ar archive # needs gzip
 = test
-less testok/a\ b.tgz:testok/a\'html.gz	# HTML document # needs gzip
+less testok/a\ b.tgz:testok/a\'html.gz	# HTML document # needs gzip,xhtml2text
 = test
 less testok/a\ b.tgz:testok/a\"doc.gz    # Composite Document File V2 (2005) # needs gzip
 = test
@@ -134,7 +148,7 @@ less testok/a\#rtf						# Rich Text Format, needs unrtf
 ~ TITLE: test$|^test
 less testok/a\ b.tgz:testok/a\&pdf.gz	# PDF document 1.3, needs gzip
 ~ test
-less testok/a\ b.tgz:testok/a\;dvi.gz	# TeX DVI file, needs gzip
+less testok/a\ b.tgz:testok/a\;dvi.gz	# TeX DVI file, needs gzip,dvi2tty
 ~ test
 less testok/a\ b.tgz:testok/a\(ps.gz		# PostScript 2.0, needs gzip
 ~ \s+test\s*
@@ -143,36 +157,36 @@ less testok/a\ b.tgz:testok/a\)nroff.gz	# troff or preprocessor, needs troff
 less -f testok/perlstorable.gz				# perl Storable (0.7), needs gzip
 ~ test
 less testok/iso.image					# ISO 9660 CD-ROM listing, needs isoinfo
-~ /ISO.TXT;1$|^.*\sISO.TXT;1\s*
+~ /ISO.TXT;1$|^.*---.*\sISO.TXT;1\s*
 less testok/iso.image:/ISO.TXT\;1		# ISO 9660 CD-ROM file content, needs isoinfo
 = test
 less testok/test.rpm:test.txt			# RPM v3, needs rpm2cpio
 = test
-less testok/cabinet.cab:a\ text.gz       # Cabinet archive data
+less testok/cabinet.cab:a\ text.gz       # Cabinet archive data, needs cabextract
 = test
-less testok/test.deb:./test.txt			# Debian binary package
+less testok/test.deb:./test.txt			# Debian binary package, needs ar,gzip
 = test
-less testok/test2.deb:./test.txt			# Debian, converted from rpm
+less testok/test2.deb:./test.txt			# Debian, converted from rpm, needs ar,gzip
 = test
 less testok/a\ b.tgz:testok/a\~b.odt		# OpenDocument Text
 = test
-less testok/a\|b.7za:testok/a\|b.txt		# 7-zip archivedata
+less testok/a\|b.7za:testok/a\|b.txt		# 7-zip archivedata, needs 7za or 7zr
 = test
-less -f testok/onefile.7za					# 7-zip single file
+less -f testok/onefile.7za					# 7-zip single file, needs 7za or 7zr
 = test
-less testok/a\ b.tgz:testok/onefile.7za	# 7-zip single file
+less testok/a\ b.tgz:testok/onefile.7za	# 7-zip single file, needs 7za or 7zr
 = test
-less testok/a\ b.tgz:testok/a\|b.7za:testok/a\|b.txt # recursive packing
+less testok/a\ b.tgz:testok/a\|b.7za:testok/a\|b.txt # recursive packing, needs 7za or 7zr
 = test
-less testok/test.rar:testok/a\ b			# RAR archive data v4
+less testok/test.rar:testok/a\ b			# RAR archive data v4 needs unrar|rar|bsdtar
 = test
-less testok/a\ b.br								# brotli compressed file
+less testok/a\ b.br								# brotli compressed file needs brotli
 = test
-less -f testok/test.utf16					# UTF-16 Unicode
+less -f testok/test.utf16					# UTF-16 Unicode needs iconv
 = test
-less -f testok/test.mp3						# Audio with ID3 2.4 MPEG layer III
+less -f testok/test.mp3						# Audio with ID3 2.4 MPEG layer III needs mediainfo|exiftool
 ~ Title\s+:\stest\s*.*
-less -f testok/id3v2.mp3                    # Audio with ID3 2.3 MPEG layer III
+less -f testok/id3v2.mp3                    # Audio with ID3 2.3 MPEG layer III needs mediainfo|exiftool
 ~ Title\s+:\stest$|^TIT2.*:\stest
 less -f testok/a\?b.gz						# check special chars
 = test
@@ -181,18 +195,18 @@ less -f testok/a\[b.gz						# check special chars
 less -f testok/a\]b.gz						# check special chars
 = test
 less testok/a\ test						# directory
-~ -rw-rw-r.*test
+~ -rw-.*test
 less testok/a:test						# directory with colon
-~ -rw-rw-r.*test
-less testok/test.zst						# Zstandard compressed data 0.8
+~ -rw-.*test
+less testok/test.zst						# Zstandard compressed data 0.8, needs zstd
 = test
 less testok/test.tzst				# tar file using zstd compression, needs zstd
 ~ .* testok/test
-less testok/test.zst.tzst:test.zst		# Zstandard compressed data 0.8
+less testok/test.zst.tzst:test.zst		# Zstandard compressed data 0.8, needs zstd
 = test
 less testok/test.tar.zst					# tar file of a zstd compressed file, needs zstd
 ~ .* testok/test
 less testok/test:a.tbz=testok/a::b::c::d	# Alternate separator char
 ~ test$|^.*test.*
-#less testok/test.class.gz					# Java class file, needs procyon
-#~ public class test
+less testok/test.class.gz					# Java class file, needs procyon
+~ public class test
