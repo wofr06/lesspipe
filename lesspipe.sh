@@ -982,10 +982,8 @@ elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
         cat "$2" | ccze -A
       elif cmd_exist bat; then
         bat $bat_theme $COLOR "$2"
-      # ifdef perl
       elif cmd_exist code2color; then
         code2color $PPID ${in_file:+"$in_file"} "$2"
-      #endif
       elif cmd_exist batcat; then
         batcat $bat_theme $COLOR "$2"
       fi

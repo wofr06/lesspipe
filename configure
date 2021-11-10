@@ -196,8 +196,6 @@ while (<IN>) {
     # make replacements in lines if neccessary ($in == 1)
     for my $p (keys %rep) {
       # add option -c for iconv if appropriate
-      $rep{$p} .= check_iconv($rep{$p})
-        if $p eq 'iconv' and $rep{$p} =~ /iconv$/;
       s/\b$p\b/$rep{$p}/ unless /^#/;
     }
     # and write out the line

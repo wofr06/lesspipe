@@ -139,7 +139,7 @@ less testok/a\ b.tgz:testok/a\`data.gz	# check special chars # needs gzip
 = test
 less testok/a\ b.tgz:testok/a=ar.gz:a=b  # current ar archive # needs gzip
 = test
-less testok/a\ b.tgz:testok/a\'html.gz	# HTML document # needs gzip,xhtml2text
+less testok/a\ b.tgz:testok/a\'html.gz	# HTML document # needs gzip,html2text
 = test
 less testok/a\ b.tgz:testok/a\"doc.gz    # Composite Document File V2 (2005) # needs gzip
 = test
