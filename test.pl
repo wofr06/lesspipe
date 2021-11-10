@@ -22,7 +22,6 @@ use vars qw(%ENV);
 
 my ($debug, $noaction, $fname, @numtest);
 $fname = 'lesspipe.sh';
-$fname = 'reco.sh';
 while ($ARGV[0]) {
 	if ($ARGV[0] =~ /^\-([dn]$)/) {
 		$debug = 1 if $1 =~ /d/;
