@@ -464,7 +464,7 @@ xlhtml		Y
 dpkg		Y	# for debian systems, fallback is tar+g(un)zip
 ### please change to Y on MacOSX
 lsbom		N	# we are not on MacOSX
-plutil		N	# we are not on MacOSX
+plistutil	N	# we are not on MacOSX
 bsd_cpio	N	# we are not on MacOSX
 tarcolor	Y	# to colorize tar listings
 

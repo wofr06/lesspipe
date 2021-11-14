@@ -795,9 +795,9 @@ isfinal() {
     msg "append $sep to filename to view the DjVu source"
     djvutxt "$2"
   elif [[ "$1" = *Microsoft\ Word\ 2007* ]]; then
-    if cmd_exist docx2txt.pl; then
+    if cmd_exist docx2txt; then
       msg "append $sep to filename to view the raw word document"
-      docx2txt.pl "$2" -
+      docx2txt "$2" -
     else
       msg "install docx2txt.pl to view human readable text"
       cat "$2"
@@ -943,9 +943,9 @@ elif [[ "$1" = *JSON\ data* && "$2" = *ipynb ]]; then
   elif [[ "$1" = *GPG\ encrypted\ data* || "$1" = *PGP\ *ncrypted* ]] && cmd_exist gpg; then
     msg "append $sep to filename to view the encrypted file"
     gpg -d "$2"
-  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plutil; then
+  elif [[ "$1" = *Apple\ binary\ property\ list* ]] && cmd_exist plistutil; then
     msg "append $sep to filename to view the raw data"
-    plutil -convert xml1 -o - "$2"
+    plistutil -convert xml1 -o - "$2"
   elif [[ "$2" = *.crt || "$2" = *.pem ]] && cmd_exist openssl; then
     msg "append $sep to filename to view the raw data"
     openssl x509 -hash -text -noout -in "$2"
