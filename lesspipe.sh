@@ -33,7 +33,6 @@
 #setopt KSH_ARRAYS SH_WORD_SPLIT 2>/dev/null
 set +o noclobber
 tarcmd='tar'
-bat_theme='--theme GitHub'
 
 dir=${LESSOPEN#\|}
 dir=${dir%%lesspipe.sh*\%s}
@@ -587,6 +586,7 @@ isfinal() {
       lang=${3#$sep}
       lang="-l${lang#.}"
       lang=${lang%%-l }
+      # the theme for bat(cat) can be modified (BAT_THEME or config file)
       if cmd_exist bat; then
         if [[ "$lang" = "-l" ]]; then
           bat $bat_theme $COLOR "$2"
