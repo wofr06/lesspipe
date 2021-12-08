@@ -5,65 +5,8 @@ use Getopt::Long;
 use File::Basename;
 use POSIX;
 
-my $VERSION = "0.3";
+my $VERSION = "0.4";
 my $vernr = "0.9.1"; # this is the underlying version of Peter Palfraders script
-##########################################################################
-# allow only a limited set of known (external) colorizers
-my @colorizers = qw(code2color pygmentize);
-##########################################################################
-#
-# very early check whether this routine is called from less -R or less -r
-# or if the variable LESS contains -R or -r
-# return if not (escape sequences would not be interpreted as colors)
-# on systems with process info in /proc this could be coded in lesspipe.sh
-#
-##########################################################################
-if ( $ARGV[0] =~ /^\d+$/  and $ARGV[1] ) {
-  # we were called from lesspipe.sh with first arg = PPID
-  my $PPID = shift;
-  # if env variable LESS contains -r or -R we are sure that colors get displayed
-  if ( $ENV{LESS} !~ /-\w*r\w*\b/i ) {
-    # check if less is called with -r or -R (highly OS dependent)
-    # tested only for Linux, Solaris, IRIX, True64, MacOS X, FreeBSD and AIX !!!
-    my $psargs = '-oppid= -oargs=';
-    if ( $^O eq 'darwin' || $^O =~ /bsd$/ ) {
-      $psargs = '-oppid -ocommand';
-    } elsif ( $^O eq 'hpux' ) {
-      $procvers = "0.36";
-      $psargs = '-f';
-    }
-    eval "use Proc::ProcessTable $procvers";
-    if ( $@ ) { 
-      my $p = `ps -p $PPID $psargs`;
-      exit 1 if $p =~ /\bless\s+/ and $p !~ /less\s+-\w*r\w*\b/is;
-      if ( $p !~ /\bless\s+/ ) {
-	if ($p =~ /\d+\s+(\d+)/) {
-	  $PPID = $1;
-	} else {
-	  $PPID = $1 if $p =~ /(\d+)/;
-	}
-	my $p2 = `ps -p $PPID $psargs`;
-	exit 1 if $p2 !~ /less\s+-\w*r\w*\b/is;
-      }
-    } else {
-      my $pt = new Proc::ProcessTable;
-      for (@{$pt->table}) {
-	next unless $_->pid eq $PPID;
-	$p = $_->cmndline;
-	exit 1 if $p =~ /\bless\s+/ and $p !~ /less\s+-\w*r\w*\b/i;
-	if ( $p !~ /\bless\s+/ ) {
-	  $PPID = $_->ppid;
-	  for (@{$pt->table}) {
-	    next unless $_->pid eq $PPID;
-	    $p = $_->cmndline;
-	    exit 1 if $p !~ /less\s+-\w*r\w*\b/i;
-	  }
-	}
-      }
-    }
-  }
-}
-
 ########################################################################
 #                                                                      #
 # Code2HTML                                                            #
@@ -101,7 +44,6 @@ my %ENTITIES;
 my $STYLE_AND_LANGUAGE_FLAG;
 my %STYLESHEET;
 my %LANGUAGE;
-Usage() unless @ARGV;
 # =======================================================================
 # == subroutines ========================================================
 # =======================================================================
@@ -110,37 +52,16 @@ sub Usage {
   (my $prog = $0) =~ s!.*/!!;
   my $time = strftime("%F", localtime( (stat($0))[9]));
   print <<EOF;
-$prog V$VERSION $time based on Code2Html version $vernr (peter\@palfrader.org)
-EOF
-  my $origtext = <<EOF;
+$prog V$VERSION $time based on Code2Html V$vernr (peter\@palfrader.org)
+Convert a program source to syntax highlighted ASCII text
+
 Usage: $prog [options] [input_file [output_file]]
+-l LANG  set language mode to LANG
 
-Convert a program source to syntax highlighted HTML,
-or any other format for wich rules are defined.
-
--l, --language-mode   set language mode
-    --fallback LANG   fallback language mode
--v, --verbose         prints progress information to STDER
--n, --linenumbers     print out the source code with line numbers
--P, --prefix          optional prefix to use for linenumber anchors
--N, --linknumbers     linenumbers will link to themselves
--t, --replace-tabs[=TABSTOP-WIDTH]
-                      replace <tabs> with spaces
--L, --language-file=LANGUAGE-FILE
-                      specify an alternate file for definitions
--m, --modes           print all available modes
--h, --help            print this message
--V, --version         print version
--c, --content-type    prints a Content-Type header
--o, --output-format   selects the output-format
--H, --no-header       don't use the template
-    --template=FILE   override template
--T, --title           set title
-
--w, --linewidth       max characters per line
--b, --linebreakprefix prefix of the new lines
-
-see the man-page code2html for further help
+Supported languages
+  plain ada ada95 awk c c++ cc cpp cxx gpasm groff html xml
+  java javascript js lisp m4 make makefile pas pascal perl
+  pov povray python ruby sql patch shellscript sh
 EOF
   exit;
 }
@@ -151,6 +72,7 @@ EOF
 
 sub main {
     my %params = %{shift()};
+	$params{'langmode'} =~ s/^\.// if $params{'langmode'};
     my $html;   # end result
 
     # undefine the input record separator so everything gets loaded in one turn
@@ -274,7 +196,7 @@ sub main {
     # Output $html code.
     if ( $params{outfile} ) {
       if ( $params{outfile} eq '-') {
-        print $html;
+        print "$html\n";
       }
       else {
         open(FILEHANDLE, '>'.$params{outfile}) or 
@@ -935,7 +857,7 @@ $STYLESHEET{'xterm'} =  { 'template'       => '%%code%%',
                                                                           'stop'  => $reset },
                                             'reserved word'          => { 'start' => "$yellow",
                                                                           'stop'  => $reset },
-                                            'library function'       => { 'start' => $reset,
+                                            'library function'       => { 'start' => $green,
                                                                           'stop'  => $reset },
                                             'include'                => { 'start' => $green,
                                                                           'stop'  => $reset },
@@ -3244,25 +3166,8 @@ return \%LANGUAGE;
 
 };
 use Getopt::Std;
-getopts('i:l:') || exit 2;
-  # external colorizer ?
-  if ( $ENV{LESSCOLORIZER} and $ENV{LESSCOLORIZER} !~ m"(/|^)code2color(\s|$)" ) {
-    # for security reasons do accept only a limited set of colorizers
-    die "$ENV{LESSCOLORIZER} is not an allowed colorizer, use one of ",
-      join(', ',@colorizers), " instead\n"
-      if ! grep { $ENV{LESSCOLORIZER} =~ m"(/|^)$_(\s|$)" } @colorizers;
-    die "$ENV{LESSCOLORIZER} not found or not an executable\n"
-      if ! -x $ENV{LESSCOLORIZER}
-      and ! grep { -x "$_/$ENV{LESSCOLORIZER}" } split /:/, $ENV{PATH};
-    # call external colorizer
-    if ($ENV{LESSCOLORIZER} =~ m"(/|^)pygmentize(\s|$)" ) {
-      # do not call pygmentize with - and use option -g
-      @ARGV = grep {$_ ne '-'} @ARGV;
-      unshift @ARGV, '-g';
-    }
-    system($ENV{LESSCOLORIZER}, @ARGV);
-    exit;
-  }
+getopts('i:l:h') || exit 2;
+  Usage() if $opt_h;
   $str = main(parse_passed_params( infile        => $ARGV[0] || '-',
              outfile       => '-',
 #             linenumbers   => 1 ,

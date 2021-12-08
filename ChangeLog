@@ -1,6 +1,13 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.00-alpha
+- complete rewrite with many fixes and enhancements.
+- incompatible change: groff converts to utf8, not 'latin1' and not 'nippon'
+- incompatible change: do not detect perl storable file format
+- incompatible change: LESS_ADVANCED_PREPROCESSOR no longer honored
+- support for growing files and calling less from a filter (LESSOPEN=|-...)
+- new testsuite test.pl
 Version 1.91 Nov 10 2021
 - testsuite works, most files get colored properly
 Versions 1.88 - 1.90

@@ -1,0 +1,280 @@
+#!/usr/bin/perl
+
+# Syntax highlight text using Vim
+# simplified version to use it as a monolithic function within lesspipe
+#
+# This software is copyright (c) 2002-2006 by Geoff Richards.
+# This software is copyright (c) 2011 by Randy Stauner.
+# This software is copyright (c) 2021 by Wolfgang Friebel.
+#
+# This is free software; you can redistribute it and/or modify it under
+# the same terms as the Perl 5 programming language system itself.
+#
+use warnings;
+use strict;
+use 5.9.3;
+use IO::File;
+use File::Copy;
+use File::Temp qw(tempfile);
+use Term::ANSIColor qw(color colorvalid);
+use IPC::Open3;
+use Getopt::Std;
+our $opt_l;
+&getopt ('l:');
+my ($file) = shift;
+my $filetype = $opt_l;
+
+# do a clean up if we get a CTRL-C
+our ($tdir,$script_fh, $markup_fh);
+$SIG{INT} = sub  { if ($tdir) {
+		close $script_fh if $script_fh;
+		close $markup_fh if $markup_fh;
+		unlink $tdir; print "\n"; exit 1 }};
+
+$tdir = File::Temp->newdir('/tmp/vimcolorXXXX');
+
+if (! $file or $file eq '-') {
+   $file = "$tdir/inputfile";
+   File::Copy::syscopy(\*STDIN, $file);
+}
+
+my %ANSI_COLORS = (
+   Comment    =>  'blue',
+   Constant   =>  'red',
+   Identifier =>  'cyan',
+   Statement  =>  'yellow',
+   PreProc    =>  'magenta',
+   Type       =>  'green',
+   Special    =>  'bright_magenta',
+   Underlined =>  'underline',
+   Ignore     =>  'bright_white',
+   Error      =>  'on_red',
+   Todo       =>  'on_cyan',
+);
+
+# These extra syntax group are available but linked to the groups above by
+# default in vim. They can get their own highlighting (all_syntax_groups => 1).
+my %SYNTAX_LINKS;
+
+$SYNTAX_LINKS{$_} = 'Constant' for qw(String Character Number Boolean Float);
+$SYNTAX_LINKS{$_} = 'Identifier' for qw(Function);
+$SYNTAX_LINKS{$_} = 'Statement' for qw(Conditional Repeat Label Operator Keyword Exception);
+$SYNTAX_LINKS{$_} = 'PreProc' for qw(Include Define Macro PreCondit);
+$SYNTAX_LINKS{$_} = 'Type' for qw(StorageClass Structure Typedef);
+$SYNTAX_LINKS{$_} = 'Special' for qw(Tag SpecialChar Delimiter SpecialComment Debug);
+
+# Copy ansi color for main group to all subgroups.
+$ANSI_COLORS{$_} = $ANSI_COLORS{$SYNTAX_LINKS{$_}} for keys %SYNTAX_LINKS;
+
+# Build a lookup table to determine if a syntax exists.
+my %SYNTAX_TYPE = map {$_, 1} keys %ANSI_COLORS;
+
+my $defaults = set_defaults();
+my $syntax = do_markup($defaults, $file, $filetype);
+print_ansi($syntax);
+
+sub set_defaults {
+  return {
+    vim_command        => 'vim',
+	vim_options        => [qw( -RXZ -i NONE -u NONE -N -n ), "+set nomodeline"],
+    all_syntax_groups  => 0,
+    vim_let            => {perl_include_pod => 1, 'b:is_bash' => 1},
+  };
+}
+
+sub print_ansi {
+  my ($syntax) = @_;
+
+  # allow the environment to overwrite:
+  my %colors = (
+    %ANSI_COLORS,
+    $ENV{TEXT_VIMCOLOR_ANSI} ? split(/\s*[=;]\s*/, $ENV{TEXT_VIMCOLOR_ANSI}) : ()
+  );
+  for (keys (%colors)) {
+    if (colorvalid($colors{$_})) {
+      $colors{$_} = color($colors{$_});
+    } else {
+      warn "### invalid color name '$colors{$_}' (Term::ANSIColor) ###\n";
+      $colors{$_} = color('reset');
+    }
+  }
+  my $reset = color('reset');
+
+  local $_;
+
+  # compared to join/map or foreach/my this benched as the fastest:
+  my $ansi = '';
+  my $colorize;
+  for (@$syntax) {
+    $colorize ||= $colors{$_->[0]};
+    $ansi .= $colors{$_->[0]}
+      ? $colors{$_->[0]} . $_->[1] . $reset
+      : $_->[1];
+  }
+  print $ansi;
+}
+
+# Actually run Vim and turn the script's output into a datastructure.
+sub do_markup {
+  my ($defaults, $file, $filetype) = @_;
+
+  my $filename = $file;
+
+   # Create a temp file to put the output in.
+   my $out_file = File::Temp->new(TEMPLATE => 'vimcXXXX', DIR => '/tmp');
+   # Create a temp file for the 'script', which is given to vim
+   # with the -s option.
+   my $script_file = "$tdir/scriptfile";
+   open $script_fh, ">$script_file" or die "$!\n";
+   my $markup_file = "$tdir/markupfile";
+   open $markup_fh, ">$markup_file" or die "$!\n";
+   my $filetype_set = defined $filetype ? ":set filetype=$filetype" : '';
+   my $vim_let = $defaults->{vim_let};
+
+  # on linux '-s' is fast and '--cmd' adds the 2-second startup delay
+  # are there situations where --cmd is necessary or useful?
+
+  # Specify filename as argument to command (rather than using :edit in script).
+
+my $markscript= <<'EOF';
+set report=1000000
+if !strlen(&filetype)
+   filetype detect
+endif
+syn on
+new
+set modifiable
+set paste
+set isprint+=9
+wincmd p
+let s:end = line("$")
+let s:lnum = 1
+while s:lnum <= s:end
+  let s:line = getline(s:lnum)
+  let s:len = strlen(s:line)
+  let s:new = ""
+  let s:col = 1
+  while s:col <= s:len
+    let s:startcol = s:col " The start column for processing text
+    let s:id = synID(s:lnum, s:col, 1)
+    let s:col = s:col + 1
+    while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
+    let s:id = synIDtrans(s:id)
+	let s:name = synIDattr(s:id, 'name')
+    let s:new = s:new . '>' . s:name . '>' . substitute(substitute(substitute(strpart(s:line, s:startcol - 1, s:col - s:startcol), '&', '\&a', 'g'), '<', '\&l', 'g'), '>', '\&g', 'g') . '<' . s:name . '<'
+    if s:col > s:len
+      break
+    endif
+  endwhile
+  exe "normal \<C-W>pa" . strtrans(s:new) . "\n\e\<C-W>p"
+  let s:lnum = s:lnum + 1
+  +
+endwhile
+wincmd p
+normal dd
+EOF
+if ($defaults->{all_syntax_groups}) {
+  my %a= (map {$_, 1} ('Normal', keys %ANSI_COLORS, keys %SYNTAX_LINKS));
+  printf $markup_fh "hi %-16s ctermfg=7\n", $_ for keys %a;
+}
+print $markup_fh $markscript;
+close $markup_fh;
+  my @script_lines = (
+    map { "$_\n" }
+      # do :edit before :let or the buffer variables may get reset
+      ":edit $filename",
+      (
+        map  { ":let $_=$vim_let->{$_}" }
+        grep { defined  $vim_let->{$_} }
+          keys %$vim_let
+      ),
+      ':filetype on',
+       $filetype_set,
+      ":source $markup_file",
+      ":write! $out_file",
+      ':qall!',
+  );
+
+   print $script_fh @script_lines;
+   close $script_fh;
+
+   run(
+      $defaults->{vim_command},
+      $defaults->{vim_options},
+      $filename, ('-s' => "$script_file")
+   );
+
+   my $data = do { local $/; <$out_file> };
+
+   # Convert line endings to ones appropriate for the current platform.
+   $data =~ s/\x0D\x0A?/\n/g;
+
+   my $syntax = [];
+   LOOP: {
+      add_markup($syntax, $1, $2), redo LOOP
+         if $data =~ /\G>(.*?)>(.*?)<\1</cgs;
+      add_markup($syntax, '', $1), redo LOOP
+         if $data =~ /\G([^<>]+)/cgs;
+   }
+   return $syntax;
+}
+
+# Given an array ref ($syntax), we add a new syntax chunk to it, unescaping
+# the text and making sure that consecutive chunks of the same type are merged.
+sub add_markup {
+   my ($syntax, $type, $text) = @_;
+
+   # Ignore types we don't know about.  At least one syntax file (xml.vim)
+   # can produce these.  It happens when a syntax type isn't 'linked' to
+   # one of the predefined types.
+   $type = '' unless exists $SYNTAX_TYPE{$type};
+
+   # Unescape ampersands and pointies.
+   my %r=(l=>'<',g=>'>',a=>'&');
+   $text =~s/&([lga])/$r{$1}/g;
+   $text =~ s/&l/</g;
+   $text =~ s/&g/>/g;
+   $text =~ s/&a/&/g;
+   $text =~ s/\^\[/\e/g;
+
+   if (@$syntax && $syntax->[-1][0] eq $type) {
+      # Concatenate consecutive bits of the same type.
+      $syntax->[-1][1] .= $text;
+   }
+   else {
+      # A new chunk of marked-up text.
+      push @$syntax, [ $type, $text ];
+   }
+}
+
+# This is a subroutine which runs a program.
+# It takes a list of the program name and arguments.
+sub run {
+   my ($prog, @args) = @_;
+
+  {
+    my ($in, $out) = (Symbol::gensym(), Symbol::gensym());
+    my $err_fh = Symbol::gensym();
+
+    my $pid = IPC::Open3::open3($in, $out, $err_fh, $prog => @args);
+
+    # close these to avoid any ambiguity that might cause this to block
+    # (see also the paragraph about "select" in IPC::Open3)
+    close($in);
+    close($out);
+
+    # read handle before waitpid to avoid hanging on older systems
+    my $errout = do { local $/; <$err_fh> };
+
+      my $gotpid = waitpid($pid, 0);
+      die "couldn't run the program '$prog'" if $gotpid == -1;
+      my $error = $? >> 8;
+      if ($error) {
+         $errout =~ s/\n+\z//;
+         my $details = $errout eq '' ? '' :
+                       "\n$prog wrote this error output:\n$errout\n";
+         die "$prog returned an error code of '$error'$details";
+      }
+   }
+}
+# vim: set ts=2 sts=2 sw=2 expandtab smarttab:

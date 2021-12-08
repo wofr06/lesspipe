@@ -3,7 +3,7 @@ INSTALL
 Execute the following commands (for a more detailed description see below):
 
   ./configure
-  cp lesspipe.sh sxw2txt code2color tarcolor /usr/local/bin
+  cp lesspipe.sh code2color tarcolor vimcolor sxw2txt /usr/local/bin
 
 or if you prefer make:
 
@@ -24,69 +24,37 @@ Detailed description
 Prerequisites:
 --------------
 For a detailed discussion consult the file README starting with the section
-'Required programs'. For best results up to date versions of 'file' (4.17 or
-later), tar, gzip, bzip2 and the programs antiword, html2text and o3tohtml are
-highly recommended.
+'Required programs'. For best results up to date versions of 'file'
+tar, gzip, bzip2 and some helper programs are highly recommended.
 
-Step 1: recreate lesspipe.sh and Makefile (optional)
-----------------------------------------------------
-To verify a working system and to customize lesspipe.sh to your needs
-recreate lesspipe.sh from lesspipe.sh.in (and Makefile) by the command
+Step 1: create Makefile and lesspipe.sh using a different shell (optional)
+--------------------------------------------------------------------------
 
- ./configure [--help] [--ask|--default|--fixed|--yes] [--nomake]
-	[--prefix=<path>] [--shell=<file>]
+ ./configure [--help] [--nomake] [--prefix=<path>] [--shell=<file>]
 
 Options:
   --help                  print this message
-  --ask                   ask questions when running make (this is the default
-                          for configure but without --ask it is not for make)
-  --default               do not ask questions, try to guess correct answer
-  --yes                   like --default but assume 'yes' to all questions
-  --fixed                 like --yes but use preconfigured answer (see below)
   --shell=<filename>      specify full path to an alternative shell to use
   --nomake                do not generate a Makefile
 Directory and file names:
   --prefix=PREFIX         install lesspipe.sh in PREFIX/bin (/usr/local)
 
-configure generates by default both lesspipe.sh and Makefile
-configure tries to find required and optional programs for lesspipe.sh
-If optional programs are not found, then you can choose between
-  - giving the correct location of the program if installed
-  - including the code in lesspipe.sh without having the program
-  - or skipping the code for the missing program.
-Answers to the questions can be preconfigured by modifying the data section
-in configure after the __END__ line. For missing data use the default answer
-
-The recreation of lesspipe.sh can also be achieved by using the supplied or
-regenerated Makefile with the command
-
-  make [MODE=--ask|--default|--fixed|--yes] [PREFIX=<path>]
-
-where the optional parameters MODE and PREFIX correspond to the configure
-options described above. Forcing the use of a specific shell is not possible.
-
-##  Please note that the activation of syntax highlighting can slow down
-##  the display of plain files noticeably.
-##  An alternative to using less with syntax highlighting is the use of vim
-##  with the macro less.vim. A script less.sh is usually coming with vim
-##  that does emulate less and has syntax highlighting. 
+configure generates by default a Makefile and if an alternate shell is
+given, then also a changed lesspipe.sh.
 
 Step 2: verify that lesspipe.sh is working correctly (optional)
 ---------------------------------------------------------------
-A test suite has been added that does cover complicated use cases of less
-where bugs have been fixed recently. Attempts are made to add normal use
-cases as well. If the test suite reports "NOT ok" lines then lesspipe.sh
+A test suite has been added that does cover most use cases of less.
+If the test suite reports "NOT ok" lines then lesspipe.sh
 is probably not fully functional in your environment. If the message is
-"NOT ok (ignored)" it is usually an indication that some helper programs are
+"ignored" it is usually an indication that some helper programs are
 not installed. To execute the test suite the command
 
   make test
 or
-  ./test.pl [-d]
+  ./test.pl [-e] [-n] [-v] [testnumber[s]] [file_name]
 
-can be used. The option -d is for debugging. In case of errors please read
-the file testok/README. Make sure your file command is sufficiently recent.
-Otherwise not all file formats will be recognized correctly.
+can be used. The options -e and -v are for debugging.
 
 To get support for newer file types an additional magic file (e.g. ~/.magic,
 for use in the file command) might have to be created. In that case the
@@ -96,16 +64,15 @@ magic file and your personal one. Example:
   MAGIC='/usr/share/file/magic:/Users/myaccount/.magic'
   export MAGIC
 
-Step 3: install lesspipe.sh, code2color, sxw2txt and tarcolor
--------------------------------------------------------------
+Step 3: install lesspipe.sh, code2color, vimcolor, sxw2txt and tarcolor
+-----------------------------------------------------------------------
 You can copy lesspipe.sh to any appropriate place.
 Suggested location: /usr/local/bin/lesspipe.sh
 The helper programs can be copied to the same directory as lesspipe.sh or any
-directory listed in the PATH environment variable. The program sxw2txt is
-required for decoding Openoffice and OpenDocument (OASIS) documents, if
-o3tohtml is not installed. The tarcolor script allows to colorize tar listings.
+directory listed in the PATH environment variable.
+The tarcolor script allows to colorize tar listings.
 
-  cp lesspipe.sh code2color sxw2txt tarcolor /usr/local/bin
+  cp lesspipe.sh code2color vimcolor sxw2txt tarcolor /usr/local/bin
 
 This can be achieved also with make:
 
@@ -119,19 +86,3 @@ scripts of the same name or with a changed search PATH:
 
   LESSOPEN="|/usr/local/bin/lesspipe.sh %s"; export LESSOPEN  #(sh like shells)
   setenv LESSOPEN "|/usr/local/bin/lesspipe.sh %s"	      #(csh, tcsh)
-
-If syntax highlighting is activated in the script then to actually see
-highlighted or colored code less has to be called with option -r or -R!
-
-If lesspipe.sh was generated respecting the ENV var LESS_ADVANCED_PREPROCESSOR
-then html, ps, rtf files as well as files with foreign charsets get only
-preprocessed if that variable is set. This way the user can control the amount
-of file filtering himself.
-
-Generated lesspipe.sh and Makefile in the package
-=================================================
-the supplied files were generated with the settings from configure
-(after the __END__ line), that is everything enabled i.e. syntax highlighting
-and the LESS_ADVANCED_PREPROCESSOR code is included.
-
-  ./configure --fixed

@@ -2,17 +2,14 @@
 # the above line will use any perl that is in your PATH. You might want to
 # replace it by #!/usr/bin/perl or similar if this does not work for you.
 
-#use strict;
-#use warnings;
+use strict;
+use warnings;
+use File::Copy;
 
-# do a clean up if we get a CTRL-C
-$SIG{INT} = sub  { unlink "lesspipe.sh.tmp"; print "\n"; exit 1 };
 # find sxw2txt and other scripts in current dir, if scripts not installed yet
 $ENV{PATH} .= ':.';
 
-use vars qw($opt_help $opt_prefix $opt_yes $opt_default $opt_ask $opt_nomake
-            $opt_shell $opt_fixed $ifsyntax $ifadvanced %have %rep $recursion
-            %answer);
+use vars qw($opt_help $opt_prefix $opt_nomake $opt_shell);
 
 use Getopt::Long;
 Getopt::Long::Configure("prefix_pattern=--");
@@ -23,324 +20,75 @@ if ( $ARGV[0] or ! $result or $opt_help) {
 Usage: configure [options]
 Options:
   --help                  print this message
-  --ask                   ask questions when running make (this is the default
-                          for configure but without --ask it is not for make)
-  --default               do not ask questions, try to guess correct answer
-  --yes                   like --default but assume 'yes' to all questions
-  --fixed                 like --yes but use preconfigured answer (see below)
-  --shell=<filename>      specify full path to an alternative shell to use
+  --shell=<filename>      specify an alternative shell path (zsh/bash) to use
   --nomake                do not generate a Makefile
 Directory and file names:
   --prefix=PREFIX         install lesspipe.sh in PREFIX/bin (/usr/local)
 
-configure generates by default both lesspipe.sh and Makefile
-configure tries to find required and optional programs for lesspipe.sh
-If optional programs are not found, then you can choose between
-  - giving the correct location of the program if installed
-  - including the code in lesspipe.sh without having the program
-  - or skipping the code for the missing program.
-Answers to the questions can be preconfigured by modifying the data section
-in configure after the __END__ line. For missing data use the default answer
+configure generates by default a Makefile
 EOF
-  exit !$opt_help ? 1 : 0;
+  exit ! $opt_help ? 1 : 0;
 }
 $opt_prefix ||= '/usr/local';
 # remove trailing slash and trailing bin directory
 print "removed trailing /bin dir from prefix\n" if $opt_prefix =~ m|/bin/?$|;
 $opt_prefix =~ s|(/bin)?/?$||;
 if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
-  print "trying alternate shell: $opt_shell\n";
+  # do nothing
 } elsif ( $opt_shell) {
   print "unuseable shell $opt_shell: not executable or no absolute path\n";
   exit 1;
 }
 
-# get preconfigured answers into %answer hash
-while (<DATA>) {
-    next if /^\s*$|^\s*#/;
-    $answer{$1} = $2 if /^(\S+)\s+(\S+)/;
-}
-
-my $mode = $opt_ask ? "" : 
-           $opt_yes ? "--yes" :
-           $opt_fixed ? "--fixed" :
-           "--default";
 if ( ! $opt_nomake ) {
   open OUT, ">Makefile";
   print OUT << "EOF";
 # This is a generated file, do not edit it. Use configure to modify it
 PREFIX = $opt_prefix
-MODE = $mode
 
 .PHONY: install
 
 all:
-	./configure --prefix=\$(PREFIX) --nomake \$(MODE)
+	./configure --prefix=\$(PREFIX)
 test:
 	./test.pl
 install:
 	mkdir -p \$(DESTDIR)\$(PREFIX)/bin
 	mkdir -p \$(DESTDIR)\$(PREFIX)/share/man/man1
-	cp ./code2color ./sxw2txt ./tarcolor ./lesspipe.sh \$(DESTDIR)\$(PREFIX)/bin
+	cp ./code2color ./sxw2txt ./tarcolor ./lesspipe.sh ./vimcolor \$(DESTDIR)\$(PREFIX)/bin
 	cp ./lesspipe.1 \$(DESTDIR)\$(PREFIX)/share/man/man1
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesspipe.sh
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/sxw2txt
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/code2color
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/tarcolor
+	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/vimcolor
 clean:
 	mv Makefile Makefile.old
-	rm -f lesspipe.sh
 EOF
   close OUT;
 }
 
-$|=1;
-# Check version of tar and file commands even before trying to create lesspipe.sh
-check_tar_vers();
-open IN, "lesspipe.sh.in";
-open OUT, ">lesspipe.sh.tmp";
-my $in = 1;
-my $anyin;
 my $shell = check_shell_vers();
-# ask if syntax highlighting should be included
-$ifsyntax = '';
-if ($opt_yes) {
-  $ifsyntax = 'y';
-} elsif ($opt_default) {
-  $ifsyntax = 'n';
-} elsif ($opt_fixed) {
-  $ifsyntax = $answer{HILITE} || 'n' ;
-} else {
-  while ( $ifsyntax !~ /^[yn]/i ) {
-    print "Activate syntax highlighting code [y/N] ? ";
-    $ifsyntax = <STDIN>;
-    chomp $ifsyntax;
-    $ifsyntax ||= 'n';
-  }
+open F, "lesspipe.sh";
+{
+	my $line1 = <F>;
+	exit if $line1 =~ /^$shell$/;
+	local $/;
+	my $in = <F>;
+	print "generating new lesspipe.sh using '$shell' as first line\n";
+	copy "lesspipe.sh", "lesspipe.sh.old";
+	open OUT, ">lesspipe.sh";
+	print OUT "$shell\n";
+	print OUT $in;
+	close OUT;
 }
-$ifsyntax = "\L$ifsyntax";
-
-# ask if the ENV variable LESS_ADVANCED_PREPROCESSOR should be respected
-$ifadvanced = '';
-if ($opt_yes) {
-  $ifadvanced = 'y';
-} elsif ($opt_default) {
-  $ifadvanced = 'n';
-} elsif ($opt_fixed) {
-  $ifadvanced = $answer{LESS_ADVANCED_PREPROCESSOR} || 'n' ;
-} else {
-  while ( $ifadvanced !~ /^[yn]/i ) {
-    print "interpret html, ps and other mostly ASCII files only if the\n",
-      "ENV variable LESS_ADVANCED_PREPROCESSOR is set [y/N] ? ";
-    $ifadvanced = <STDIN>;
-    chomp $ifadvanced;
-    $ifadvanced ||= 'n';
-  }
-}
-$ifadvanced = "\L$ifadvanced" eq 'y' ? 'y' : '';
-
-my $skip_comment = 0;
-while (<IN>) {
-  $skip_comment = 1 if /^setopt /;
-  next if $skip_comment and ! /^#\w/ and /^#/;
-  # try to be flexible and allow a switch of the shell at run time
-  if ( /^setopt / ) {
-    if ( $shell eq 'zsh' ) {
-      print OUT '( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec bash -- "$0" ${1+"$@"}', "\n";
-    } else {
-      s/^/#/;
-      print OUT '( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}', "\n" if $shell ne 'ksh';
-    }
-  }
-  if (/set -A c/ and $shell ne 'ksh') {
-    s/$/)/;
-    s/set -A (c\w+) /$1=(/;
-  }
-  if ( /LESS_ADVANCED_PREPROCESSOR/ and ! $ifadvanced ) {
-    # skip 3 lines code for LESS_ADVANCED_PREPROCESSOR check
-    $_=<IN>; $_=<IN>; next;
-  }
-  s/\$NOL_A_P// if ! $ifadvanced;
-  # line #ifdef prog1, prog2, ... encountered, store prog1, prog2, ... in @progs
-  if ( /^#ifdef\s+(.*)/ ) {
-    %rep = ();
-    $_ = $1;
-    chomp;
-    my @progs = split /,/;
-    # check if @progs existing and executable ($in == 1)
-    $in = inpath ("Include code anyway", @progs);
-	$anyin = $in;
-    # line #elif prog1, prog2, ... seen, store prog1, prog2, ... in @progs
-  } elsif (/^#elif\s+(.*)/ ) {
-    $in = 1 - $anyin;
-    $anyin ||= $in;
-    next unless $in;
-    %rep = ();
-    $_ = $1;
-    chomp;
-    my @progs = split /,/;
-    # check if @progs existing and executable ($in == 1)
-    $in = inpath ("Include code anyway", @progs);
-	$anyin = $in;
-    # line #endif encountered, clear list of replacement strings %rep
-  } elsif (/^#else\b/ ) {
-    $in = 1 - $anyin;
-    $anyin ||= $in;
-    next unless $in;
-    %rep = ();
-  } elsif (/^#endif\s/ ) {
-    %rep = ();
-    # unconditionally accept all statements after #endif
-    $in = 1;
-  } elsif ( $in ) {
-    # make replacements in lines if neccessary ($in == 1)
-    for my $p (keys %rep) {
-      # add option -c for iconv if appropriate
-      s/\b$p\b/$rep{$p}/ unless /^#/;
-    }
-    # and write out the line
-    print OUT;
-  }
-}
-close OUT;
-chmod 0755, "lesspipe.sh.tmp";
-rename "lesspipe.sh.tmp", "lesspipe.sh";
-print "lesspipe.sh with", $ifsyntax eq "n" ? 'out' : '',
-      " syntax highlighting created\n";
-print "Please make sure to copy lesspipe.sh ", 
-      $ifsyntax ne 'n' ? "and code2color " : "", "to $opt_prefix/bin\n";
-
-sub inpath {
-  my $string = shift;
-  my %optstr = ( cabextract => '-v', bzip2 => '-h' );
-  for my $prog ( @_ ) {
-    $rep{$prog} = $have{$prog} if $have{$prog} and $have{$prog} =~ /^\//;
-    $rep{tar} = $have{tar} if $prog eq 'tar';
-    $rep{tar} = $have{gtar} if $prog eq 'gtar';
-    # conditionally activate syntax highlighting code
-    # 'perl' will always be the last (or only) entry on an #ifdef
-    return $ifsyntax ne 'n' if $prog eq 'perl';
-    next if $have{$prog} and $have{$prog} ne 'N';
-    return 0 if $have{$prog} and $have{$prog} eq 'N';
-    my $ok = 0;
-    my $which_one = "";
-    print "checking $prog...";
-    for ( split /:/, $ENV{PATH} ) {
-      #next unless m|^/|; # consider only absolute PATH elements
-      # skip bzip2 and cabextract if version not at least 1.0
-      if (exists $optstr{$prog} and -x "$_/$prog") {
-	my $vs = `$_/$prog $optstr{$prog} 2>&1`;
-	$vs = $1 if $vs =~ /\b(\d+\.\d+)\b/;
-        if ($vs < 1.0) {
-            print "$prog version $vs unuseable, need at least 1.0\n";
-            $which_one = "$_/";
-            next;
-        } else {
-            # only if we had already a wrong version
-            $which_one = "$_/" if $which_one;
-        }
-      }
-      $have{$prog} = "$which_one$prog", last if -x "$_/$prog";
-    }
-    if ( $opt_fixed and exists $answer{$prog} ) {
-        my $yesno = "\L$answer{$prog}";
-        my $found = $have{$prog} ? "found" : "not found";
-        my $useit = $yesno eq 'n' ? "not using it" :
-                    $yesno eq 'y' ? "include code for $prog" :
-                    "using $answer{$prog}";
-        print "$found, $useit (fixed)\n";
-        $have{$prog} = $answer{$prog};
-        return 0 if $yesno eq 'n';
-    } else {
-        print "using $have{$prog}\n" if $have{$prog} and $opt_fixed;
-    }
-    if ( $have{$prog} ) {
-      print "using $have{$prog}\n" if ! $opt_fixed;
-      $rep{$prog} = $have{$prog} if ! $opt_fixed;
-    } else {
-      print "not found\n" if ! $opt_fixed or ! exists $answer{$prog};
-      my $yesno = get_answer($string, $prog);
-      $have{$prog} = $yesno if ! $have{$prog} and $yesno =~ /^[yn]$/i;
-      if (exists $optstr{$prog} and $have{$prog} =~ /^\//) {
-	my $vs = `$have{$prog} $optstr{$prog}` if -x $have{$prog};
-	$vs = $1 if $vs =~ /\b(\d+\.\d+)\b/;
-        if ($vs < 1.0) {
-	    $have{$prog} = "";
-            print "$prog version $vs unuseable, need at least 1.0\n";
-        }
-      }
-      $rep{$prog} = $have{$prog} if $have{$prog} and $have{$prog} =~ /^\//;
-      return 0 if $yesno !~ /^y/i;
-    }
-  }
-  return 1;
-}
-
-sub get_answer {
-  my ($string, $prog) = @_;
-  # automatically recognize if we are using GNU cpio or BSD cpio
-  if ( $prog eq 'bsd_cpio' ) {
-    my $rc = system "cpio --help >/dev/null 2>&1";
-    return $rc ? 'y' : 'N';
-  }
-  return 'y' if $opt_yes;
-  return 'N' if $opt_default;
-  return $answer{$prog} || 'N' if $opt_fixed;
-  my $yesno;
-  while ( ! $yesno or $yesno !~ /^[yn]/i ) {
-    print "$string [y/N or <full_path_to_$prog>] ? ";
-    $yesno = <STDIN>;
-    chomp $yesno;
-    $yesno = 'N' if ! $yesno or $yesno =~ /^n/i;
-    if ( $yesno =~ m|^/| ) {
-      if ( -x $yesno ) {
-	$have{$prog} = $yesno;
-	$yesno = 'y';
-      } else {
-	print "Program $prog not found (or at least not executable)\n";
-	$yesno = '';
-      }
-    }
-  }
-  return $yesno;
-}
-
-sub check_iconv {
-  my $iconv = shift;
-  return '' if ! $iconv;
-  my $rc = system "echo hi|$iconv -c -f utf-8 -t utf-8 >/dev/null 2>&1";
-  return ' -c' if ! $rc;
-  return '';
-}
-
-sub check_tar_vers {
-  inpath("Look for GNU tar", 'tar');
-  my $vers = `$have{tar} --version 2>&1`;
-  # /usr/bin/tar on Solaris does not have the tar -O option
-  if ( $vers =~ /unknown function modifier/ ) {
-    print "  system version of tar is lacking functionality\n";
-    inpath("Look for GNU tar", 'gtar');
-    if ( $have{gtar} ) {
-      $have{tar} = $have{gtar};
-    } else {
-      print "  found system version of tar only, consider using GNU tar\n";
-    }
-  }
-  $rep{tar} = $have{tar};
-}
+exit 0;
 
 sub check_shell_vers {
   # define useable shells, the order is important !
-  my @shells = qw( /bin/sh /bin/bash /bin/zsh /bin/ksh );
+  my @shells = qw( /bin/bash /bin/zsh /bin/sh);
   @shells = ( $opt_shell ) if $opt_shell;
   my @bad = ();
-  # reorder list of shells depending on OS
-  if ( $^O eq 'solaris' ) {
-    my @tmp = reverse @shells;
-    @shells = @tmp;
-  } elsif ( defined $shells[1] ) {
-    ($shells[0], $shells[1]) = ($shells[1], $shells[0]);
-  }
   my $selected_shell = '';
   my $shellcmd = '';
   for my $shell ( @shells ) {
@@ -369,7 +117,6 @@ sub check_shell_vers {
     if ( $name eq 'bash' or $name eq 'sh' ) {
       my $tst = `$file -c \'if [[ -n 1 && -n 2 ]];then true;fi 2>&1\'`;
       if ( $tst ) {
-	print "skipping unuseable shell $shell, error msg was $tst";
 	push @bad, $shell;
 	next;
       }
@@ -378,93 +125,9 @@ sub check_shell_vers {
     $shellcmd = "$file$opt" if ! $shellcmd;
   }
   if ( !$selected_shell ) {
-    print "Sorry, no useable shell found, cannot create lesspipe.sh\n", @bad;
+    print "Sorry, no useable shell found\n", @bad;
     print "You could run configure --shell=<abs_filename> to retry\n";
     exit 1;
-  } else {
-    print OUT "#!$shellcmd\n";
-    print "Using $shellcmd from the list of available shells:\n  @shells\n"
-          if ! $opt_shell;
-    print "The following shells are unuseable: @bad\n" if @bad;
   }
-  return $selected_shell;
+  return "#!$shellcmd";
 }
-__END__
-# the answers configured here do only apply when ./configure --fixed is used
-#sample lines (without the comment sign #):
-#sample_prog	/opt/apps/bin/sample_prog
-#skip_prog	N
-#take_prog	Y
-
-#file		/usr/bin/file	# it is better to let configure do the checks
-HILITE		Y		# we do want syntax highlighting for --fixed
-LESS_ADVANCED_PREPROCESSOR N	# always interpret textlike files (html, ...)
-
-# compression programs
-bzip2		Y	# include bzip2 and unzip code, it is fairly essential
-unzip		Y
-rar		Y
-unrar		Y
-lzip		N	# default for lzma, lzip, xz, 7za should probably be N
-lzma		Y
-xz		Y
-7za		Y
-7zr		N	# included in 7za code
-zstd		Y
-brotli		Y
-lz4		Y
-# essential utilities
-cpio		Y
-elinks		Y	# only one of html2text, elinks, links, lynx, w3m needed
-groff		Y
-html2text	Y	# rarely found but is a good alternative to elinks
-iconv		Y
-links		Y
-lynx		Y
-nm		Y
-rpm		Y
-rpmunpack	N	# fallback for rpm2cpio only, code inserted anyway
-rpm2cpio	Y
-w3m		Y
-# code for these programs should be included in lesspipe.sh
-doc2txt.pl	Y	  # to view Microsoft Word 2007+ files
-pandoc	    Y	      # to view Microsoft Word 2007+ files
-libreoffice	Y	  # to view Microsoft Office 2007+ files
-antiword	Y	# one of antiword or catdoc or wvText should be installed
-catdoc		Y
-wvText		Y
-dvi2tty		Y	# nice to have
-pstotext	Y	# pstotext is better than the fallback ps2ascii
-ps2ascii	N	# ps2ascii code is already in the pstotext part
-iconv		Y
-gpg		Y
-pdftohtml	Y
-pdftotext	Y
-pdfinfo	Y
-# other helper programs
-cabextract	Y
-matdump	N
-djvutxt		Y
-fastjar		N	# I do prefer unzip
-gpg		Y
-mediainfo	Y
-exiftool	N # is mediainfo or exiftool better?
-id3v2		  Y	# id3v2 is preferred over mp3info if both selected
-mp3info2	N	# code for mp3info2 is included anyway if id3v2 selected
-mp3info		N	# code for mp3info is included anyway if id3v2 selected
-identify	Y
-isoinfo		Y	# I would not want to see that
-o3tohtml	Y
-openssl		Y
-perldoc		Y
-ppthtml		Y
-unrtf		Y
-xlhtml		Y
-# for specific operating systems
-dpkg		Y	# for debian systems, fallback is tar+g(un)zip
-### please change to Y on MacOSX
-lsbom		N	# we are not on MacOSX
-plistutil	N	# we are not on MacOSX
-bsd_cpio	N	# we are not on MacOSX
-tarcolor	Y	# to colorize tar listings
-
