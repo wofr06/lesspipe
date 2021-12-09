@@ -408,7 +408,7 @@ isfinal () {
     docx)
       { has_cmd pandoc && cmd=(pandoc -f docx -t plain "$2"); } ||
       { has_cmd docx2txt && cmd=(docx2txt "$2" -); } ||
-      { has_cmd libreoffice && cmd=(istemp "libreoffice --headless --cat" "$2"); } ;;
+      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
     pptx)
       { has_cmd pptx2md && t2=$(nexttmp) &&
         { has_cmd mdcat && istemp "pptx2md --disable-image --disable-wmf \
@@ -420,11 +420,11 @@ isfinal () {
       { has_cmd in2csv && cmd=(in2csv -f xlsx "$2"); } ||
       { has_cmd xlscat && cmd=(istemp xlscat "$2"); } ||
       { has_cmd excel2csv && cmd=(istemp excel2csv "$2"); } ||
-      { has_cmd libreoffice && cmd=(istemp "libreoffice --headless --cat" "$2"); } ;;
+      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
     odt)
       { has_cmd pandoc && cmd=(pandoc -f odt -t plain "$2"); } ||
       { has_cmd odt2txt && cmd=(istemp odt2txt "$2"); } ||
-      { has_cmd libreoffice && cmd=(istemp "libreoffice --headless --cat" "$2"); } ;;
+      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
     odp)
       { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" odp); } ;;
     ods)
@@ -435,7 +435,7 @@ isfinal () {
       { has_cmd wvText && cmd=(istemp wvText "$t" /dev/stdout); } ||
       { has_cmd antiword && cmd=(antiword "$2"); } ||
       { has_cmd catdoc && cmd=(catdoc "$2"); } ||
-      { has_cmd libreoffice && cmd=(istemp "libreoffice --headless --cat" "$2"); } ;;
+      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
     ms-powerpoint)
       { has_cmd broken_catppt && cmd=(istemp catppt "$2"); } ||
       { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" ppt); } ;;
@@ -481,7 +481,7 @@ isfinal () {
     pgp)
       has_cmd gpg && cmd=(gpg -d "$2") ;;
     plist)
-      has_cmd plistutil && cmd=(plistutil -i "$2") ;;
+      has_cmd plistutil && cmd=(istemp "plistutil -i" "$2") ;;
     mp3)
       has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$2") ;;
     log)
@@ -653,6 +653,10 @@ isoffice () {
   cat $1 > $t2
   libreoffice --headless --convert-to html --outdir "$tmpdir" "$t2" > /dev/null 2>&1
   ishtml $t.html
+}
+
+isoffice2 () {
+  istemp "libreoffice --headless --cat" "$1" 2>/dev/null
 }
 
 if has_cmd w3m || has_cmd lynx || has_cmd elinks || has_cmd html2text; then
