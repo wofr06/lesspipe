@@ -32,29 +32,29 @@ my $filetype = $opt_l;
 # do a clean up if we get a CTRL-C
 our ($tdir,$script_fh, $markup_fh);
 $SIG{INT} = sub  { if ($tdir) {
-		close $script_fh if $script_fh;
-		close $markup_fh if $markup_fh;
-		unlink $tdir; print "\n"; exit 1 }};
+  close $script_fh if $script_fh;
+  close $markup_fh if $markup_fh;
+  unlink $tdir; print "\n"; exit 1 }};
 
 $tdir = File::Temp->newdir('/tmp/vimcolorXXXX');
 
 if (! $file or $file eq '-') {
-   $file = "$tdir/inputfile";
-   File::Copy::syscopy(\*STDIN, $file);
+  $file = "$tdir/inputfile";
+  File::Copy::syscopy(\*STDIN, $file);
 }
 
 my %ANSI_COLORS = (
-   Comment    =>  'blue',
-   Constant   =>  'red',
-   Identifier =>  'cyan',
-   Statement  =>  'yellow',
-   PreProc    =>  'magenta',
-   Type       =>  'green',
-   Special    =>  'bright_magenta',
-   Underlined =>  'underline',
-   Ignore     =>  'bright_white',
-   Error      =>  'on_red',
-   Todo       =>  'on_cyan',
+  Comment    =>  'blue',
+  Constant   =>  'red',
+  Identifier =>  'cyan',
+  Statement  =>  'yellow',
+  PreProc    =>  'magenta',
+  Type       =>  'green',
+  Special    =>  'bright_magenta',
+  Underlined =>  'underline',
+  Ignore     =>  'bright_white',
+  Error      =>  'on_red',
+  Todo       =>  'on_cyan',
 );
 
 # allow the environment to overwrite:
@@ -123,16 +123,16 @@ sub do_markup {
 
   my $filename = $file;
 
-   # Create a temp file to put the output in.
-   my $out_file = File::Temp->new(TEMPLATE => 'vimcXXXX', DIR => '/tmp');
-   # Create a temp file for the 'script', which is given to vim
-   # with the -s option.
-   my $script_file = "$tdir/scriptfile";
-   open $script_fh, ">$script_file" or die "$!\n";
-   my $markup_file = "$tdir/markupfile";
-   open $markup_fh, ">$markup_file" or die "$!\n";
-   my $filetype_set = defined $filetype ? ":set filetype=$filetype" : '';
-   my $vim_let = $defaults->{vim_let};
+  # Create a temp file to put the output in.
+  my $out_file = File::Temp->new(TEMPLATE => 'vimcXXXX', DIR => '/tmp');
+  # Create a temp file for the 'script', which is given to vim
+  # with the -s option.
+  my $script_file = "$tdir/scriptfile";
+  open $script_fh, ">$script_file" or die "$!\n";
+  my $markup_file = "$tdir/markupfile";
+  open $markup_fh, ">$markup_file" or die "$!\n";
+  my $filetype_set = defined $filetype ? ":set filetype=$filetype" : '';
+  my $vim_let = $defaults->{vim_let};
 
   # on linux '-s' is fast and '--cmd' adds the 2-second startup delay
   # are there situations where --cmd is necessary or useful?
@@ -140,7 +140,7 @@ sub do_markup {
   my $markscript= <<'EOF';
 set report=1000000
 if !strlen(&filetype)
-   filetype detect
+  filetype detect
 endif
 syn on
 new
@@ -161,7 +161,7 @@ while s:lnum <= s:end
     let s:col = s:col + 1
     while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
     let s:id = synIDtrans(s:id)
-	let s:name = synIDattr(s:id, 'name')
+    let s:name = synIDattr(s:id, 'name')
     let s:new = s:new . '>' . s:name . '>' . substitute(substitute(substitute(strpart(s:line, s:startcol - 1, s:col - s:startcol), '&', '\&a', 'g'), '<', '\&l', 'g'), '>', '\&g', 'g') . '<' . s:name . '<'
     if s:col > s:len
       break
@@ -174,12 +174,12 @@ endwhile
 wincmd p
 normal dd
 EOF
-if ($defaults->{all_syntax_groups}) {
-  my %a= (map {$_, 1} ('Normal', keys %ANSI_COLORS, keys %SYNTAX_LINKS));
-  printf $markup_fh "hi %-16s ctermfg=7\n", $_ for keys %a;
-}
-print $markup_fh $markscript;
-close $markup_fh;
+  if ($defaults->{all_syntax_groups}) {
+    my %a= (map {$_, 1} ('Normal', keys %ANSI_COLORS, keys %SYNTAX_LINKS));
+    printf $markup_fh "hi %-16s ctermfg=7\n", $_ for keys %a;
+  }
+  print $markup_fh $markscript;
+  close $markup_fh;
   my @script_lines = (
     map { "$_\n" }
       # do :edit before :let or the buffer variables may get reset
@@ -189,6 +189,7 @@ close $markup_fh;
         grep { defined  $vim_let->{$_} }
           keys %$vim_let
       ),
+
       ':filetype on',
        $filetype_set,
       ":source $markup_file",
@@ -196,16 +197,16 @@ close $markup_fh;
       ':qall!',
   );
 
-   print $script_fh @script_lines;
-   close $script_fh;
+  print $script_fh @script_lines;
+  close $script_fh;
 
-   run(
-      $defaults->{vim_command},
-      $defaults->{vim_options},
-      $filename, ('-s' => "$script_file")
-   );
+  run(
+    $defaults->{vim_command},
+    $defaults->{vim_options},
+    $filename, ('-s' => "$script_file")
+  );
 
-   my $data = do { local $/; <$out_file> };
+  my $data = do { local $/; <$out_file> };
 
   # Given an array ref ($syntax), we add a new syntax chunk to it, unescaping
   # the text & making sure that consecutive chunks of the same type are merged.
@@ -234,7 +235,7 @@ close $markup_fh;
 # This is a subroutine which runs a program.
 # It takes a list of the program name and arguments.
 sub run {
-   my ($prog, @args) = @_;
+  my ($prog, @args) = @_;
 
   {
     my ($in, $out) = (Symbol::gensym(), Symbol::gensym());
@@ -250,16 +251,16 @@ sub run {
     # read handle before waitpid to avoid hanging on older systems
     my $errout = do { local $/; <$err_fh> };
 
-      my $gotpid = waitpid($pid, 0);
-      die "couldn't run the program '$prog'" if $gotpid == -1;
-      my $error = $? >> 8;
-      if ($error) {
-         $errout =~ s/\n+\z//;
-         my $details = $errout eq '' ? '' :
-                       "\n$prog wrote this error output:\n$errout\n";
-         die "$prog returned an error code of '$error'$details";
-      }
-   }
+    my $gotpid = waitpid($pid, 0);
+    die "couldn't run the program '$prog'" if $gotpid == -1;
+    my $error = $? >> 8;
+    if ($error) {
+      $errout =~ s/\n+\z//;
+      my $details = $errout eq '' ? '' :
+                    "\n$prog wrote this error output:\n$errout\n";
+      die "$prog returned an error code of '$error'$details";
+    }
+  }
 }
 
 sub usage {
