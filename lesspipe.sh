@@ -346,31 +346,34 @@ analyze_args () {
 }
 
 has_colorizer () {
+  arg="$1"
+  [[ "$arg" = - ]] && arg=
   [[ $COLOR == *always ]] || return
-  [[ $1 == plain || -z $1 ]] && return
+  [[ $2 == plain || -z $2 ]] && return
   prog=${LESSCOLORIZER%% *}
 
   for i in bat batcat pygmentize source-highlight code2color vimcolor ; do
     [[ -z $prog || $prog == $i ]] && has_cmd $i && prog=$i
   done
-  [[ "$1" =~ ^[0-9]*$ ]] && opt= || opt=" -l $1"
+  [[ "$2" =~ ^[0-9]*$ ]] && opt= || opt=" -l $2"
   case $prog in
     bat|batcat)
       opt="$opt $COLOR" ;;
     pygmentize)
 		[[ -n $LESSCOLORIZER && $LESSCOLORIZER =~ pygmentize\ \ *-O\ *style=[a-z]* ]] && prog=$LESSCOLORIZER
-		res=$(pygmentize -l $1 /dev/null 2>/dev/null) && opt=" -l $1" || opt=" -g" ;;
+		res=$(pygmentize -l $2 /dev/null 2>/dev/null) && opt=" -l $2" || opt=" -g" ;;
     source-highlight)
       prog="source-highlight --failsafe -f esc"
-      [[ -n $opt ]] && opt=" -s $1 -i" || opt=" -i" ;;
+      [[ -z $arg ]] && arg=/dev/stdin
+      [[ -n $opt ]] && opt=" -s $2 -i" || opt=" -i" ;;
     code2color)
-      [[ -n $opt ]] && opt=" -i .$1" ;;
+      [[ -n $opt ]] && opt=" -i .$2" ;;
     vimcolor)
       ;;
     *)
       return ;;
   esac
-  echo "$prog$opt"
+  echo "$prog$opt $arg"
 }
 
 isfinal () {
@@ -510,9 +513,9 @@ isfinal () {
     [[ -n "$file2" ]] && fext=$file2
     [[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
     [[ -z "$fext" ]] && fext=$(fileext "$fileext")
-    colorizer=$(has_colorizer "$fext")
+    colorizer=$(has_colorizer "$2" "$fext")
     if [[ -n $colorizer && $fcat != binary ]]; then
-      nodash "$colorizer" "$2" && return
+      $colorizer && return
     fi
     # if fileext set, we need to filter to get rid of .fileext
     [[ -n $fileext || "$2" == - || "$2" == $t ]] && cat "$2"
