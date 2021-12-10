@@ -4,7 +4,9 @@
 # simplified version to use it as a monolithic function within lesspipe
 #
 # This software is copyright (c) 2002-2006 by Geoff Richards.
+#
 # This software is copyright (c) 2011 by Randy Stauner.
+#
 # This software is copyright (c) 2021 by Wolfgang Friebel.
 #
 # This is free software; you can redistribute it and/or modify it under
@@ -15,12 +17,15 @@ use strict;
 use 5.9.3;
 use IO::File;
 use File::Copy;
-use File::Temp qw(tempfile);
+use File::Temp;
 use Term::ANSIColor qw(color colorvalid);
 use IPC::Open3;
 use Getopt::Std;
-our $opt_l;
-&getopt ('l:');
+
+our ($opt_h, $opt_l);
+&getopts('hl:') || usage();
+usage() if $opt_h;
+
 my ($file) = shift;
 my $filetype = $opt_l;
 
@@ -52,8 +57,27 @@ my %ANSI_COLORS = (
    Todo       =>  'on_cyan',
 );
 
+# allow the environment to overwrite:
+
+my $report_colors;
+my %COLORS = %ANSI_COLORS;
+if ($ENV{TEXT_VIMCOLOR_ANSI}) {
+  my @ADD = split /\s*[=;]\s*/, $ENV{TEXT_VIMCOLOR_ANSI};
+  if (@ADD % 2) {
+    warn "### TEXT_VIMCOLOR_ANSI has wrong content: $ENV{TEXT_VIMCOLOR_ANSI}\n";
+  } else {
+    while (@ADD) {
+      my ($k, $v) = splice @ADD, -2;
+      $COLORS{$k} = $v, next if $v ne '?';
+      $report_colors=1;
+      $COLORS{$k} ||= '';
+    }
+  }
+}
+
 # These extra syntax group are available but linked to the groups above by
 # default in vim. They can get their own highlighting (all_syntax_groups => 1).
+# Gets activated by setting a color for at least one of these members.
 my %SYNTAX_LINKS;
 
 $SYNTAX_LINKS{$_} = 'Constant' for qw(String Character Number Boolean Float);
@@ -63,55 +87,34 @@ $SYNTAX_LINKS{$_} = 'PreProc' for qw(Include Define Macro PreCondit);
 $SYNTAX_LINKS{$_} = 'Type' for qw(StorageClass Structure Typedef);
 $SYNTAX_LINKS{$_} = 'Special' for qw(Tag SpecialChar Delimiter SpecialComment Debug);
 
+my $all_groups = 0;
+$all_groups = 1 if grep {defined $COLORS{$_}} keys %SYNTAX_LINKS;
 # Copy ansi color for main group to all subgroups.
-$ANSI_COLORS{$_} = $ANSI_COLORS{$SYNTAX_LINKS{$_}} for keys %SYNTAX_LINKS;
+$COLORS{$_} ||= $COLORS{$SYNTAX_LINKS{$_}} for keys %SYNTAX_LINKS;
 
+my %colors;
+my $reset = color('reset');
+for (keys (%COLORS)) {
+  if (colorvalid($COLORS{$_})) {
+    $colors{$_} = color($COLORS{$_});
+  } else {
+    warn "### invalid color name '$COLORS{$_}' (Term::ANSIColor) ###\n";
+    $colors{$_} = $reset;
+  }
+}
 # Build a lookup table to determine if a syntax exists.
-my %SYNTAX_TYPE = map {$_, 1} keys %ANSI_COLORS;
+my %SYNTAX_TYPE = map {$_, 1} keys %COLORS;
 
 my $defaults = set_defaults();
 my $syntax = do_markup($defaults, $file, $filetype);
-print_ansi($syntax);
 
 sub set_defaults {
   return {
     vim_command        => 'vim',
-	vim_options        => [qw( -RXZ -i NONE -u NONE -N -n ), "+set nomodeline"],
-    all_syntax_groups  => 0,
+    vim_options        => [qw( -RXZ -i NONE -u NONE -N -n ), "+set nomodeline"],
+    all_syntax_groups  => $all_groups,
     vim_let            => {perl_include_pod => 1, 'b:is_bash' => 1},
   };
-}
-
-sub print_ansi {
-  my ($syntax) = @_;
-
-  # allow the environment to overwrite:
-  my %colors = (
-    %ANSI_COLORS,
-    $ENV{TEXT_VIMCOLOR_ANSI} ? split(/\s*[=;]\s*/, $ENV{TEXT_VIMCOLOR_ANSI}) : ()
-  );
-  for (keys (%colors)) {
-    if (colorvalid($colors{$_})) {
-      $colors{$_} = color($colors{$_});
-    } else {
-      warn "### invalid color name '$colors{$_}' (Term::ANSIColor) ###\n";
-      $colors{$_} = color('reset');
-    }
-  }
-  my $reset = color('reset');
-
-  local $_;
-
-  # compared to join/map or foreach/my this benched as the fastest:
-  my $ansi = '';
-  my $colorize;
-  for (@$syntax) {
-    $colorize ||= $colors{$_->[0]};
-    $ansi .= $colors{$_->[0]}
-      ? $colors{$_->[0]} . $_->[1] . $reset
-      : $_->[1];
-  }
-  print $ansi;
 }
 
 # Actually run Vim and turn the script's output into a datastructure.
@@ -134,9 +137,7 @@ sub do_markup {
   # on linux '-s' is fast and '--cmd' adds the 2-second startup delay
   # are there situations where --cmd is necessary or useful?
 
-  # Specify filename as argument to command (rather than using :edit in script).
-
-my $markscript= <<'EOF';
+  my $markscript= <<'EOF';
 set report=1000000
 if !strlen(&filetype)
    filetype detect
@@ -206,45 +207,28 @@ close $markup_fh;
 
    my $data = do { local $/; <$out_file> };
 
-   # Convert line endings to ones appropriate for the current platform.
-   $data =~ s/\x0D\x0A?/\n/g;
+  # Given an array ref ($syntax), we add a new syntax chunk to it, unescaping
+  # the text & making sure that consecutive chunks of the same type are merged.
+  my ($syntax, $content, %types);
+  $data =~ s/\x0D\x0A?/\n/g;
+  $data =~ s/<(.*?)<>\1>//g; # repeating blocks of the same type
+  for (keys %colors) {
+    $types{$_} = 1 if $data =~ s/>$_>(.*?)<$_</$colors{$_}$1/g; #coloring
+  }
+  # first line without the reset sequence
+  $data =~ s/^>(.*?)>(.*?)<\1</$2/; #no color
+  $data =~ s/>(.*?)>(.*?)<\1</$reset$2/g; #no color
+  # Unescape ampersands and pointies, restore escape
+  my %s=(l=>'<',g=>'>',a=>'&');
+  $data =~s/&([lga])/$s{$1}/g;
+  $data =~ s/\^\[/\e/g;
+  # get start and end of file correct
+  $data .= $reset if $data !~ /\n$/;
+  print $data if $data;
 
-   my $syntax = [];
-   LOOP: {
-      add_markup($syntax, $1, $2), redo LOOP
-         if $data =~ /\G>(.*?)>(.*?)<\1</cgs;
-      add_markup($syntax, '', $1), redo LOOP
-         if $data =~ /\G([^<>]+)/cgs;
-   }
-   return $syntax;
-}
-
-# Given an array ref ($syntax), we add a new syntax chunk to it, unescaping
-# the text and making sure that consecutive chunks of the same type are merged.
-sub add_markup {
-   my ($syntax, $type, $text) = @_;
-
-   # Ignore types we don't know about.  At least one syntax file (xml.vim)
-   # can produce these.  It happens when a syntax type isn't 'linked' to
-   # one of the predefined types.
-   $type = '' unless exists $SYNTAX_TYPE{$type};
-
-   # Unescape ampersands and pointies.
-   my %r=(l=>'<',g=>'>',a=>'&');
-   $text =~s/&([lga])/$r{$1}/g;
-   $text =~ s/&l/</g;
-   $text =~ s/&g/>/g;
-   $text =~ s/&a/&/g;
-   $text =~ s/\^\[/\e/g;
-
-   if (@$syntax && $syntax->[-1][0] eq $type) {
-      # Concatenate consecutive bits of the same type.
-      $syntax->[-1][1] .= $text;
-   }
-   else {
-      # A new chunk of marked-up text.
-      push @$syntax, [ $type, $text ];
-   }
+  return if ! $report_colors;
+  print "\n### Report color settings:\n";
+  print "$_ ($colors{$_}$COLORS{$_}$reset)\n" for keys %types;
 }
 
 # This is a subroutine which runs a program.
@@ -277,4 +261,46 @@ sub run {
       }
    }
 }
-# vim: set ts=2 sts=2 sw=2 expandtab smarttab:
+
+sub usage {
+  print <<EOF;
+usage: vimcolor [-h] [-l language] [filename]
+
+This program works by running the Vim text editor and getting it to apply its
+excellent syntax highlighting (aka 'font-locking') to an input file, and mark
+pieces of text according to whether it thinks they are comments, keywords,
+strings, etc.  The Perl code then reads back this markup and converts it
+to text marked with ANSI escape sequences (using Term::ANSIColor)
+based on the Vim syntax coloring of the input file.
+
+OPTIONS:
+ -h print this help and exit
+ -l specify the type of file Vim should expect, if not recognized correctly
+
+ARGUMENT
+ filename   name of the file to colorize. If not given or - then STDIN is used
+
+You can alter the color scheme using the TEXT_VIMCOLOR_ANSI
+environment variable in the format of "SynGroup=color;"
+For example:
+
+   TEXT_VIMCOLOR_ANSI='Comment=green;Statement = magenta; '
+
+A question mark as colorname displays in addition the color settings for
+the syntax groups found at the end of the program. By default only the
+following SynGroup syntax groups are used:
+
+Comment Constant Identifier Statement PreProc Type Special Underlined
+Ignore Error Todo
+
+If you want to benefit from finer-grained syntax highlighting you can
+request in TEXT_VIMCOLOR_ANSI additional syntax groups from the list
+
+Character Number Boolean Float Function Conditional Repeat Label Operator
+Keyword Exception Include Define Macro PreCondit StorageClass Structure
+Typedef Tag SpecialChar Delimiter SpecialComment Debug
+
+and chose appropriate colors.
+EOF
+  exit;
+}
