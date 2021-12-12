@@ -101,17 +101,23 @@ the author by email.
 
  To activate lesspipe.sh the environment variable **LESSOPEN** has to be defined
  in the following way:
+
         `LESSOPEN="|lesspipe.sh %s"; export LESSOPEN`   (sh like shells)
+
         `setenv LESSOPEN "|lesspipe.sh %s"`             (csh, tcsh)
- If lesspipe.sh is not in the UNIX search path or if the wrong lesspipe.sh is
- found in the search path, then the full path to lesspipe.sh should be given
+
+ If `lesspipe.sh` is not in the UNIX search path or if the wrong `lesspipe.sh` is
+ found in the search path, then the full path to `lesspipe.sh` should be given
  in the above commands.
 
- The command to set **LESSOPEN** can also be displayed by calling lesspipe.sh
+ The command to set **LESSOPEN** can also be displayed by calling `lesspipe.sh`
  without arguments. This can even be used to set **LESSOPEN** directly:
+
         `eval` `` `lesspipe.sh` ``          (bash) or
+
         `lesspipe.sh | source /dev/stdin`   (zsh)
- As lesspipe.sh is accepting only a single argument, a hierarchical list of file
+
+ As `lesspipe.sh` is accepting only a single argument, a hierarchical list of file
  names has to be separated by a non blank character. A colon is rarely found
  in file names, therefore it has been chosen as the separator character. If a
  file name does however contain at least one isolated colon, the equal sign =
@@ -120,14 +126,22 @@ the author by email.
  guarantees a correct processing and display at each stage of the filtering.
 
  To view files in multifile archives the following command can be used:
+
         `less archive_file:contained_file`
+
  This can be used to extract single files from a multifile archive:
+
         `less archive_file:contained_file > extracted_file`
+
  For extracting files less is not required, that can be done also using:
+
         `lesspipe.sh archive_file:contained_file > extracted_file`
+
  Even a file in a multifile archive that itself is contained in yet
  another archive can be viewed this way:
+
         `less super_archive:archive_file:contained_file`
+
  The script is able to extract files up to a depth of 6 where applying a
  decompression algorithm counts as a separate level. In a few rare cases the
  file command does not recognize the correct format.
@@ -143,7 +157,7 @@ the author by email.
  **LESS** can be used to switch on colored less output (should contain -R).
 
  **LESSCOLORIZER** can be set to prefer a highlighting program from the following
- choices (bat batcat pygmentize source-highlight code2color vimcolor).
+ choices (`bat` `batcat` `pygmentize` `source-highlight` `code2color` `vimcolor`).
  Otherwise the first program in that list that is installed will be used.
 
 ## 3. Required programs
@@ -158,62 +172,62 @@ the author by email.
 
 ## 4. Supported file formats
 
- Currently lesspipe.sh [3] supports the following compression methods
- and file types (i.e. the file contents gets transformed by lesspipe.sh):
+ Currently `lesspipe.sh` [3] supports the following compression methods
+ and file types (i.e. the file contents gets transformed by `lesspipe.sh`):
 
 ### 4.1 Supported compression methods and archive formats
-- gzip, compress	requires gzip
-- bzip2			requires bzip2
-- lzma			requires lzma
-- xz			requires xz
-- zstd			requires zstd
-- brotli		requires bro
-- lz4			requires lz4
-- tar			requires optionally tarcolor for coloring
-- ar library	requires ar
-- zip archive	requires unzip
-- jar archive	requires unzip
-- rar archive	requires unrar or rar or bsdtar
-- 7-zip archive	requires 7zr
-- lzip archive	requires lzip
-- iso images	requires isoinfo
-- rpm			requires cpio and rpm2cpio or rpmunpack
-- Debian		requires gzip, optionally dpkg for more info
-- cab			requires cabextract
+- gzip, compress	requires `gzip`
+- bzip2			requires `bzip2`
+- lzma			requires `lzma`
+- xz			requires `xz`
+- zstd			requires `zstd`
+- brotli		requires `bro`
+- lz4			requires `lz4`
+- tar			requires optionally `tarcolor` for coloring
+- ar library	requires `ar`
+- zip archive	requires `unzip`
+- jar archive	requires `unzip`
+- rar archive	requires `unrar or `rar` or `bsdtar`
+- 7-zip archive	requires `7zr`
+- lzip archive	requires `lzip`
+- iso images	requires `isoinfo`
+- rpm			requires `cpio and `rpm2cpio` or `rpmunpack`
+- Debian		requires `gzip, optionally `dpkg` for more info
+- cab			requires `cabextract`
 
 ### 4.2 List of preprocessed file types
-- directory			displayed using ls -lA
-- nroff(man)		requires groff
-- shared library	requires nm
-- MS Word (doc)		requires wvText or antiword or catdoc or libreoffice
-- Powerpoint (ppt)	requires catppt
-- Excel (xls)		requires in2csv (csvkit) or xls2csv
-- odt				requires pandoc or odt2txt or libreoffice
-- odp				requires libreoffice
-- ods				requires xlscat or libreoffice
-- MS Word (docx)	requires pandoc or docx2txt or libreoffice
-- Powerpoint (pptx)	requires pptx2md or libreoffice
-- Excel (xlsx)		requires in2csv or xlscat or excel2csv or libreoffice
-- rtf				requires unrtf or libreoffice
-- epub				requires pandoc
-- html,xml			requires w3m or lynx or elinks or html2text
-- pdf				requires pdftotext or pdftohtml
-- perl pod			requires pod2text or perldoc
-- dvi				requires dvi2tty
-- djvu				requires djvutxt
-- ps				requires ps2ascii (from the gs package)
-- mp3				requires id3v2
-- multimedia formats	requires mediainfo or exiftools
-- image formats		requires mediainfo or exiftools or identify
-- hdf, nc4			requires h5dump or ncdump (NetCDF format)
-- crt, pem, csr, crl	requires openssl
-- matlab			requires matdump
-- Jupyter notebook	requires pandoc
-- markdown			requires mdcat or pandoc
-- log				requires ccze
-- java.class		requires procyon
-- MacOS X plist		requires plistutil
-- binary data		requires strings
+- directory			displayed using `ls -lA`
+- nroff(man)		requires `groff`
+- shared library	requires `nm`
+- MS Word (doc)		requires `wvText` or `antiword` or `catdoc` or `libreoffice`
+- Powerpoint (ppt)	requires `catppt`
+- Excel (xls)		requires `in2csv` (csvkit) or `xls2csv`
+- odt				requires `pandoc` or `odt2txt` or `libreoffice`
+- odp				requires `libreoffice`
+- ods				requires `xlscat` or `libreoffice`
+- MS Word (docx)	requires `pandoc` or `docx2txt` or `libreoffice`
+- Powerpoint (pptx)	requires `pptx2md` or `libreoffice`
+- Excel (xlsx)		requires `in2csv` or `xlscat` or `excel2csv` or `libreoffice`
+- rtf				requires `unrtf` or `libreoffice`
+- epub				requires `pandoc`
+- html,xml			requires `w3m` or `lynx` or `elinks` or `html2text`
+- pdf				requires `pdftotext` or `pdftohtml`
+- perl pod			requires `pod2text` or `perldoc`
+- dvi				requires `dvi2tty`
+- djvu				requires `djvutxt`
+- ps				requires `ps2ascii` (from the gs package)
+- mp3				requires `id3v2`
+- multimedia formats	requires `mediainfo` or `exiftools`
+- image formats		requires `mediainfo` or `exiftools` or `identify`
+- hdf, nc4			requires `h5dump` or `ncdump` (NetCDF format)
+- crt, pem, csr, crl	requires `openssl`
+- matlab			requires `matdump`
+- Jupyter notebook	requires `pandoc`
+- markdown			requires `mdcat` or `pandoc`
+- log				requires `ccze`
+- java.class		requires `procyon`
+- MacOS X plist		requires `plistutil`
+- binary data		requires `strings`
 
 To show the unmodified html, xml or perl pod text append a colon to the file
 name. Appending in addition the file type (html, xml, pod) produces a colored
@@ -221,9 +235,9 @@ output if the conditions for colorizing (see below) are met.
 
 ### 4.3 Conversion of files with alternate character encoding
  If the file utility reports text containing ISO-8859, UTF-8 or UTF-16 encoded
- characters then the text will be transformed using iconv into the default
- encoding. This does assume iconv has the right default which can be wrong
- in some situations. It is checked if iconv would fail. Then the text is
+ characters then the text will be transformed using `iconv` into the default
+ encoding. This does assume `iconv` has the right default which can be wrong
+ in some situations. It is checked if `iconv` would fail. Then the text is
  displayed unmodified.
 
 ## 5. Colorizing the output
@@ -242,26 +256,29 @@ output if the conditions for colorizing (see below) are met.
  wrong language was chosen for syntax highlighting then another one can be
  forced by appending a colon and a suffix to the file name as follows (assuming
  this is a file with perl syntax):
+
         `less config_file:pl`
+
  That works as well to force the call of a colorizer for a given language.
 
 #### 5.1.1 Syntax highlighting choices
  The filter is able to do syntax highlighting for a wide variety of language
- and other format files. If installed, bat/batcat is used for coloring the
- output. If not, pygmentize, source-highlight, code2color is tried and finally
- vimcolor which is the slowest.
+ and other format files. If installed, `bat`/`batcat` is used for coloring the
+ output. If not, `pygmentize`, `source-highlight`, `code2color` is tried and finally
+ `vimcolor` which is the slowest.
  Among these colorizers a preferred one can be forced for coloring by setting
  the ENV variable **LESSCOLORIZER** to the name of the colorizer.
- For pygmentize also a style option can be set:
+ For `pygmentize` also a style option can be set:
+
         `LESSCOLORIZER='pygmentize -O style=somename'`
 
- Much better syntax highlighting is obtained using the less emulation of vim:
- The editor vim comes with a file less.sh, e.g. on Ubuntu located in
+ Much better syntax highlighting is obtained using the `less` emulation of `vim`:
+ The editor `vim` comes with a file `less.sh`, e.g. on Ubuntu located in
  /usr/share/vim/vimXX/macros (XX being the version number). Assuming that file
- location a function lessc (bash, zsh, ksh users)
+ location a function `lessc` (bash, zsh, ksh users)
+
         `lessc () { /usr/share/vim/vimXX/macros/less.sh "$@"}`
- or an alias lessc (csh, tcsh users)
-        `alias lessc /usr/share/vim/vimXX/macros/less.sh`
+
  is defined and `lessc filename` is used to view the colorful file contents.
  The same, but much slower can be achieved using the `vimcolor` colorizer.
 
@@ -289,33 +306,40 @@ contents is colored in a similar fashion as directory contents.
 ## 6. Calling less from standard input
 
 Normally `lesspipe.sh` is not called when less is used within a pipe such as
+
         `cat somefile | less`
+
 This restriction is removed when the **LESSOPEN** variable starts with the
 characters |- or||-.
 Then the colon notation for extracting and displaying files in archives
-does not work. As a way out lesspipe.sh analyses the command line and looks
+does not work. As a way out `lesspipe.sh` analyses the command line and looks
 for the last argument given to less. If it starts with a colon, it is
-interpreted from lesspipe.sh as a continuation of the first parameter.
+interpreted from `lesspipe.sh` as a continuation of the first parameter.
 Examples:
+
         `cat some_c_file | less - :c` is equivalent to `less some_c_file:c`
+
         `cat archive | less - :contained_file` extracts a file from the archive
 
 ## 7. Displaying files with special characters in the file name
 
  Shell meta characters in file names: space (frequently used in windows
- file names), the characters | & ; ( ) ` < > " ' # ~ = $ * ? [ ] or \\
- must be escaped by a \ when used in the shell, e.g. less a\ b.tar.gz:a\\"b
+ file names),
+
+ the characters | & ; ( ) ` < > " ' # ~ = $ * ? [ ] or \\
+
+ must be escaped by a \ when used in the shell, e.g. `less a\ b.tar.gz:a\\"b`
  will display the file a"b contained in the gzipped tar archive a b.tar.gz.
 
 ## 8. (Old) documentation about lesspipe
 
  In English
-	- https://ref.web.cern.ch/CERN/CNL/2002/001/unix-less/
-	- https://www.oreilly.com/library/view/bash-cookbook/0596526784/ch08s15.html
+ - https://ref.web.cern.ch/CERN/CNL/2002/001/unix-less/
+ - https://www.oreilly.com/library/view/bash-cookbook/0596526784/ch08s15.html
  In German:
-	- german.txt (distributed with lesspipe, not updated)
-	- https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/
-	- https://www.linux-community.de/ausgaben/linuxuser/2002/04/lesspipe/
+ - german.txt (distributed with lesspipe, not updated)
+ - https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/
+ - https://www.linux-community.de/ausgaben/linuxuser/2002/04/lesspipe/
 
 ## 9. External links
 
