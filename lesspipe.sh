@@ -291,9 +291,10 @@ get_unpack_cmd () {
   if [[ $fchar == utf-16le ]]; then
     qm="\033[7m?\033[m" # inverted question mark
     rep=-c
-	trans=
-    echo ""|iconv --byte-subst - 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
-	echo ""|iconv -f UTF-16 -t //TRANSLIT - 2>/dev/null && trans="-t //TRANSLIT"
+	trans="-t //TRANSLIT"
+    echo -n ""|iconv --byte-subst - 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
+    echo -n ""|iconv $rep - 2>/dev/null || rep= # MacOS
+	echo -n ""|iconv $rep $trans - 2>/dev/null || trans=
     cmd=(iconv $rep -f UTF-16 $trans "$2")
     return
   fi
