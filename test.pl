@@ -59,7 +59,8 @@ $ENV{LESSCOLORIZER} = 'vimcolor';
 my $duration = time();
 my ($retcode, $sumok, $sumignore, $sumnok, $num) = (0, 0, 0, 0, 0);
 my ($needed, $comment);
-$tdir = File::Temp->newdir('/tmp/lesspipeXXXX');
+my $tmp = $ENV{TMPDIR} || '/tmp';
+$tdir = File::Temp->newdir("$tmp/lesspipeXXXX");
 mkdir "$tdir/tests";
 my $T="$tdir/tests";
 copy("tests/archive.tgz","$T/archive.tgz") or die "$!";
@@ -197,7 +198,7 @@ less $T/tests/test_tar:tests/textfile	# extract file from tar (unpacked)
 = test
 less tests/archive.tgz:test_tar:tests/textfile # (on the fly)
 = test
-### plain tar file names with a : not allowed, use ./tar:name, not tar:name
+###    plain tar file names with a : not allowed, use ./tar:name, not tar:name
 less $T/tests/test:tar			# tar file name with colon git #51
 ~ .* tests/textfile
 less $T/tests/test:tar=tests/textfile	# extract file from tar file with colon
@@ -275,9 +276,9 @@ less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo
 less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo
 = test
 less $T/tests/test_ar			# ar archive contents
-~ .* a=b
+~ .* a=b/?
 less tests/archive.tgz:test_ar		# (on the fly)
-~ .* a=b
+~ .* a=b/?
 less $T/tests/test_ar:a=b			# extract file from ar
 = test
 less tests/archive.tgz:test_ar:a=b	# (on the fly)
@@ -291,7 +292,7 @@ less tests/compress.tgz:test.tar.lzma:tests/textfile	# extract from lzma, needs 
 = test
 less tests/compress.tgz:test.tar.xz:tests/textfile	# extract from xz, needs xz
 = test
-### call dd also for brotli to keep the script structure clean git #19 (revert)
+###    call dd also for brotli to keep the script structure clean git #19 (revert)
 less tests/compress.tgz:test.bro:tests/textfile		# extract from brotli, needs brotli
 = test
 less tests/compress.tgz:test.tar.zst:tests/textfile	# extract from zstandard git #13,20,36,44, needs zstd
@@ -301,7 +302,7 @@ less tests/compress.tgz:test.tar.lz4:tests/textfile	# extract from lz4 git #14, 
 ### filter tests, produce readable output
 less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv
 = test
-### no output if file not modified (watch growing files) git #4,25 (revert)
+###    no output if file not modified (watch growing files) git #4,25 (revert)
 less $T/tests/test_plain			# plain text, no output from lesspipe.sh
 = test=a
 less tests/filter.tgz:test_html		# html text, needs html_converter
@@ -360,7 +361,7 @@ less tests/filter.tgz:test.pem		# SSL related files git #15
 ~ .* 2038 GMT
 less tests/filter.tgz:test.bplist	# Apple binary property list, needs plistutil
 ~ <dict>
-### no test case for decoding gpg/pgp encrypted files git #12
+###    no test case for decoding gpg/pgp encrypted files git #12
 less tests/filter.tgz:test_mp3		# mp3 without mp3 extension, needs mediainfo|exiftools
 ~ Title .* test
 less tests/filter.tgz:test_mp3:mp3	# mp3, needs id3v2
@@ -405,7 +406,7 @@ less $T/tests/test\ \;\'\"\[\(\{ok		# file name with special chars
 = test
 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive containing a file with special chars in the name
 = test
-less $T/tests/special.tgz=a::b::c::d	# file name with colon (use alternate separator)
+less $T/tests/special.tgz=aaa::b::c::d	# file name with colon (use alternate separator)
 = test
 less $T/tests/symlink			# symbolic link to file name with special chars
 = test=a
@@ -425,5 +426,5 @@ less $T/tests/test_plain :			# even watch growing files without +F
 ~ test=a
 less $T/tests/test.jar			# support for jar files git #8,22
 ~ .* META-INF/
-### .lessfilter not implemented git #23 (open)
-### markdown files (mdcat) on MacOSX and iTerm2 without color git #48 (open)
+###    .lessfilter not implemented git #23 (open)
+###    markdown files (mdcat) on MacOSX and iTerm2 without color git #48 (open)

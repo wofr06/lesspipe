@@ -55,6 +55,8 @@ filetype () {
       ftype=sh ;;
     makefile)
       ftype=make ;;
+    epub+zip)
+      ftype=epub ;;
   # chose another file type which can handle the current one
     compress)
       ftype=gzip ;;
@@ -289,8 +291,10 @@ get_unpack_cmd () {
   if [[ $fchar == utf-16le ]]; then
     qm="\033[7m?\033[m" # inverted question mark
     rep=-c
+	trans=
     echo ""|iconv --byte-subst - 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
-    cmd=(iconv $rep -f UTF-16 -t //TRANSLIT "$2")
+	echo ""|iconv -f UTF-16 -t //TRANSLIT - 2>/dev/null && trans="-t //TRANSLIT"
+    cmd=(iconv $rep -f UTF-16 $trans "$2")
     return
   fi
   [[ "$3" == $sep ]] && return
@@ -449,7 +453,7 @@ isfinal () {
     ooffice1)
       { has_cmd sxw2txt && cmd=(istemp sxw2txt "$2"); } ||
       { has_cmd libreoffice && cmd=(istemp "libreoffice --headless --cat" "$2"); } ;;
-    ipynb|epub*)
+    ipynb|epub)
       has_cmd pandoc && cmd=(pandoc -f $x -t plain "$2") ;;
     troff)
       if has_cmd groff; then
@@ -478,9 +482,9 @@ isfinal () {
     djvu)
       has_cmd djvutxt && cmd=(djvutxt "$2") ;;
     x509|crl)
-      has_cmd openssl && cmd=(openssl $x -hash -text -noout  -in "$2") ;;
+      has_cmd openssl && cmd=(istemp "openssl $x -hash -text -noout  -in" "$2") ;;
     csr)
-      has_cmd openssl && cmd=(openssl req -text -noout  -in "$2") ;;
+      has_cmd openssl && cmd=(istemp "openssl req -text -noout  -in" "$2") ;;
     pgp)
       has_cmd gpg && cmd=(gpg -d "$2") ;;
     plist)
