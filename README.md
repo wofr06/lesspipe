@@ -101,22 +101,20 @@ the author by email.
 
  To activate lesspipe.sh the environment variable **LESSOPEN** has to be defined
  in the following way:
-
-        `LESSOPEN="|lesspipe.sh %s"; export LESSOPEN`   (sh like shells)
-
-        `setenv LESSOPEN "|lesspipe.sh %s"`             (csh, tcsh)
-
+```
+        LESSOPEN="|lesspipe.sh %s"; export LESSOPEN  # (sh like shells)
+        setenv LESSOPEN "|lesspipe.sh %s"            # (csh, tcsh)
+```
  If `lesspipe.sh` is not in the UNIX search path or if the wrong `lesspipe.sh` is
  found in the search path, then the full path to `lesspipe.sh` should be given
  in the above commands.
 
  The command to set **LESSOPEN** can also be displayed by calling `lesspipe.sh`
  without arguments. This can even be used to set **LESSOPEN** directly:
-
-        `eval` `` `lesspipe.sh` ``          (bash) or
-
-        `lesspipe.sh | source /dev/stdin`   (zsh)
-
+```
+        eval lesspipe.sh                  # (bash) or
+        lesspipe.sh | source /dev/stdin   # (zsh)
+```
  As `lesspipe.sh` is accepting only a single argument, a hierarchical list of file
  names has to be separated by a non blank character. A colon is rarely found
  in file names, therefore it has been chosen as the separator character. If a
@@ -126,22 +124,22 @@ the author by email.
  guarantees a correct processing and display at each stage of the filtering.
 
  To view files in multifile archives the following command can be used:
-
-        `less archive_file:contained_file`
-
+```
+        less archive_file:contained_file
+```
  This can be used to extract single files from a multifile archive:
-
-        `less archive_file:contained_file > extracted_file`
-
+```
+        less archive_file:contained_file > extracted_file
+```
  For extracting files less is not required, that can be done also using:
-
-        `lesspipe.sh archive_file:contained_file > extracted_file`
-
+```
+        lesspipe.sh archive_file:contained_file > extracted_file
+```
  Even a file in a multifile archive that itself is contained in yet
  another archive can be viewed this way:
-
-        `less super_archive:archive_file:contained_file`
-
+```
+        less super_archive:archive_file:contained_file
+```
  The script is able to extract files up to a depth of 6 where applying a
  decompression algorithm counts as a separate level. In a few rare cases the
  file command does not recognize the correct format.
@@ -256,9 +254,9 @@ output if the conditions for colorizing (see below) are met.
  wrong language was chosen for syntax highlighting then another one can be
  forced by appending a colon and a suffix to the file name as follows (assuming
  this is a file with perl syntax):
-
-        `less config_file:pl`
-
+```
+        less config_file:pl
+```
  That works as well to force the call of a colorizer for a given language.
 
 #### 5.1.1 Syntax highlighting choices
@@ -269,16 +267,16 @@ output if the conditions for colorizing (see below) are met.
  Among these colorizers a preferred one can be forced for coloring by setting
  the ENV variable **LESSCOLORIZER** to the name of the colorizer.
  For `pygmentize` also a style option can be set:
-
-        `LESSCOLORIZER='pygmentize -O style=somename'`
-
+```
+        LESSCOLORIZER='pygmentize -O style=somename'
+```
  Much better syntax highlighting is obtained using the `less` emulation of `vim`:
  The editor `vim` comes with a file `less.sh`, e.g. on Ubuntu located in
  /usr/share/vim/vimXX/macros (XX being the version number). Assuming that file
  location a function `lessc` (bash, zsh, ksh users)
-
-        `lessc () { /usr/share/vim/vimXX/macros/less.sh "$@"}`
-
+```
+        lessc () { /usr/share/vim/vimXX/macros/less.sh "$@"}
+```
  is defined and `lessc filename` is used to view the colorful file contents.
  The same, but much slower can be achieved using the `vimcolor` colorizer.
 
@@ -306,9 +304,9 @@ contents is colored in a similar fashion as directory contents.
 ## 6. Calling less from standard input
 
 Normally `lesspipe.sh` is not called when less is used within a pipe such as
-
-        `cat somefile | less`
-
+```
+        cat somefile | less
+```
 This restriction is removed when the **LESSOPEN** variable starts with the
 characters |- or||-.
 Then the colon notation for extracting and displaying files in archives
@@ -316,11 +314,10 @@ does not work. As a way out `lesspipe.sh` analyses the command line and looks
 for the last argument given to less. If it starts with a colon, it is
 interpreted from `lesspipe.sh` as a continuation of the first parameter.
 Examples:
-
-        `cat some_c_file | less - :c` is equivalent to `less some_c_file:c`
-
-        `cat archive | less - :contained_file` extracts a file from the archive
-
+```
+        cat some_c_file | less - :c          # equivalent to less some_c_file:c
+        cat archive | less - :contained_file # extracts a file from the archive
+```
 ## 7. Displaying files with special characters in the file name
 
  Shell meta characters in file names: space (frequently used in windows
@@ -336,6 +333,7 @@ Examples:
  In English
  - https://ref.web.cern.ch/CERN/CNL/2002/001/unix-less/
  - https://www.oreilly.com/library/view/bash-cookbook/0596526784/ch08s15.html
+
  In German:
  - german.txt (distributed with lesspipe, not updated)
  - https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/
