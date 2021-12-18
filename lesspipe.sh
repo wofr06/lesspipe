@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # lesspipe.sh, a preprocessor for less (version 2.00-alpha)
 # Author:  Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
@@ -179,15 +179,15 @@ nodash () {
 
 show () {
   file1="${1%%$sep*}"
-  rest1="${1#$file1}"
+  rest1="${1#"$file1"}"
   while [[ "$rest1" == $sep$sep* ]]; do
     if [[ "$rest1" == $sep$sep ]]; then
       break
     else
       rest1="${rest1#$sep$sep}"
       file1="${rest1%%$sep*}"
-      rest1="${rest1#$file1}"
-      file1="${1%$rest1}"
+      rest1="${rest1#"$file1"}"
+      file1="${1%"$rest1"}"
     fi
   done
   if [[ ! -e "$file1" && "$file1" != '-' ]]; then
@@ -195,18 +195,18 @@ show () {
   fi
   rest11="${rest1#$sep}"
   file2="${rest11%%$sep*}"
-  rest2="${rest11#$file2}"
+  rest2="${rest11#"$file2"}"
   while [[ "$rest2" == $sep$sep* ]]; do
     if [[ "$rest2" == $sep$sep ]]; then
       break
     else
       rest2="${rest2#$sep$sep}"
       file2="${rest2%%$sep*}"
-      rest2="${rest2#$file2}"
-      file2="${rest11%$rest2}"
+      rest2="${rest2#"$file2"}"
+      file2="${rest11%"$rest2"}"
     fi
   done
-  rest2="${rest11#$file2}"
+  rest2="${rest11#"$file2"}"
   rest11="$rest1"
 
   if [[ "$cmd" == "" ]]; then

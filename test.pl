@@ -322,7 +322,7 @@ less tests/filter.tgz:test.class	# java class file, needs procyon
 less tests/filter.tgz:test_docx		# docx (neu) git #24,26,27,37, needs pandoc|docx2txt|libreoffice
 = test
 less tests/filter.tgz:test_pptx		# pptx (neu), needs pptx2md,mdcat|pptx2md,pandoc|libreoffice,html_converter
-c test
+~ processing slide 1...|.*test.*
 less tests/filter.tgz:test_xlsx		# xlsx (neu), needs in2csv|xlscat|excel2csv|libreoffice
 = test
 less tests/filter.tgz:test_odt		# odt, needs pandoc|odt2txt|libreoffice
@@ -372,7 +372,7 @@ less tests/filter.tgz:test_mp3:mp3	# mp3, needs id3v2
 ~ Title  : test .*
 less tests/filter.tgz:test_data		# binary data
 = test
-### colorizing tests
+### colorizing tests (ok should be displayed colored, for MacOSX see git #48)
 less $T/tests				# directory
 c test.jar
 less tests/archive.tgz			# contents of tar colorized with tarcolor
@@ -406,9 +406,17 @@ c test=a
 ### github issues (solved and unsolved) and other test cases
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git issue #1
 ~ .*tests/test_zip:non-existent-file.*
-less $T/tests/test\ \;\'\"\[\(\{ok		# file name with special chars
+less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
-less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive containing a file with special chars in the name
+less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
+= test
+less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces git issue 69
+~ .*test\[a\]\(b\)\{c\}
+less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc.
+= test
+less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces (on the fly)
+~ .*test\[a\]\(b\)\{c\}
+less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc. (on the fly)
 = test
 less $T/tests/special.tgz=aaa::b::c::d	# file name with colon (use alternate separator)
 = test
