@@ -343,15 +343,20 @@ Examples:
 
 (last checked: Nov 30 2021):
 
-### 9.1 URLs to some utilities
+### 9.1 URLs to some utilities (with last known release)
 - 7zr                  https://sourceforge.net/projects/p7zip/ (2016)
 - antiword             https://www.winfield.demon.nl/ (2005)
 - cabextract           https://www.cabextract.org.uk/ (2019)
+- catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
+- ccze                 https://github.com/cornet/ccze (2011)
+- djvutxt              https://sourceforge.net/projects/djvu/ (2021)
 - docx2txt             https://docx2txt.sourceforge.net/ (2014)
 - dvi2tty              https://www.ctan.org/tex-archive/dviware/dvi2tty/ (2016)
+- excel2csv            https://github.com/informationsea/excel2csv (2018)
 - html2text            https://www.mbayer.de/html2text/ (2016 version 1.3.2a)
 - id3v2                https://id3v2.sourceforge.net/ (2010)
 - lzip                 https://download.savannah.gnu.org/releases/lzip/ (2021)
+- matdump              https://github.com/tbeu/matio (2021)
 - mediainfo            https://mediaarea.net/MediaInfo/ (2021)
 - odt2txt              https://github.com/dstosberg/odt2txt (2017)
 - pandoc               https://pandoc.org/ (2021)

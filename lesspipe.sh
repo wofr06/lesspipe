@@ -153,8 +153,7 @@ contentline () {
 }
 
 nexttmp () {
-  ran=$(od -An -N2 -i /dev/random)
-  declare new="$tmpdir/lesspipe.${ran##* }"
+  declare new="$tmpdir/lesspipe.$RANDOM"
   echo "$new"
 }
 
@@ -291,10 +290,9 @@ get_unpack_cmd () {
   if [[ $fchar == utf-16le ]]; then
     qm="\033[7m?\033[m" # inverted question mark
     rep=-c
-	trans="-t //TRANSLIT"
-    echo -n ""|iconv --byte-subst - 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
-    echo -n ""|iconv $rep - 2>/dev/null || rep= # MacOS
-	echo -n ""|iconv $rep $trans - 2>/dev/null || trans=
+	trans=
+    echo ""|iconv --byte-subst - 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
+	echo ""|iconv -f UTF-16 -t //TRANSLIT - 2>/dev/null && trans="-t //TRANSLIT"
     cmd=(iconv $rep -f UTF-16 $trans "$2")
     return
   fi
@@ -675,6 +673,7 @@ if has_cmd w3m || has_cmd lynx || has_cmd elinks || has_cmd html2text; then
     has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
     has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
     # different incompatible versions with the name html2text may let this fail
+	# html2text -utf8  || html2text -from_encoding utf-8
     has_cmd html2text && nodash html2text "$1"
   }
 fi

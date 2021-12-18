@@ -33,18 +33,22 @@ use vars qw(%ENV);
 
 my ($verbose, $errors, $noaction, $fname, @numtest);
 $fname = 'lesspipe.sh';
-while ($ARGV[0]) {
-	if ($ARGV[0] =~ /^\-([env]+$)/) {
+my $args = "@ARGV";
+$args =~ s/(?:^|\s)(\d+)\s*\-\s*(\d+)(?:$|\s)/ $1-$2 /g;
+$args =~ s/,/ /g;
+for (split ' ', $args) {
+	if (/^\-([env]+$)/) {
 		my $x = $1;
 		$verbose = 1, $errors = 1 if $x =~ /v/;
 		$errors = 1 if $x =~ /e/;
 		$noaction = 1 if $x =~ /n/;
-		shift;
-	} elsif ($ARGV[0] =~ /^\d+/) {
-		push @numtest, shift;
+	} elsif (/^(\d*)-(\d+)$/) {
+		push @numtest, $_ for ($1 || 1 .. $2);
+	} elsif (/^(\d+)$/) {
+		push @numtest, $1;
 	} else {
-		usage() if ! -r $ARGV[0];
-		$fname = shift;
+		usage() if ! -r $_;
+		$fname = $_;
 	}
 }
 $fname = "./$fname" if $fname !~ m|/|;
@@ -60,6 +64,7 @@ my $duration = time();
 my ($retcode, $sumok, $sumignore, $sumnok, $num) = (0, 0, 0, 0, 0);
 my ($needed, $comment);
 my $tmp = $ENV{TMPDIR} || '/tmp';
+$tmp =~ s|/$||;
 $tdir = File::Temp->newdir("$tmp/lesspipeXXXX");
 mkdir "$tdir/tests";
 my $T="$tdir/tests";
@@ -73,7 +78,6 @@ my $tar = Archive::Tar->new;
 for my $arch (qw(archive compress filter special)) {
 	my $next = Archive::Tar->iter("$arch.tgz", 1);
 	while( my $f = $next->() ) {
-		#print $f->name, "\n";
 		$f->extract or warn "Extraction failed";
 	}
 }

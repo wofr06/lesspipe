@@ -75,7 +75,6 @@ cd $RPM_BUILD_DIR
 %defattr(-,root,root)
 %{prefix}/bin/lesspipe.sh
 %{prefix}/bin/code2color
-%{prefix}/bin/sxw2txt
 %{prefix}/bin/tarcolor
 %{prefix}/share/man/man1
 /etc/profile.d
