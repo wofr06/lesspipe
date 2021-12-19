@@ -27,6 +27,10 @@ If the file command reports text with
 characters then the text will be transformed using iconv into the default
 encoding. This does assume iconv has the right default which can be wrong
 in some situations.
+.PP
+When using the programs \fBgit\fP, \fBvim\fP or \fBmutt\fP they can be
+enabled to read non-text files by using lesspipe.sh. That is described in
+the Wiki at \fIhttps://github.com/wofr06/lesspipe/wiki\fP.
 .SH FILTER ACTIVATION
 The filter is called from \fBless\fP provided the environment variable
 \fBLESSOPEN\fP is set properly. For ksh like shells (\fIbash, zsh\fP)
