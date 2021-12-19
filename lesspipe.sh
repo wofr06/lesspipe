@@ -21,14 +21,14 @@ fileext () {
 
 filetype () {
   # do not depend on the file extension, if possible
-  fname=$1
+  fname="$1"
   if [[ "$1" == - ]]; then
     declare t=$(nexttmp)
     head -c 40000 > "$t" 2>/dev/null
     set "$t" "$2"
-    fname=$fileext
+    fname="$fileext"
   fi
-  fext=$(fileext "$fname")
+  fext=$("fileext" "$fname")
   ### get file type from mime type
   declare ft=$(file -L -s -b --mime "$1" 2> /dev/null)
   fchar="${ft##*=}"
@@ -158,7 +158,7 @@ nexttmp () {
 }
 
 istemp () {
-  prog=$1
+  prog="$1"
   shift
   if [[ "$1" = - ]]; then
     shift
@@ -174,7 +174,7 @@ nodash () {
   prog="$1"
   shift
   [[ "$1" == - ]] && shift
-  $prog $@
+  $prog "$@"
 }
 
 show () {
@@ -302,7 +302,7 @@ get_unpack_cmd () {
   # remember name of file to extract or file type
   [[ -n "$file2" ]] && fileext="$file2"
   # extract from archive
-  rest1=$rest2
+  rest1="$rest2"
   rest2=
   case "$x" in
     tar)
@@ -381,7 +381,7 @@ has_colorizer () {
 
 isfinal () {
   if [[ "$3" == *$sep ]]; then
-    cat $2
+    cat "$2"
     return
   fi
   if [[ -z "$cmd" ]]; then
@@ -491,7 +491,7 @@ isfinal () {
     mp3)
       has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$2") ;;
     log)
-      has_cmd ccze && cat $2 | ccze -A
+      has_cmd ccze && cat "$2" | ccze -A
       return ;;
   esac
   fi
@@ -513,7 +513,7 @@ isfinal () {
   if [[ -n $cmd ]]; then
     "${cmd[@]}"
   else
-    [[ -n "$file2" ]] && fext=$file2
+    [[ -n "$file2" ]] && fext="$file2"
     [[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
     [[ -z "$fext" ]] && fext=$(fileext "$fileext")
     colorizer=$(has_colorizer "$2" "$fext")
@@ -542,7 +542,7 @@ ispdf () {
 
 isar () {
   if [[ -n $2 ]]; then
-    istemp "ar p" $1 $2
+    istemp "ar p" "$1" "$2"
   else
     istemp "ar vt" "$1"
   fi
@@ -550,7 +550,7 @@ isar () {
 
 iszip () {
   if [[ -n $2 ]]; then
-    istemp "unzip -avp" $1 $2
+    istemp "unzip -avp" "$1" "$2"
   else
     istemp "unzip -l" "$1"
   fi
@@ -655,8 +655,8 @@ is9660iso () {
 
 isoffice () {
   t=$(nexttmp)
-  t2=$t.$2
-  cat $1 > $t2
+  t2=$t."$2"
+  cat "$1" > $t2
   libreoffice --headless --convert-to html --outdir "$tmpdir" "$t2" > /dev/null 2>&1
   ishtml $t.html
 }
@@ -667,7 +667,7 @@ isoffice2 () {
 
 if has_cmd w3m || has_cmd lynx || has_cmd elinks || has_cmd html2text; then
   ishtml () {
-    [[ $1 == - ]] && arg1=-stdin || arg1=$1
+    [[ $1 == - ]] && arg1=-stdin || arg1="$1"
     # 4 lines following can easily be reshuffled according to the preferred tool
     has_cmd w3m && nodash "w3m -dump -T text/html" "$1" && return ||
     has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
