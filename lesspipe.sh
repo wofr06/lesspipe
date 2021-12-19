@@ -426,7 +426,7 @@ isfinal () {
       { has_cmd in2csv && cmd=(in2csv -f xlsx "$2"); } ||
       { has_cmd xlscat && cmd=(istemp xlscat "$2"); } ||
       { has_cmd excel2csv && cmd=(istemp excel2csv "$2"); } ||
-      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
+      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" xlsx); } ;;
     odt)
       { has_cmd pandoc && cmd=(pandoc -f odt -t plain "$2"); } ||
       { has_cmd odt2txt && cmd=(istemp odt2txt "$2"); } ||
@@ -451,7 +451,7 @@ isfinal () {
       { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" xls); } ;;
     ooffice1)
       { has_cmd sxw2txt && cmd=(istemp sxw2txt "$2"); } ||
-      { has_cmd libreoffice && cmd=(istemp "libreoffice --headless --cat" "$2"); } ;;
+      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" odt); } ;;
     ipynb|epub)
       has_cmd pandoc && cmd=(pandoc -f $x -t plain "$2") ;;
     troff)
