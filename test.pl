@@ -12,13 +12,16 @@ $SIG{INT} = sub  { if ($tdir) {unlink $tdir; print "\n"; exit 1 }};
 
 sub usage {
 	print <<EOF;
-Usage: $0 [-e] [-n] [-v] [testnumber[s]] [file_name]
+Usage: $0 [-e] [-n] [-v] [number[s]] [string[s]] [file_name]
   Test lesspipe.sh against a number of files and report failures
   -v        Print the output of all commands and the test string
   -e        Print the output of failing commands and the test string
   -n        Test commands are printed only, not checked
             With -v print also test numbers and required auxiliary programs
   file_name The script to test against in the current directory [lesspipe.sh]
+  The number[s] and string[s] arguments can be used to limit the tests to be
+  performed. Number ranges are allowed. Strings can be part of the command
+  or the comment attached to the test commands.
   The test commands and test strings are stored at the end of this program
   The '= some string' means, that 'some string' including a newline char
   must be the test result. The '~ match string' means, that 'match string'
@@ -31,13 +34,13 @@ EOF
 
 use vars qw(%ENV);
 
-my ($verbose, $errors, $noaction, $fname, @numtest);
+my ($verbose, $errors, $noaction, $fname, @numtest, @strtest);
 $fname = 'lesspipe.sh';
 my $args = "@ARGV";
 $args =~ s/(?:^|\s)(\d+)\s*\-\s*(\d+)(?:$|\s)/ $1-$2 /g;
 $args =~ s/,/ /g;
 for (split ' ', $args) {
-	if (/^\-([env]+$)/) {
+	if (/^\-([enrv]+$)/) {
 		my $x = $1;
 		$verbose = 1, $errors = 1 if $x =~ /v/;
 		$errors = 1 if $x =~ /e/;
@@ -46,19 +49,23 @@ for (split ' ', $args) {
 		push @numtest, $_ for ($1 || 1 .. $2);
 	} elsif (/^(\d+)$/) {
 		push @numtest, $1;
-	} else {
-		usage() if ! -r $_;
+	} elsif (-r $_) {
 		$fname = $_;
+	} elsif (/^([-\w]+)$/) {
+		push @strtest, $1;
+	} else {
+		usage();
 	}
 }
 $fname = "./$fname" if $fname !~ m|/|;
-
+print "testing $fname\n";
 # set the env variables to standard contents to get reproducible results
 $ENV{LESS} = '-R';
 $ENV{LESSOPEN} = "|-$fname %s";
 print "LESSOPEN=\"$ENV{LESSOPEN}\"\n\n" if $noaction;
 $ENV{LESSQUIET} =1;
 $ENV{LESSCOLORIZER} = 'vimcolor';
+$ENV{LANG} = 'C';
 
 my $duration = time();
 my ($retcode, $sumok, $sumignore, $sumnok, $num) = (0, 0, 0, 0, 0);
@@ -86,7 +93,7 @@ chdir $cwd;
 
 while (<DATA>) {
 	last if /^END\n$/;
-	print if /^###/ and ! @numtest;
+	print if /^###/ and ! @numtest and ! @strtest;
 	next if /^#|^\s*$/;
 	if (! /^\s*less\s|\|\s*less|^\s*LESS|\|\s*LESS.*less/) {
 		print "### skipping invalid line $_";
@@ -97,10 +104,14 @@ while (<DATA>) {
 	$cmd =~ s/\$T/$tdir/g;
 	my $comp = <DATA>;
 	$num++;
-	next if @numtest and ! grep {$num == $_} @numtest;
+	my $skip;
+	$skip = 1 if @numtest and ! grep {$num == $_} @numtest;
+	$skip = 1 if @strtest and ! grep {$cmd =~ /$_/} @strtest;
+	next if $skip;
 	$comment = $cmd =~ s/\s+#(.*)// ? $1 : '';
 	$needed = $comment =~ s/[#,]? needs (.*)// ? $1 : '';
 	$needed =~ s/ or /|/g;
+	$needed =~ s/ not /!/g;
 	$needed =~ s/ and /,/g;
 	my @needed = split /\s*\|\s*/, $needed;
 	map {s/html_converter/w3m,lynx,elinks,html2text/} @needed;
@@ -114,7 +125,11 @@ while (<DATA>) {
 	for my $andargs (@needed) {
 		my $good = 1;
 		for (split /\s*,\s*/, $andargs) {
-			$good = 0 if is_not_exec($_);
+			if (s/^!//) {
+				$good = 0 if ! is_not_exec($_);
+			} else {
+				$good = 0 if is_not_exec($_);
+			}
 		}
 		$ignore = 0 if $good;
 	}
@@ -124,12 +139,12 @@ while (<DATA>) {
 		$ignore = 1;
 		$needed = 'a colorizer';
 	}
-	my $res = $ignore ? '' : `$cmd 2>&1`;
+	my $res = $ignore ? '' : ($cmd =~ /|/ ? `$cmd` : `$cmd 2>&1`);
 	my $ok = 0;
 	my $lines = 0;
 	# zsh|bash|ksh style|file not found
-	if ($res =~ /command not found: (\S+)|(\S+):\s+command not found|(\S+):\s+not found|no such file or directory: .*?([^\/]+)\b$/m) {
-		$res = "NOT found: " . $1|$2|$3|$4;
+	if ($res =~ /command not found: \S+|\S+:\s+command not found|\S+:\s+not found|no such file or directory: .*?[^\/]+\b$/m) {
+		$res = "NOT found: " . $res;
 		$ok = 1;
 	} else {
 		if ($ignore) {
@@ -143,7 +158,7 @@ while (<DATA>) {
 			}
 		}
 	}
-	print "result for $cmd\n$res" if $ok and $verbose;
+	print "result for :$cmd:\n$res" if $ok and $verbose;
 	printf "%2d %6s %s %s\n", $num, $ignore ? 'ignore' : $ok ? $ok: 'NOT ok', $comment, $ignore ? "(needs $needed)" : '';
 	print "\t   failing command: $cmd\n" if ! $ok and ! $ignore;
 }
@@ -271,13 +286,21 @@ less $T/tests/test_1file_7za		# extract the only file from 7z, needs 7zr|7za
 = test
 less tests/archive.tgz:test_1file_7za	# (on the fly), needs 7zr|7za
 = test
-less $T/tests/test_iso			# iso9660 contents, needs isoinfo
-~ /ISO.TXT;1
-less tests/archive.tgz:test_iso		# (on the fly), needs isoinfo
-~ /ISO.TXT;1
-less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo
+less $T/tests/test_iso			# iso9660 contents, needs bsdtar
+~ .* ISO.TXT
+less tests/archive.tgz:test_iso		# (on the fly), needs bsdtar
+~ .* ISO.TXT
+less $T/tests/test_iso:ISO.TXT		# extract file from iso9660, needs bsdtar
 = test
-less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo
+less tests/archive.tgz:test_iso:ISO.TXT	# (on the fly), needs bsdtar
+= test
+less $T/tests/test_iso			# iso9660 contents, needs isoinfo, not bsdtar
+~ /ISO.TXT;1
+less tests/archive.tgz:test_iso		# (on the fly), needs isoinfo, not bsdtar
+~ /ISO.TXT;1
+less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo, not bsdtar
+= test
+less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo, not bsdtar
 = test
 less $T/tests/test_ar			# ar archive contents
 ~ .* a=b/?
@@ -405,7 +428,7 @@ diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped thro
 c test=a
 ### github issues (solved and unsolved) and other test cases
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git issue #1
-~ .*tests/test_zip:non-existent-file.*
+~ .* non-existent-file.*
 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name

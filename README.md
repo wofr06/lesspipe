@@ -1,6 +1,6 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.00-alpha
+Version: 2.00-beta
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto://wp.friebel@gmail.com)
 License: GPL
 
@@ -163,7 +163,7 @@ the author by email.
  Most of the programs are checked for its existence before they get called
  in lesspipe.sh. However some of the programs are assumed to always be
  installed. That is foremost `bash` or `zsh` (have the appropriate first line
- in the script), then `file` and other utilities like `ar`, `cat`, `cut`, `dd`,
+ in the script), then `file` and other utilities like `cat`, `dd`,
  `grep`, `gzip`, `ln`, `ls`, `mkdir`, `rm`, `sed`, `strings` and `tar`.
  For testing and configuring lesspipe.sh `perl` is used, that is however not
  required in just using `lesspipe.sh`
@@ -182,14 +182,14 @@ the author by email.
 - brotli		requires `bro`
 - lz4			requires `lz4`
 - tar			requires optionally `tarcolor` for coloring
-- ar library	requires `ar`
-- zip archive	requires `unzip`
-- jar archive	requires `unzip`
-- rar archive	requires `unrar or `rar` or `bsdtar`
+- ar library	requires `bsdtar` or `ar`
+- zip archive	requires `bsdtar` or `unzip`
+- jar archive	requires `bsdtar` or `unzip`
+- rar archive	requires `bsdtar` or `unrar or `rar`
 - 7-zip archive	requires `7zr`
 - lzip archive	requires `lzip`
-- iso images	requires `isoinfo`
-- rpm			requires `cpio and `rpm2cpio` or `rpmunpack`
+- iso images	requires `bsdtar` or `isoinfo`
+- rpm			requires `cpio` or `bsdtar` or  and `rpm2cpio` or `rpmunpack`
 - Debian		requires `gzip, optionally `dpkg` for more info
 - cab			requires `cabextract`
 

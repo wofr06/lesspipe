@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lesspipe.sh, a preprocessor for less (version 2.00-alpha)
+# lesspipe.sh, a preprocessor for less (version 2.00-beta)
 # Author:  Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 set +o noclobber
@@ -306,13 +306,16 @@ get_unpack_cmd () {
   rest2=
   case "$x" in
     tar)
-      cmd=(istar "$2" "$file2") ;;
+      { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
+      { cmd=(istar tar "$2" "$file2"); } ;;
     rpm)
-      has_cmd cpio && { has_cmd rpm2cpio || has_cmd rpmunpack; } && cmd=(isrpm "$2" "$file2") ;;
+      { has_cmd cpio || has_cmd bsdtar; } &&
+      { has_cmd rpm2cpio || has_cmd rpmunpack; } && cmd=(isrpm "$2" "$file2") ;;
     java-archive|zip)
-      has_cmd unzip && cmd=(iszip "$2" "$file2") ;;
+      { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
+      { has_cmd unzip && cmd=(iszip "$2" "$file2"); } ;;
     debian*-package)
-      cmd=(isdeb "$2" "$file2") ;;
+      has_cmd ar && cmd=(isdeb "$2" "$file2") ;;
     rar)
         { has_cmd unrar && cmd=(israr unrar "$2" "$file2"); } ||
         { has_cmd rar && cmd=(israr rar "$2" "$file2"); } ||
@@ -323,22 +326,38 @@ get_unpack_cmd () {
       { has_cmd 7zr && cmd=(is7zarchive 7zr "$2" "$file2"); } ||
       { has_cmd 7za && cmd=(is7zarchive 7za "$2" "$file2"); } ;;
     iso9660-image)
-      has_cmd isoinfo && cmd=(is9660iso "$2" "$file2") ;;
+      { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
+      { has_cmd isoinfo && cmd=(is9660iso "$2" "$file2"); } ;;
     archive)
-      cmd=(isar "$2" "$file2") ;;
+      { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
+      { cmd=(isar "$2" "$file2"); } ;;
   esac
     [[ -n $cmd && -z $file2 ]] && msg "use ${x}_file${sep}contained_file to view a file in the archive"
     [[ -n $cmd && -n $file2 ]] && file2=
 }
 
 analyze_args () {
+  # determine how we are called
+  cmdtree=`ps -T -opid= -oargs=`
+  # adjust, if we are called from the test suite
+  [[ $cmdtree =~ ./test.pl\ .*|./test.pl ]] && addmatch='[0-9]* '
+  cmdtree=`echo $cmdtree|sed "s/[0-9]* $addmatch//;s/ [0-9]* /;/g;s/^[^;]*;//"`
+  lessarg=${cmdtree%%;*}
+  [[ $lessarg == *test.pl\ * ]] && lessarg=${cmdtree##$lessarg;*}
+  # return if we want to watch growing files
+  [[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
+  # if lesspipe is called in pipes, return immediately for some use cases
+  if [[ $LESSOPEN == *-* ]]; then
+    # man pandoc output errorneously recognized as html
+    case $lessarg in
+      man\ *|*/man\ *|*/perldoc\ *)
+        exit 0
+    esac
+  fi
   # color is set when calling less with -r or -R
-  lessarg=`ps -p $PPID -oargs=`
-  [[ $lessarg != */less\ * ]] && [[ $lessarg != less\ * ]] && \
-  lesspid=`ps -p $PPID -oppid=` && lessarg=`ps -p $lesspid -oargs=`
-  [[ $lessarg == *\ +F\ * || $lessarg == *\ : ]] && return 1
-  lessarg=`echo $lessarg|sed 's/-[a-zA-Z]*[rR]/-r/'`
+  #[[ $lessarg == *less\ * ]] || return
   lessarg="$LESS $lessarg"
+  lessarg=`echo $lessarg|sed 's/-[a-zA-Z]*[rR]/-r/'`
   if has_cmd tput && [[ $(tput colors) -ge 8 && $lessarg == *-[rR]* ]]; then
     COLOR="--color=always"
   else
@@ -400,7 +419,7 @@ isfinal () {
     html|xml)
       [[ -z $file2 ]] && has_cmd ishtml && cmd=(ishtml "$2") ;;
     pdf)
-      { has_cmd pdftotext && cmd=(istemp pdftotext -nopgbrk -q -- "$2" -); } ||
+      { has_cmd pdftotext && cmd=(istemp pdftotext -layout -nopgbrk -q -- "$2" -); } ||
       { has_cmd pdftohtml && has_cmd ishtml && cmd=(istemp ispdf "$2"); } ||
       { has_cmd pdfinfo && cmd=(istemp pdfinfo "$2"); } ;;
     postscript)
@@ -464,7 +483,7 @@ isfinal () {
       fi ;;
     rtf)
       { has_cmd unrtf && cmd=(istemp "unrtf --text" "$2"); } ||
-      { has_cmd libreoffice && cmd=(istemp "libreoffice --headless --cat" "$2"); } ;;
+      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
     dvi)
       has_cmd dvi2tty && cmd=(istemp "dvi2tty -q" "$2") ;;
     sharedlib)
@@ -526,13 +545,14 @@ isfinal () {
 }
 
 istar () {
-  [[ "$1" =~ ^[a-z_-]*:.* ]] && echo $1: remote operation tar host:file not allowed && return
-  if [[ -n $2 ]]; then
-    tar Oxf "$1" "$2" 2>&1
+  prog=$1
+  [[ "$2" =~ ^[a-z_-]*:.* ]] && echo $2: remote operation tar host:file not allowed && return
+  if [[ -n $3 ]]; then
+    $prog Oxf "$2" "$3" 2>&1
   elif [[ $COLOR == *always ]] && has_cmd tarcolor; then
-    tar tvf "$1" | tarcolor
+    $prog tvf "$2" | tarcolor
   else
-    tar tvf "$1"
+    $prog tvf "$2"
   fi
 }
 
@@ -550,7 +570,7 @@ isar () {
 
 iszip () {
   if [[ -n $2 ]]; then
-    istemp "unzip -avp" "$1" "$2"
+    istemp "unzip -avp" "$1" "$2" 2>&1
   else
     istemp "unzip -l" "$1"
   fi
@@ -561,15 +581,31 @@ isrpm () {
     istemp "rpm -qivp" "$1"
     [[ $1 == - ]] && set "$t" "$1"
     contentline
-    if has_cmd rpm2cpio && has_cmd cpio; then
-      rpm2cpio "$1" 2>/dev/null|cpio -i -tv 2>/dev/null
-    elif has_cmd rpmunpack && has_cmd cpio; then
-      cat "$1" | rpmunpack | gzip -cd | cpio -i --quiet -tv 2>/dev/null
+	if has_cmd bsdtar; then
+      if has_cmd rpm2cpio; then
+        rpm2cpio "$1" 2>/dev/null | bsdtar tvf -
+      elif has_cmd rpmunpack; then
+        cat "$1" | rpmunpack | bsdtar tvf -
+      fi
+    else
+      if has_cmd rpm2cpio; then
+        rpm2cpio "$1" 2>/dev/null|cpio -i -tv 2>/dev/null
+      elif has_cmd rpmunpack; then
+        cat "$1" | rpmunpack | gzip -cd | cpio -i --quiet -tv 2>/dev/null
+      fi
     fi
-  elif has_cmd rpm2cpio; then
-    rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --to-stdout "$2"
-  elif has_cmd rpmunpack; then
-    cat "$1" | rpmunpack | gzip -cd | cpio -i --quiet --to-stdout "$2"
+  elif has_cmd bsdtar; then
+    if has_cmd rpm2cpio; then
+      rpm2cpio "$1" 2>/dev/null | bsdtar xOf - "$2"
+    elif has_cmd rpmunpack; then
+      cat "$1" | rpmunpack | bsdtar xOf - "$2"
+    fi
+  else
+    if has_cmd rpm2cpio; then
+      rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --to-stdout "$2"
+    elif has_cmd rpmunpack; then
+      cat "$1" | rpmunpack | gzip -cd | cpio -i --quiet --to-stdout "$2"
+    fi
   fi
 }
 
@@ -582,18 +618,29 @@ isdeb () {
   if [[ -z "$2" ]]; then
     if has_cmd dpkg; then
       dpkg -I "$1"
+    elif has_cmd bsdtar; then
+      bsdtar "$1" control.tar.gz | bsdtar xOf - ./control
     else
       istemp ar p "$1" control.tar.gz | gzip -dc - | tar xOf - ./control
     fi
   fi
   data=$(istemp "ar t" "$1"|grep data)
-  ft=$(ar p "$1" "$data" | filetype -)
-  get_unpack_cmd $ft -
-  if [[ -z "$2" ]]; then
-    contentline
-    istemp "ar p" "$1" "$data" | ${cmd[@]} | tar tvf -
+  if has_cmd bsdtar; then
+    if [[ -z "$2" ]]; then
+      contentline
+      bsdtar xOf "$1" "$data" | bsdtar tvf -
+    else
+      bsdtar xOf "$1" "$data" | bsdtar xOf - "$2"
+    fi
   else
-    ar p "$1" "$data" | ${cmd[@]} | tar xOf - "$2"
+    ft=$(ar p "$1" "$data" | filetype -)
+    get_unpack_cmd $ft -
+    if [[ -z "$2" ]]; then
+      contentline
+      istemp "ar p" "$1" "$data" | ${cmd[@]} | tar tvf -
+    else
+      ar p "$1" "$data" | ${cmd[@]} | tar xOf - "$2"
+    fi
   fi
 }
 
