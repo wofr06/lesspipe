@@ -5,6 +5,9 @@
 set +o noclobber
 setopt sh_word_split 2>/dev/null
 PATH=$PATH:${0%%/lesspipe.sh}
+# the current locale in lowercase (or generic utf-8
+locale=$(locale|grep LC_CTYPE|sed 's/.*"\(.*\)"/\L\1/') || locale=utf-8
+lclocale=${locale##*.}
 
 has_cmd () {
   command -v "$1" > /dev/null
@@ -287,13 +290,17 @@ get_unpack_cmd () {
       has_cmd lz4 && cmd=(lz4 -cdq "$2") && return ;;
   esac
   # convert into utf8
-  if [[ $fchar == utf-16le ]]; then
+
+  if [[ -n $lclocale && $fchar != binary && $fchar != *ascii && $fchar != $lclocale ]]; then
     qm="\033[7m?\033[m" # inverted question mark
     rep=-c
 	trans=
     echo ""|iconv --byte-subst - 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
-	echo ""|iconv -f UTF-16 -t //TRANSLIT - 2>/dev/null && trans="-t //TRANSLIT"
-    cmd=(iconv $rep -f UTF-16 $trans "$2")
+	echo ""|iconv -f $fchar -t $locale//TRANSLIT - 2>/dev/null && trans="-t $locale//TRANSLIT"
+	msg "append $sep$sep to filename to view the $fchar encoded file"
+    cmd=(iconv $rep -f $fchar $trans "$2")
+	# loop protection, just in case
+	lclocale=
     return
   fi
   [[ "$3" == $sep ]] && return
@@ -694,7 +701,7 @@ is9660iso () {
   else
     t="$1"
     istemp "isoinfo -d -i" "$1"
-    joliet=$(isoinfo -d -i "$t"| grep -E '^Joliet'|cut -c1)
+    isoinfo -d -i "$t"| grep -E '^Joliet' && joliet=J
     contentline
     isoinfo -fR$joliet -i "$t"
   fi

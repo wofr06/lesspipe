@@ -1,14 +1,14 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-Version 2.00-beta
+Version 2.00-beta Dec 22 2021
 - much enhanced testsuite, can now select tests based on its number etc.
 - added better bsdtar handling from the contributed bsdtar patch (Jim Pryor)
 - added -layout option to pdftotext (Sergio Callegari)
 - changed code for extraction of less calling parameters
 - dont engage lesspipe in pipes (LESSPIPE=|-...), if called from man and perldoc
-- iconv on MacOSX still not ok
-Version 2.00-alpha
+- iconv handles most conversions from non foreign encodings
+Version 2.00-alpha Dec 8 2021
 - complete rewrite with many fixes and enhancements.
 - incompatible change: groff converts to utf8, not 'latin1' and not 'nippon'
 - incompatible change: do not detect perl storable file format

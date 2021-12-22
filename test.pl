@@ -65,7 +65,7 @@ $ENV{LESSOPEN} = "|-$fname %s";
 print "LESSOPEN=\"$ENV{LESSOPEN}\"\n\n" if $noaction;
 $ENV{LESSQUIET} =1;
 $ENV{LESSCOLORIZER} = 'vimcolor';
-$ENV{LANG} = 'C';
+$ENV{LANG} = 'en_US.UTF-8';
 
 my $duration = time();
 my ($retcode, $sumok, $sumignore, $sumnok, $num) = (0, 0, 0, 0, 0);
@@ -140,6 +140,7 @@ while (<DATA>) {
 		$needed = 'a colorizer';
 	}
 	my $res = $ignore ? '' : ($cmd =~ /|/ ? `$cmd` : `$cmd 2>&1`);
+
 	my $ok = 0;
 	my $lines = 0;
 	# zsh|bash|ksh style|file not found
@@ -182,11 +183,12 @@ sub comp {
 	my $ok = '';
 	my $reset = color('reset');
 	if ($comp =~ s/^= //) {
-		# ignore leading and trailing newlines
+		# ignore leading and trailing newlines, unicode start of file
 		$res =~ s/^\n//g;
 		$res =~ s/\0//g;
 		$res =~ s/\014//g;
 		$res =~ s/\n$//g;
+		$res =~ s/^\x{ef}\x{bb}\x{bf}//;
 		for (split /\|/, $comp) {
 			return 'ok' if $res eq $_;
 		}
@@ -329,6 +331,8 @@ less tests/compress.tgz:test.tar.lz4:tests/textfile	# extract from lz4 git #14, 
 ### filter tests, produce readable output
 less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv
 = test
+less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file  needs iconv
+= äöü
 ###    no output if file not modified (watch growing files) git #4,25 (revert)
 less $T/tests/test_plain			# plain text, no output from lesspipe.sh
 = test=a

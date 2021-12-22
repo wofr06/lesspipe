@@ -22,11 +22,11 @@ but can also be applied recursively and be used to extract and display
 files in archives on the fly. This works to a depth of 6 where applying a
 decompression algorithm counts as a separate level.
 .PP
-If the file command reports text with
-\fIUTF-8\fP, \fIISO-8859-1\fP or \fIUTF-16\fP encoded
-characters then the text will be transformed using iconv into the default
-encoding. This does assume iconv has the right default which can be wrong
-in some situations.
+If the file utility reports text with an encoding different from the one
+used in the terminal then the text will be transformed using \fIiconv\fP into
+the default encoding. This does assume the \fIfile\fP command gets the file
+encoding right, which can be wrong in some situations. An appended colon
+to the file name does suppress the conversion.
 .PP
 When using the programs \fBgit\fP, \fBvim\fP or \fBmutt\fP they can be
 enabled to read non-text files by using lesspipe.sh. That is described in

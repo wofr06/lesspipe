@@ -232,11 +232,11 @@ name. Appending in addition the file type (html, xml, pod) produces a colored
 output if the conditions for colorizing (see below) are met.
 
 ### 4.3 Conversion of files with alternate character encoding
- If the file utility reports text containing ISO-8859, UTF-8 or UTF-16 encoded
- characters then the text will be transformed using `iconv` into the default
- encoding. This does assume `iconv` has the right default which can be wrong
- in some situations. It is checked if `iconv` would fail. Then the text is
- displayed unmodified.
+ If the file utility reports text with an encoding different from the one
+ used in the terminal then the text will be transformed using `iconv` into
+ the default encoding. This does assume the file command gets the file
+ encoding right, which can be wrong in some situations. An appended colon
+ to the file name does suppress the conversion.
 
 ## 5. Colorizing the output
 
