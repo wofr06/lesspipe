@@ -215,16 +215,18 @@ show () {
   if [[ "$cmd" == "" ]]; then
     ft=$(filetype "$file1")
     get_unpack_cmd $ft "$file1" "$rest1"
-    if [[ "$cmd" != "" ]]; then
+    if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
+      # if nothing to convert, exit without a command
+      [[ $colorizer == cat ]] && colorizer=
       isfinal "$ft" "$file1" "$rest11"
     fi
   elif [[ "$c1" == "" ]]; then
     c1=("${cmd[@]}")
     ft=$("${c1[@]}" | filetype -) || exit 1
     get_unpack_cmd $ft "$file1" "$rest1"
-    if [[ "$cmd" != "" ]]; then
+    if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
       "${c1[@]}" | isfinal "$ft" - "$rest11"
@@ -233,7 +235,7 @@ show () {
     c2=("${cmd[@]}")
     ft=$("${c1[@]}" | "${c2[@]}" | filetype -) || exit 1
     get_unpack_cmd $ft "$file1" "$rest1"
-    if [[ "$cmd" != "" ]]; then
+    if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
        "${c1[@]}" | "${c2[@]}" | isfinal "$ft" - "$rest11"
@@ -242,7 +244,7 @@ show () {
     c3=("${cmd[@]}")
     ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | filetype -) || exit 1
     get_unpack_cmd $ft "$file1" "$rest1"
-    if [[ "$cmd" != "" ]]; then
+    if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
       "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | isfinal "$ft" - "$rest11"
@@ -251,7 +253,7 @@ show () {
     c4=("${cmd[@]}")
     ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | filetype -) || exit 1
     get_unpack_cmd $ft "$file1" "$rest1"
-    if [[ "$cmd" != "" ]]; then
+    if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
       "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | isfinal "$ft" - "$rest11"
@@ -260,7 +262,7 @@ show () {
     c5=("${cmd[@]}")
     ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | filetype -) || exit 1
     get_unpack_cmd $ft "$file1" "$rest1"
-    if [[ "$cmd" != "" ]]; then
+    if [[ "$cmd" != "" && -z $colorizer ]]; then
       echo "$0: Too many levels of encapsulation"
     else
       "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | isfinal "$ft" - "$rest11"
@@ -313,6 +315,7 @@ get_unpack_cmd () {
   rest2=
   case "$x" in
     tar)
+      [[ -z $file2 ]] && colorizer=archive_color
       { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
       { cmd=(istar tar "$2" "$file2"); } ;;
     rpm)
@@ -339,8 +342,11 @@ get_unpack_cmd () {
       { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
       { cmd=(isar "$2" "$file2"); } ;;
   esac
-    [[ -n $cmd && -z $file2 ]] && msg "use ${x}_file${sep}contained_file to view a file in the archive"
-    [[ -n $cmd && -n $file2 ]] && file2=
+  if [[ -n $cmd ]]; then
+    [[ -n "$file2" ]] && file2= && return
+    msg "use ${x}_file${sep}contained_file to view a file in the archive"
+    colorizer=cat
+  fi
 }
 
 analyze_args () {
@@ -357,7 +363,7 @@ analyze_args () {
   if [[ $LESSOPEN == *-* ]]; then
     # man pandoc output errorneously recognized as html
     case $lessarg in
-      man\ *|*/man\ *|*/perldoc\ *)
+      man\ *|*/man\ *|*/perldoc\ *|git\ *)
         exit 0
     esac
   fi
@@ -542,8 +548,10 @@ isfinal () {
     [[ -n "$file2" ]] && fext="$file2"
     [[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
     [[ -z "$fext" ]] && fext=$(fileext "$fileext")
-    colorizer=$(has_colorizer "$2" "$fext")
+    [[ -z $colorizer ]] && colorizer=$(has_colorizer "$2" "$fext")
     if [[ -n $colorizer && $fcat != binary ]]; then
+      [[ -z $file2 ]] && file2="$2"
+      [[ "$file2" == - ]] && file2=
       $colorizer && return
     fi
     # if fileext set, we need to filter to get rid of .fileext
@@ -556,8 +564,8 @@ istar () {
   [[ "$2" =~ ^[a-z_-]*:.* ]] && echo $2: remote operation tar host:file not allowed && return
   if [[ -n $3 ]]; then
     $prog Oxf "$2" "$3" 2>&1
-  elif [[ $COLOR == *always ]] && has_cmd tarcolor; then
-    $prog tvf "$2" | tarcolor
+  elif [[ $COLOR == *always ]] && has_cmd archive_color; then
+    $prog tvf "$2" | archive_color
   else
     $prog tvf "$2"
   fi
@@ -703,7 +711,7 @@ is9660iso () {
     istemp "isoinfo -d -i" "$1"
     isoinfo -d -i "$t"| grep -E '^Joliet' && joliet=J
     contentline
-    isoinfo -fR$joliet -i "$t"
+    isoinfo -lR$joliet -i "$t"
   fi
 }
 

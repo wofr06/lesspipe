@@ -8,6 +8,7 @@ Version 2.00-beta Dec 22 2021
 - changed code for extraction of less calling parameters
 - dont engage lesspipe in pipes (LESSPIPE=|-...), if called from man and perldoc
 - iconv handles most conversions from non foreign encodings
+- tarcolor enhanced and renamed to archive_color, archive listings colorizations
 Version 2.00-alpha Dec 8 2021
 - complete rewrite with many fixes and enhancements.
 - incompatible change: groff converts to utf8, not 'latin1' and not 'nippon'

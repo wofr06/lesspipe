@@ -181,7 +181,7 @@ the author by email.
 - zstd			requires `zstd`
 - brotli		requires `bro`
 - lz4			requires `lz4`
-- tar			requires optionally `tarcolor` for coloring
+- tar			requires optionally `archive_color` for coloring
 - ar library	requires `bsdtar` or `ar`
 - zip archive	requires `bsdtar` or `unzip`
 - jar archive	requires `bsdtar` or `unzip`
@@ -298,7 +298,7 @@ Depending on the operating system ls is called with appropriate options to
 produce colored output.
 
 ### 5.3 Colored listing of tar file contents
-If the executable tarcolor is installed, then the listing of tar file
+If the executable archive_color is installed, then the listing of tar file
 contents is colored in a similar fashion as directory contents.
 
 ## 6. Calling less from standard input
@@ -361,7 +361,7 @@ Examples:
 - odt2txt              https://github.com/dstosberg/odt2txt (2017)
 - pandoc               https://pandoc.org/ (2021)
 - pptx2md              https://github.com/ssine/pptx2md (2021)
-- tarcolor             https://github.com/msabramo/tarcolor
+- tarcolor             https://github.com/msabramo/tarcolor (modified, 2021)
 - unrtf                https://ftp.gnu.org/gnu/unrtf/ (2018)
 - wvText               https://github.com/AbiWord/wv/ (2014)
 - xlscat               https://metacpan.org/pod/Spreadsheet::Read (2021)

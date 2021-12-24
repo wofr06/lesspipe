@@ -187,7 +187,7 @@ sub comp {
 		$res =~ s/^\n//g;
 		$res =~ s/\0//g;
 		$res =~ s/\014//g;
-		$res =~ s/\n$//g;
+		$res =~ s/\r?\n$//g;
 		$res =~ s/^\x{ef}\x{bb}\x{bf}//;
 		for (split /\|/, $comp) {
 			return 'ok' if $res eq $_;
@@ -196,7 +196,7 @@ sub comp {
 			print ":$res:\ndiffers from\n:$_:\n" if $errors;
 		}
 	} elsif ($comp =~ s/^~ //) {
-		return 'ok' if $res =~ /^$comp$/m;
+		return 'ok' if $res =~ /^$comp\r?/m;
 		print ":$res:\ndoes not match\n:$comp:\n" if $errors;
 	} elsif ($comp =~ s/^c //) {
 		$ok = (grep {s/.*(\e\S+)$comp\b.*/$1ok$reset/} split /\n/, $res)[0];
@@ -233,17 +233,17 @@ less $T/tests/test_rpm:./textfile		# extract file from rpm, needs rpm2cpio
 less tests/archive.tgz:test_rpm:./textfile	# (on the fly), needs rpm2cpio
 = test
 less $T/tests/test.jar			# jar contents, needs unzip
-~ .* META-INF/
+~ .*/MANIFEST.MF
 less tests/archive.tgz:test.jar		# (on the fly), needs unzip
-~ .* META-INF/
+~ .*/MANIFEST.MF
 less $T/tests/test.jar:META-INF/MANIFEST.MF	# # extract file from jar, needs unzip
 ~ .*: test
 less tests/archive.tgz:test.jar:META-INF/MANIFEST.MF	# (on the fly), needs unzip
 ~ .*: test
 less $T/tests/test_zip			# zip contents, needs unzip
-~ .* tests/test.tar
+~ .* 10240 .*
 less tests/archive.tgz:test_zip		# (on the fly), needs unzip
-~ .* tests/test.tar
+~ .* 10240 .*
 less $T/tests/test_zip:tests/test.tar	# extract tar archive from zip, needs unzip
 ~ .* tests/textfile
 less tests/archive.tgz:test_zip:tests/test.tar	# (on the fly), needs unzip
@@ -402,7 +402,7 @@ less tests/filter.tgz:test_data		# binary data
 ### colorizing tests (ok should be displayed colored, for MacOSX see git #48)
 less $T/tests				# directory
 c test.jar
-less tests/archive.tgz			# contents of tar colorized with tarcolor
+less tests/archive.tgz			# contents of tar colorized with archive_color
 c test_cab
 less $T/tests/test.c			# C language (vimcolor)
 c void
@@ -450,7 +450,7 @@ less $T/tests/special.tgz=aaa::b::c::d	# file name with colon (use alternate sep
 less $T/tests/symlink			# symbolic link to file name with special chars
 = test=a
 cat $T/tests/test_zip|less			# can use pipes with LESSOPEN =|-... git issue #2
-~ .* tests/test.tar
+~ -rw-.*
 cat $T/tests/test_zip|less - :tests/test.tar	# extract files from piped file
 ~ .* tests/textfile
 cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive

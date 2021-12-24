@@ -3,7 +3,7 @@ INSTALL
 Execute the following commands (for a more detailed description see below):
 
   ./configure
-  cp lesspipe.sh code2color tarcolor vimcolor sxw2txt /usr/local/bin
+  cp lesspipe.sh code2color archive_color vimcolor sxw2txt /usr/local/bin
 
 or if you prefer make:
 
@@ -64,15 +64,15 @@ magic file and your personal one. Example:
   MAGIC='/usr/share/file/magic:/Users/myaccount/.magic'
   export MAGIC
 
-Step 3: install lesspipe.sh, code2color, vimcolor, sxw2txt and tarcolor
+Step 3: install lesspipe.sh, code2color, vimcolor, sxw2txt and archive_color
 -----------------------------------------------------------------------
 You can copy lesspipe.sh to any appropriate place.
 Suggested location: /usr/local/bin/lesspipe.sh
 The helper programs can be copied to the same directory as lesspipe.sh or any
 directory listed in the PATH environment variable.
-The tarcolor script allows to colorize tar listings.
+The archive_color script allows to colorize tar and other archive listings.
 
-  cp lesspipe.sh code2color vimcolor sxw2txt tarcolor /usr/local/bin
+  cp lesspipe.sh code2color vimcolor sxw2txt archive_color /usr/local/bin
 
 This can be achieved also with make:
 

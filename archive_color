@@ -1,8 +1,10 @@
 #!/usr/bin/env perl
 
-# tarcolor
+# archive_color (by Wolfgang Friebel), a slightly enhanced tarcolor
+# changed date recognition (allow for localized dates), works also for
+# other archive listings, such as rpm, debian, ar, isoinfo archives
 #
-# by Marc Abramowitz <marc at marc-abramowitz dot com>
+# originally by Marc Abramowitz <marc at marc-abramowitz dot com>
 #
 # https://github.com/msabramo/tarcolor
 #
@@ -45,6 +47,8 @@ sub get_file_type {
         return 'do';
     } elsif (substr($_, 3, 1) eq 'x') {
         return 'ex';
+    } elsif (substr($_, -3, 2) =~ /.\//) {
+        return 'di';
     } elsif (/\.\w{1,3}$/) {
         return '*' . $&;
     }
@@ -52,7 +56,7 @@ sub get_file_type {
 
 sub get_filename {
     my $suntar_date = m{
-        (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)  # Month
+        (?: [A-Z]\w\w)  # Month
         \s+
         \d{1,2}                                               # Day
         \s+
@@ -69,7 +73,7 @@ sub get_filename {
     }
 
     my $bsdtar_date = m{
-        (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)   # Month
+        (?: [A-Z]\w\w)   # Month
         \s+
         \d{1,2}                                                # Day
         \s+
@@ -86,7 +90,7 @@ sub get_filename {
     my $bsdtar_date_dmy = m{
         \d{1,2}                                                # Day
         \s+
-        (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)   # Month
+        (?: [A-Z]\w\w)   # Month
         \s+
         (?: (?: \d{4}) | (?: \d{2}:\d{2}))                     # Year or time
         \s+
@@ -128,7 +132,7 @@ sub default_ls_colors {
 }
 
 if ( -t STDIN ) {
-    print "Example: tar tvzf some_tarball.tar.gz | tarcolor\n";
+    print "Example: tar tvzf some_tarball.tar.gz | archive_color\n";
     exit(0);
 }
 
@@ -164,13 +168,13 @@ while (<>) {
 
 
 # ABSTRACT: colors output of `tar tvf`
-# PODNAME: tarcolor
+# PODNAME: archive_color
 
 =pod
 
 =head1 SYNOPSIS
 
-tar tvzf <tarball.tar.gz> | tarcolor
+tar tvzf <tarball.tar.gz> | archive_color
 
 =head1 DESCRIPTION
 
