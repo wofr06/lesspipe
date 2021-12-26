@@ -163,13 +163,13 @@ nexttmp () {
 istemp () {
   prog="$1"
   shift
-  if [[ "$1" = - ]]; then
+  if [[ "$1" == - ]]; then
     shift
     t=$(nexttmp)
     cat > "$t"
-    $prog "$t" "$@" #2>/dev/null
+    $prog "$t" "$@"
   else
-    $prog "$@" #2>/dev/null
+    $prog "$@"
   fi
 }
 
@@ -315,7 +315,6 @@ get_unpack_cmd () {
   rest2=
   case "$x" in
     tar)
-      [[ -z $file2 ]] && colorizer=archive_color
       { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
       { cmd=(istar tar "$2" "$file2"); } ;;
     rpm)
@@ -327,9 +326,9 @@ get_unpack_cmd () {
     debian*-package)
       has_cmd ar && cmd=(isdeb "$2" "$file2") ;;
     rar)
+        { has_cmd bsdtar && cmd=(israr bsdtar "$2" "$file2"); } ||
         { has_cmd unrar && cmd=(israr unrar "$2" "$file2"); } ||
-        { has_cmd rar && cmd=(israr rar "$2" "$file2"); } ||
-        { has_cmd bsdtar && cmd=(israr bsdtar "$2" "$file2"); } ;;
+        { has_cmd rar && cmd=(israr rar "$2" "$file2"); } ;;
     ms-cab-compressed)
       has_cmd cabextract && cmd=(iscab "$2" "$file2") ;;
     7z-compressed)
@@ -345,7 +344,7 @@ get_unpack_cmd () {
   if [[ -n $cmd ]]; then
     [[ -n "$file2" ]] && file2= && return
     msg "use ${x}_file${sep}contained_file to view a file in the archive"
-    colorizer=cat
+    has_cmd archive_color && colorizer=archive_color || colorizer=cat
   fi
 }
 
@@ -353,7 +352,7 @@ analyze_args () {
   # determine how we are called
   cmdtree=`ps -T -opid= -oargs=`
   # adjust, if we are called from the test suite
-  [[ $cmdtree =~ ./test.pl\ .*|./test.pl ]] && addmatch='[0-9]* '
+  [[ $cmdtree =~ ./test.pl\ .* || $cmdtree =~ ./test.pl ]] && addmatch='[0-9]* '
   cmdtree=`echo $cmdtree|sed "s/[0-9]* $addmatch//;s/ [0-9]* /;/g;s/^[^;]*;//"`
   lessarg=${cmdtree%%;*}
   [[ $lessarg == *test.pl\ * ]] && lessarg=${cmdtree##$lessarg;*}
@@ -367,8 +366,7 @@ analyze_args () {
         exit 0
     esac
   fi
-  # color is set when calling less with -r or -R
-  #[[ $lessarg == *less\ * ]] || return
+  # color is set when calling less with -r or -R or LESS contains that option
   lessarg="$LESS $lessarg"
   lessarg=`echo $lessarg|sed 's/-[a-zA-Z]*[rR]/-r/'`
   if has_cmd tput && [[ $(tput colors) -ge 8 && $lessarg == *-[rR]* ]]; then
@@ -543,17 +541,17 @@ isfinal () {
     echo $msg
   fi
   if [[ -n $cmd ]]; then
-    "${cmd[@]}"
+    if [[ $colorizer == archive_color && $COLOR == *always ]]; then
+      "${cmd[@]}" | archive_color
+    else
+      "${cmd[@]}"
+    fi
   else
     [[ -n "$file2" ]] && fext="$file2"
     [[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
     [[ -z "$fext" ]] && fext=$(fileext "$fileext")
     [[ -z $colorizer ]] && colorizer=$(has_colorizer "$2" "$fext")
-    if [[ -n $colorizer && $fcat != binary ]]; then
-      [[ -z $file2 ]] && file2="$2"
-      [[ "$file2" == - ]] && file2=
-      $colorizer && return
-    fi
+    [[ -n $colorizer && $fcat != binary ]] && $colorizer && return
     # if fileext set, we need to filter to get rid of .fileext
     [[ -n $fileext || "$2" == - || "$2" == $t ]] && cat "$2"
   fi
@@ -564,8 +562,6 @@ istar () {
   [[ "$2" =~ ^[a-z_-]*:.* ]] && echo $2: remote operation tar host:file not allowed && return
   if [[ -n $3 ]]; then
     $prog Oxf "$2" "$3" 2>&1
-  elif [[ $COLOR == *always ]] && has_cmd archive_color; then
-    $prog tvf "$2" | archive_color
   else
     $prog tvf "$2"
   fi
@@ -660,13 +656,12 @@ isdeb () {
 }
 
 iscab () {
-  if [[ "$1" = - ]]; then
-    t=$(nexttmp)
-    cat > "$t"
-    set "$t" "$2"
-  fi
-  [[ -z "$2" ]] && cabextract -l "$1" && return
-  cabextract -pF "$2" "$1"
+  [[ -z "$2" ]] && istemp "cabextract -l" "$1" && return
+  istemp cabextract2 "$1" "$2"
+}
+
+cabextract2 () {
+   cabextract -pF "$2" "$1"
 }
 
 israr () {
@@ -761,8 +756,8 @@ analyze_args
 # make LESSOPEN="|- ... " work
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
   cat > $t
-  [[ -n $fext ]] && t=$t$sep$fext
-  set $1 $t
+  [[ -n "$fext" ]] && t="$t$sep$fext"
+  set $1 "$t"
 fi
 [[ -d "$tmpdir" ]] || exit 1
 

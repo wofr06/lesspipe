@@ -450,7 +450,7 @@ less $T/tests/special.tgz=aaa::b::c::d	# file name with colon (use alternate sep
 less $T/tests/symlink			# symbolic link to file name with special chars
 = test=a
 cat $T/tests/test_zip|less			# can use pipes with LESSOPEN =|-... git issue #2
-~ -rw-.*
+~ .*10240.*
 cat $T/tests/test_zip|less - :tests/test.tar	# extract files from piped file
 ~ .* tests/textfile
 cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive
