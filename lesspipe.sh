@@ -313,34 +313,36 @@ get_unpack_cmd () {
   # extract from archive
   rest1="$rest2"
   rest2=
+  prog=
   case "$x" in
     tar)
-      { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
-      { cmd=(istar tar "$2" "$file2"); } ;;
+      prog=tar
+      has_cmd bsdtar && prog=bsdtar ;;
     rpm)
       { has_cmd cpio || has_cmd bsdtar; } &&
       { has_cmd rpm2cpio || has_cmd rpmunpack; } && cmd=(isrpm "$2" "$file2") ;;
     java-archive|zip)
-      { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
-      { has_cmd unzip && cmd=(iszip "$2" "$file2"); } ;;
+      { has_cmd bsdtar && prog=bsdtar; } ||
+      { has_cmd unzip && prog=unzip; } ;;
     debian*-package)
       has_cmd ar && cmd=(isdeb "$2" "$file2") ;;
     rar)
-        { has_cmd bsdtar && cmd=(israr bsdtar "$2" "$file2"); } ||
-        { has_cmd unrar && cmd=(israr unrar "$2" "$file2"); } ||
-        { has_cmd rar && cmd=(israr rar "$2" "$file2"); } ;;
+        { has_cmd bsdtar && prog=bsdtar; } ||
+        { has_cmd unrar && prog=unrar; } ||
+        { has_cmd rar && prog=rar; } ;;
     ms-cab-compressed)
-      has_cmd cabextract && cmd=(iscab "$2" "$file2") ;;
+      has_cmd cabextract && prog=cabextract ;;
     7z-compressed)
       { has_cmd 7zr && cmd=(is7zarchive 7zr "$2" "$file2"); } ||
       { has_cmd 7za && cmd=(is7zarchive 7za "$2" "$file2"); } ;;
     iso9660-image)
-      { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
-      { has_cmd isoinfo && cmd=(is9660iso "$2" "$file2"); } ;;
+      { has_cmd bsdtar && prog=bsdtar; } ||
+      { has_cmd isoinfo && prog=isoinfo; } ;;
     archive)
-      { has_cmd bsdtar && cmd=(istar bsdtar "$2" "$file2"); } ||
-      { cmd=(isar "$2" "$file2"); } ;;
+      prog=ar
+      has_cmd bsdtar && prog=bsdtar
   esac
+  [[ -n $prog ]] && cmd=(isarchive $prog "$2" "$file2")
   if [[ -n $cmd ]]; then
     [[ -n "$file2" ]] && file2= && return
     msg "use ${x}_file${sep}contained_file to view a file in the archive"
@@ -557,34 +559,54 @@ isfinal () {
   fi
 }
 
-istar () {
+isarchive () {
   prog=$1
   [[ "$2" =~ ^[a-z_-]*:.* ]] && echo $2: remote operation tar host:file not allowed && return
   if [[ -n $3 ]]; then
-    $prog Oxf "$2" "$3" 2>&1
+	case $prog in
+      tar|bsdtar)
+        [[ "$2" =~ ^[a-z_-]*:.* ]] && echo $2: remote operation tar host:file not allowed && return
+        $prog Oxf "$2" "$3" 2>&1 ;;
+      rar|unrar)
+        istemp "$prog p -inul" "$2" "$3" ;;
+      ar)
+        istemp "ar p" "$2" "$3" ;;
+      unzip)
+        istemp "unzip -avp" "$2" "$3" ;;
+      cabextract)
+        istemp cabextract2 "$2" "$3" ;;
+      isoinfo)
+        istemp "isoinfo -i" "$2" "-x$3" ;;
+    esac
   else
-    $prog tvf "$2"
+	case $prog in
+      tar|bsdtar)
+        [[ "$2" =~ ^[a-z_-]*:.* ]] && echo $2: remote operation tar host:file not allowed && return
+        $prog tvf "$2" ;;
+      rar|unrar)
+        istemp "$prog v" "$2" ;;
+      ar)
+        istemp "ar vt" "$2" ;;
+      unzip)
+        istemp "unzip -l" "$2" ;;
+      cabextract)
+        istemp "cabextract -l" "$2" ;;
+      isoinfo)
+        t="$2"
+        istemp "isoinfo -d -i" "$2"
+        isoinfo -d -i "$t"| grep -E '^Joliet' && joliet=J
+        contentline
+        isoinfo -fR$joliet -i "$t" ;;
+    esac
   fi
+}
+
+cabextract2 () {
+   cabextract -pF "$2" "$1"
 }
 
 ispdf () {
   istemp pdftohtml -i -q -s -noframes -nodrm -stdout "$1"|ishtml -
-}
-
-isar () {
-  if [[ -n $2 ]]; then
-    istemp "ar p" "$1" "$2"
-  else
-    istemp "ar vt" "$1"
-  fi
-}
-
-iszip () {
-  if [[ -n $2 ]]; then
-    istemp "unzip -avp" "$1" "$2" 2>&1
-  else
-    istemp "unzip -l" "$1"
-  fi
 }
 
 isrpm () {
@@ -655,28 +677,6 @@ isdeb () {
   fi
 }
 
-iscab () {
-  [[ -z "$2" ]] && istemp "cabextract -l" "$1" && return
-  istemp cabextract2 "$1" "$2"
-}
-
-cabextract2 () {
-   cabextract -pF "$2" "$1"
-}
-
-israr () {
-  optz=v
-  optn="p -inul"
-  prog=$1
-  shift
-  [[ $prog == bsdtar ]] && optz=tvf && optn=Oxf
-  if [[ -z "$2" ]]; then
-    istemp "$prog $optz" "$1"
-  else
-    istemp "$prog $optn" "$1" "$2"
-  fi
-}
-
 is7zarchive () {
   prog=$1
   if [[ -n "$3" ]]; then
@@ -695,18 +695,6 @@ is7zarchive () {
     else
       echo $res
     fi
-  fi
-}
-
-is9660iso () {
-  if [[ -n "$2" ]]; then
-    istemp "isoinfo -i" "$1" "-x$2"
-  else
-    t="$1"
-    istemp "isoinfo -d -i" "$1"
-    isoinfo -d -i "$t"| grep -E '^Joliet' && joliet=J
-    contentline
-    isoinfo -lR$joliet -i "$t"
   fi
 }
 
