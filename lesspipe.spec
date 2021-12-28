@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 1.83
+%define packageversion 2.00
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -16,13 +16,14 @@ BuildRoot:     /var/tmp/%{packagename}-%{packageversion}
 Summary:       Input filter for less to better display files
 
 %description
-lesspipe.sh is an input filter for the pager less. The script runs under a
-ksh-compatible shell (e.g. bash, zsh) and allows you to use less to view
-files with binary content, compressed files, archives, and files contained
-in archives. It supports many formats (both as plain and compressed files
-using gzip, bzip2 and other pack programs). For details please consult the
-README file contained in the package. Syntax highlighting of source code is
-possible through an included script 'code2color'.
+lesspipe.sh is an input filter for the pager less. It is able to process a
+wide variety of file formats. It enables users to deeply inspect archives
+and to display the contents of files in archives without having to unpack
+them before. That means file contents can be properly interpreted even if
+the files are compressed and contained in a hierarchy of archives (often
+found in RPM or DEB archives containing source tarballs). The filter is
+easily extensible for new formats. The input filter is a bash script, but
+works as well as a zsh script.
 
 %prep
 %setup -n lesspipe-%{packageversion}
@@ -74,14 +75,18 @@ cd $RPM_BUILD_DIR
 
 %defattr(-,root,root)
 %{prefix}/bin/lesspipe.sh
-%{prefix}/bin/code2color
 %{prefix}/bin/archive_color
+%{prefix}/bin/code2color
+%{prefix}/bin/vimcolor
+%{prefix}/bin/sxw2txt
 %{prefix}/share/man/man1
 /etc/profile.d
 
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Tue Jul 28 2015 2.00-1 20211228 - wp.friebel@gmail.com
+- heavily rewritten version
 * Tue Jul 28 2015 1.83-1 20150728 - Wolfgang.Friebel@desy.de
 - new version (see ChangeLog)
 * Mon Feb 04 2013 1.82-1 20130204 - Wolfgang.Friebel@desy.de

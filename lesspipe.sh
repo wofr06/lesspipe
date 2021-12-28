@@ -2,12 +2,6 @@
 # lesspipe.sh, a preprocessor for less (version 2.00-beta)
 # Author:  Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
-set +o noclobber
-setopt sh_word_split 2>/dev/null
-PATH=$PATH:${0%%/lesspipe.sh}
-# the current locale in lowercase (or generic utf-8)
-locale=$(locale|grep LC_CTYPE|sed 's/.*"\(.*\)"/\1/') || locale=en_US.UTF-8
-lclocale=$(echo ${locale##*.}|sed 's/\(.*\)/\L\1/')
 
 has_cmd () {
   command -v "$1" > /dev/null
@@ -25,7 +19,7 @@ fileext () {
 filetype () {
   # do not depend on the file extension, if possible
   fname="$1"
-  if [[ "$1" == - ]]; then
+  if [[ "$1" == - || -z $1 ]]; then
     declare t=$(nexttmp)
     head -c 40000 > "$t" 2>/dev/null
     set "$t" "$2"
@@ -327,14 +321,15 @@ get_unpack_cmd () {
     debian*-package)
       has_cmd ar && cmd=(isdeb "$2" "$file2") ;;
     rar)
-        { has_cmd bsdtar && prog=bsdtar; } ||
-        { has_cmd unrar && prog=unrar; } ||
-        { has_cmd rar && prog=rar; } ;;
+      { has_cmd bsdtar && prog=bsdtar; } ||
+      { has_cmd unrar && prog=unrar; } ||
+      { has_cmd rar && prog=rar; } ;;
     ms-cab-compressed)
-      has_cmd cabextract && prog=cabextract ;;
+      { has_cmd bsdtar && prog=bsdtar; } ||
+      { has_cmd cabextract && prog=cabextract; } ;;
     7z-compressed)
-      { has_cmd 7zr && cmd=(is7zarchive 7zr "$2" "$file2"); } ||
-      { has_cmd 7za && cmd=(is7zarchive 7za "$2" "$file2"); } ;;
+      { has_cmd 7zr && prog=7zr; } ||
+      { has_cmd 7za && prog=7za; } ;;
     iso9660-image)
       { has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd isoinfo && prog=isoinfo; } ;;
@@ -371,7 +366,8 @@ analyze_args () {
   # color is set when calling less with -r or -R or LESS contains that option
   lessarg="$LESS $lessarg"
   lessarg=`echo $lessarg|sed 's/-[a-zA-Z]*[rR]/-r/'`
-  if has_cmd tput && [[ $(tput colors) -ge 8 && $lessarg == *-[rR]* ]]; then
+  has_cmd tput && colors=$(tput colors) || colors=0
+  if [[ $colors -ge 8 && $lessarg == *-[rR]* ]]; then
     COLOR="--color=always"
   else
     COLOR="--color=auto"
@@ -396,6 +392,7 @@ has_colorizer () {
       opt="$opt $COLOR" ;;
     pygmentize)
 		[[ -n $LESSCOLORIZER && $LESSCOLORIZER =~ pygmentize\ \ *-O\ *style=[a-z]* ]] && prog=$LESSCOLORIZER
+		[[ $colors -ge 256 ]] && prog="$prog -f terminal256"
 		res=$(pygmentize -l $2 /dev/null 2>/dev/null) && opt=" -l $2" || opt=" -g" ;;
     source-highlight)
       prog="source-highlight --failsafe -f esc"
@@ -430,10 +427,10 @@ isfinal () {
       fi
       msg="$x: showing the output of ${cmd[@]}" ;;
     html|xml)
-      [[ -z $file2 ]] && has_cmd ishtml && cmd=(ishtml "$2") ;;
+      [[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$2") ;;
     pdf)
       { has_cmd pdftotext && cmd=(istemp pdftotext -layout -nopgbrk -q -- "$2" -); } ||
-      { has_cmd pdftohtml && has_cmd ishtml && cmd=(istemp ispdf "$2"); } ||
+      { has_cmd pdftohtml && has_htmlprog && cmd=(istemp ispdf "$2"); } ||
       { has_cmd pdfinfo && cmd=(istemp pdfinfo "$2"); } ;;
     postscript)
       has_cmd ps2ascii && nodash ps2ascii "$2" ;;
@@ -453,21 +450,21 @@ isfinal () {
           -o $t2" "$2" && cmd=(mdcat "$t2"); } ||
         { has_cmd pandoc && istemp "pptx2md --disable-image --disable-wmf \
           -o $t2" "$2" && cmd=(pandoc -f markdown -t plain "$t2"); }; } ||
-      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" ppt); } ;;
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" ppt); } ;;
     xlsx)
       { has_cmd in2csv && cmd=(in2csv -f xlsx "$2"); } ||
       { has_cmd xlscat && cmd=(istemp xlscat "$2"); } ||
       { has_cmd excel2csv && cmd=(istemp excel2csv "$2"); } ||
-      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" xlsx); } ;;
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" xlsx); } ;;
     odt)
       { has_cmd pandoc && cmd=(pandoc -f odt -t plain "$2"); } ||
       { has_cmd odt2txt && cmd=(istemp odt2txt "$2"); } ||
       { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
     odp)
-      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" odp); } ;;
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" odp); } ;;
     ods)
       { has_cmd xlscat && t=$t.ods && cat "$2" > $t &&  cmd=(xlscat "$t"); } ||
-      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" ods); } ;;
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" ods); } ;;
     msword)
       t="$2"; [[ "$t" == - ]] && t=/dev/stdin
       { has_cmd wvText && cmd=(istemp wvText "$t" /dev/stdout); } ||
@@ -476,14 +473,14 @@ isfinal () {
       { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
     ms-powerpoint)
       { has_cmd broken_catppt && cmd=(istemp catppt "$2"); } ||
-      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" ppt); } ;;
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" ppt); } ;;
     ms-excel)
       { has_cmd in2csv && cmd=(in2csv -f xls "$2"); } ||
       { has_cmd xls2csv && cmd=(istemp xls2csv "$2"); } ||
-      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" xls); } ;;
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" xls); } ;;
     ooffice1)
       { has_cmd sxw2txt && cmd=(istemp sxw2txt "$2"); } ||
-      { has_cmd libreoffice && has_cmd ishtml && cmd=(isoffice "$2" odt); } ;;
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" odt); } ;;
     ipynb|epub)
       has_cmd pandoc && cmd=(pandoc -f $x -t plain "$2") ;;
     troff)
@@ -577,6 +574,8 @@ isarchive () {
         istemp cabextract2 "$2" "$3" ;;
       isoinfo)
         istemp "isoinfo -i" "$2" "-x$3" ;;
+      7za|7zr)
+        istemp "$prog e -so" "$2" "$3"
     esac
   else
 	case $prog in
@@ -597,6 +596,8 @@ isarchive () {
         isoinfo -d -i "$t"| grep -E '^Joliet' && joliet=J
         contentline
         isoinfo -fR$joliet -i "$t" ;;
+      7za|7zr)
+		is7zarchive $prog "$2"
     esac
   fi
 }
@@ -679,22 +680,18 @@ isdeb () {
 
 is7zarchive () {
   prog=$1
-  if [[ -n "$3" ]]; then
-    istemp "$prog e -so" "$2" "$3"
-  else
-	t="$2"
-    res=$(istemp "$prog l" "$2")
-    if [[ "$res" == *1\ files ]]; then
-      name=$(echo $res|tail -3|head -1|awk '{print $6}')
-      msg "the 7-zip archive containing only file '$name' was unpacked"
-      t=${res#*Listing\ archive:\ }
-      t2="
+  t="$2"
+  res=$(istemp "$prog l" "$2")
+  if [[ "$res" == *1\ files ]]; then
+    name=$(echo $res|tail -3|head -1|awk '{print $6}')
+    msg "the 7-zip archive containing only file '$name' was unpacked"
+    t=${res#*Listing\ archive:\ }
+    t2="
 "
-      t=${t%%$t2*}
-      $prog e -so "$t"
-    else
-      echo $res
-    fi
+    t=${t%%$t2*}
+    $prog e -so "$t"
+  else
+    echo $res
   fi
 }
 
@@ -710,32 +707,44 @@ isoffice2 () {
   istemp "libreoffice --headless --cat" "$1" 2>/dev/null
 }
 
-if has_cmd w3m || has_cmd lynx || has_cmd elinks || has_cmd html2text; then
-  ishtml () {
-    [[ $1 == - ]] && arg1=-stdin || arg1="$1"
-    # 4 lines following can easily be reshuffled according to the preferred tool
-    has_cmd w3m && nodash "w3m -dump -T text/html" "$1" && return ||
-    has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
-    has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
-    # different incompatible versions with the name html2text may let this fail
-	# html2text -utf8  || html2text -from_encoding utf-8
-    has_cmd html2text && nodash html2text "$1"
-  }
-fi
+has_htmlprog () {
+  if has_cmd w3m || has_cmd lynx || has_cmd elinks || has_cmd html2text; then
+    return 0
+  fi
+  return 1
+}
+
+ishtml () {
+  [[ $1 == - ]] && arg1=-stdin || arg1="$1"
+  # 3 lines following can easily be reshuffled according to the preferred tool
+  has_cmd w3m && nodash "w3m -dump -T text/html" "$1" && return ||
+  has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
+  has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
+  # different incompatible versions with the name html2text may let this fail
+  html2text -utf8  || html2text -from_encoding utf-8
+  has_cmd html2text && nodash html2text "$1"
+}
+
+# the main program
+set +o noclobber
+setopt sh_word_split 2>/dev/null
+PATH=$PATH:${0%%/lesspipe.sh}
+# the current locale in lowercase (or generic utf-8)
+locale=$(locale|grep LC_CTYPE|sed 's/.*"\(.*\)"/\1/') || locale=en_US.UTF-8
+lclocale=$(echo ${locale##*.}|sed 's/\(.*\)/\L\1/')
 
 sep=:                       # file name separator
 altsep==                    # alternate separator character
 if [[ -e "$1" && "$1" == *$sep* ]]; then
   sep=$altsep
 elif [[ "$1" == *$altsep* ]]; then
-  fn="${1%$altsep*}"
-  if [[ -e "$fn" ]]; then
-    sep=$altsep
-  fi
+  [[ -e "${1%$altsep*}" ]] && sep=$altsep
 fi
 
 tmpdir=${TMPDIR:-/tmp}/lesspipe."$RANDOM"
 [[ -d "$tmpdir" ]] || mkdir "$tmpdir"
+[[ -d "$tmpdir" ]] || exit 1
+trap "rm -rf '$tmpdir';exit 1" INT
 trap "rm -rf '$tmpdir'" EXIT
 trap - PIPE
 
@@ -746,15 +755,11 @@ if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
   cat > $t
   [[ -n "$fext" ]] && t="$t$sep$fext"
   set $1 "$t"
+  nexttmp
 fi
-[[ -d "$tmpdir" ]] || exit 1
 
-IFS=$sep a="$@"
-IFS=' '
-if [[ "$a" == "" ]]; then
-  if [[ "$0" != /* ]]; then
-      pat=$(pwd)/
-  fi
+if [[ -z "$1" ]]; then
+  [[ "$0" == /* ]] || pat=$(pwd)/
   if [[ "$SHELL" == *csh ]]; then
     echo "setenv LESSOPEN \"|$pat$0 %s\""
   else
@@ -762,5 +767,5 @@ if [[ "$a" == "" ]]; then
     echo "export LESSOPEN"
   fi
 else
-  show "$a"
+  show "$@"
 fi
