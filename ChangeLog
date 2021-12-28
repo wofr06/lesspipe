@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.00 Dec 28 2021
+- code cleanup, minor fixes, support pygmentize with 256 color terminals
 Version 2.00-beta Dec 22 2021
 - much enhanced testsuite, can now select tests based on its number etc.
 - added better bsdtar handling from the contributed bsdtar patch (Jim Pryor)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lesspipe.sh, a preprocessor for less (version 2.00-beta)
+# lesspipe.sh, a preprocessor for less (version 2.00)
 # Author:  Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 

@@ -85,7 +85,7 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
-* Tue Jul 28 2015 2.00-1 20211228 - wp.friebel@gmail.com
+* Tue Dec 28 2021 2.00-1 20211228 - wp.friebel@gmail.com
 - heavily rewritten version
 * Tue Jul 28 2015 1.83-1 20150728 - Wolfgang.Friebel@desy.de
 - new version (see ChangeLog)
