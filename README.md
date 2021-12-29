@@ -189,7 +189,7 @@ the author by email.
 - 7-zip archive	requires `7zr`
 - lzip archive	requires `lzip`
 - iso images	requires `bsdtar` or `isoinfo`
-- rpm			requires `cpio` or `bsdtar` or  and `rpm2cpio` or `rpmunpack`
+- rpm			requires `rpm2cpio` and `cpio` or `bsdtar`
 - Debian		requires `gzip, optionally `dpkg` for more info
 - cab			requires `cabextract`
 

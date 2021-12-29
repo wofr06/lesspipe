@@ -76,7 +76,7 @@ sub main {
     my $html;   # end result
 
     # undefine the input record separator so everything gets loaded in one turn
-    local $/ = undef;  # don't propogate this change outside this package.
+    local $/ = undef;  # don't propagate this change outside this package.
 
     # Only set %STYLESHEET and %LANGUAGE if they haven't been 
     # already set in a previous call ( if, say, we're running 
@@ -137,7 +137,7 @@ sub main {
     %ENTITIES = % { $ { $STYLE{'entities'} }{'replace_by' } };
 
     # modify the header and footer so that the template variables 
-    # are set correcly
+    # are set correctly
 
     unless ($STYLE{'template'} =~ /^(.*)%%code%%(.*)$/s) {
       return "template does not contain a %%code%% variable";
@@ -422,7 +422,7 @@ sub create_snippetlist
     my ( $regexps_ref, $code, $snippetlist_ref, $style_ref ) = @_ ;
     my $length = length( $code );
 
-    ## An array of regular expression sturctures, each of which is an
+    ## An array of regular expression structures, each of which is an
     ## array.  @res is kept sorted by starting position of the RExen and
     ## then by the position of the regex in the language file.  This allows
     ## us to just evaluate $res[0], and to hand write fast code that typically

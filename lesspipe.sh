@@ -28,7 +28,7 @@ filetype () {
   fext=$("fileext" "$fname")
   ### get file type from mime type
   declare ft=$(file -L -s -b --mime "$1" 2> /dev/null)
-  fchar="${ft##*=}"
+  [[ $ft == *=* ]] && fchar="${ft##*=}" || fchar=utf-8
   fcat="${ft%/*}"
   ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-}"
   ftype="${ft#vnd\.}"
@@ -314,7 +314,7 @@ get_unpack_cmd () {
       has_cmd bsdtar && prog=bsdtar ;;
     rpm)
       { has_cmd cpio || has_cmd bsdtar; } &&
-      { has_cmd rpm2cpio || has_cmd rpmunpack; } && cmd=(isrpm "$2" "$file2") ;;
+      { has_cmd rpm2cpio; } && cmd=(isrpm "$2" "$file2") ;;
     java-archive|zip)
       { has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd unzip && prog=unzip; } ;;
@@ -357,7 +357,7 @@ analyze_args () {
   [[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
   # if lesspipe is called in pipes, return immediately for some use cases
   if [[ $LESSOPEN == *-* ]]; then
-    # man pandoc output errorneously recognized as html
+    # man pandoc output erroneously recognized as html
     case $lessarg in
       man\ *|*/man\ *|*/perldoc\ *|git\ *)
         exit 0
@@ -529,7 +529,7 @@ isfinal () {
 	fext=$(fileext "$2")
     if [[ $fcat == audio || $fcat == video || $fcat == image ]]; then
       { has_cmd mediainfo && cmd=(mediainfo --Full "$2"); } ||
-      { has_cmd exiftools && cmd=(exiftool "$2"); } ||
+      { has_cmd exiftool && cmd=(exiftool "$2"); } ||
       { has_cmd identify && $fcat == image && cmd=(identify -verbose "$2"); }
     elif [[ "$fchar" == binary ]]; then
       cmd=(nodash strings "$2")
@@ -563,7 +563,7 @@ isarchive () {
 	case $prog in
       tar|bsdtar)
         [[ "$2" =~ ^[a-z_-]*:.* ]] && echo $2: remote operation tar host:file not allowed && return
-        $prog Oxf "$2" "$3" 2>&1 ;;
+        $prog Oxf "$2" "$3" 2>/dev/null;;
       rar|unrar)
         istemp "$prog p -inul" "$2" "$3" ;;
       ar)
@@ -616,30 +616,14 @@ isrpm () {
     [[ $1 == - ]] && set "$t" "$1"
     contentline
 	if has_cmd bsdtar; then
-      if has_cmd rpm2cpio; then
-        rpm2cpio "$1" 2>/dev/null | bsdtar tvf -
-      elif has_cmd rpmunpack; then
-        cat "$1" | rpmunpack | bsdtar tvf -
-      fi
+      rpm2cpio "$1" 2>/dev/null | bsdtar tvf -
     else
-      if has_cmd rpm2cpio; then
-        rpm2cpio "$1" 2>/dev/null|cpio -i -tv 2>/dev/null
-      elif has_cmd rpmunpack; then
-        cat "$1" | rpmunpack | gzip -cd | cpio -i --quiet -tv 2>/dev/null
-      fi
+      rpm2cpio "$1" 2>/dev/null|cpio -i -tv 2>/dev/null
     fi
   elif has_cmd bsdtar; then
-    if has_cmd rpm2cpio; then
-      rpm2cpio "$1" 2>/dev/null | bsdtar xOf - "$2"
-    elif has_cmd rpmunpack; then
-      cat "$1" | rpmunpack | bsdtar xOf - "$2"
-    fi
+    rpm2cpio "$1" 2>/dev/null | bsdtar xOf - "$2"
   else
-    if has_cmd rpm2cpio; then
-      rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --to-stdout "$2"
-    elif has_cmd rpmunpack; then
-      cat "$1" | rpmunpack | gzip -cd | cpio -i --quiet --to-stdout "$2"
-    fi
+    rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --to-stdout "$2"
   fi
 }
 
@@ -755,7 +739,7 @@ if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
   cat > $t
   [[ -n "$fext" ]] && t="$t$sep$fext"
   set $1 "$t"
-  nexttmp
+  nexttmp >/dev/null
 fi
 
 if [[ -z "$1" ]]; then

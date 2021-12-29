@@ -182,13 +182,17 @@ sub comp {
 	chomp $comp;
 	my $ok = '';
 	my $reset = color('reset');
-	if ($comp =~ s/^= //) {
-		# ignore leading and trailing newlines, unicode start of file
+	# ignore unicode start of file
+	$res =~ s/^\x{fe}\x{ff}//;
+	$res =~ s/^\x{ef}\x{bb}\x{bf}//;
+	if ($comp =~ /^= ?/) {
+		$comp =~ s/^= ?//;
+		# ignore leading and trailing newlines
 		$res =~ s/^\n//g;
 		$res =~ s/\0//g;
 		$res =~ s/\014//g;
 		$res =~ s/\r?\n$//g;
-		$res =~ s/^\x{ef}\x{bb}\x{bf}//;
+		return 'ok' if $res eq $comp;
 		for (split /\|/, $comp) {
 			return 'ok' if $res eq $_;
 		}
@@ -379,9 +383,9 @@ less tests/filter.tgz:test.pod		# pod text, needs pod2text|perldoc
 less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoct
 ~ test
 less tests/filter.tgz:test_nc4		# netcdf, needs h5dump|ncdump
-~ data:
+~ data:|\s*DATA .
 less tests/filter.tgz:test_nc5		# hierarchical data format, needs h5dump|ncdump
-~ data:
+~ d:|\s*DATA .
 less tests/filter.tgz:test_matlab	# matlab git #18, needs matdump
 ~ r
 less tests/filter.tgz:matlab.mat	# matlab, not recognized by file, needs matdump
@@ -432,7 +436,7 @@ diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped thro
 c test=a
 ### github issues (solved and unsolved) and other test cases
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git issue #1
-~ .* non-existent-file.*
+= 
 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
