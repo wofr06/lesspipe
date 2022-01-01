@@ -25,7 +25,7 @@ filetype () {
     set "$t" "$2"
     fname="$fileext"
   fi
-  fext=$("fileext" "$fname")
+  fext=$(fileext "$fname")
   ### get file type from mime type
   declare ft=$(file -L -s -b --mime "$1" 2> /dev/null)
   [[ $ft == *=* ]] && fchar="${ft##*=}" || fchar=utf-8
@@ -54,9 +54,6 @@ filetype () {
       ftype=make ;;
     epub+zip)
       ftype=epub ;;
-  # chose another file type which can handle the current one
-    compress)
-      ftype=gzip ;;
   # file may report wrong type for given file names (ok in file 5.39)
     troff)
       case "${fname##*/}" in
@@ -275,10 +272,11 @@ get_unpack_cmd () {
   declare t
   # uncompress / transform
   case $x in
-    gzip|bzip2|lzip|lzma|xz|brotli)
+    gzip|bzip2|lzip|lzma|xz|brotli|compress)
       # remember name of uncompressed file
       [[ $2 == - ]] || fileext="$2"
       fileext=${fileext%%.gz}; fileext=${fileext%%.bz2}
+      [[ $x == compress ]] && x=gzip
       has_cmd $x && cmd=($x -cd "$2") && return ;;
     zstd)
       has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") && return ;;
@@ -293,7 +291,7 @@ get_unpack_cmd () {
 	trans=
     echo ""|iconv --byte-subst - 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
 	echo ""|iconv -f $fchar -t $locale//TRANSLIT - 2>/dev/null && trans="-t $locale//TRANSLIT"
-	msg "append $sep$sep to filename to view the $fchar encoded file"
+	msg "==> append $sep$sep to filename to view the $fchar encoded file"
     cmd=(iconv $rep -f $fchar $trans "$2")
 	# loop protection, just in case
 	lclocale=
@@ -319,7 +317,7 @@ get_unpack_cmd () {
       { has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd unzip && prog=unzip; } ;;
     debian*-package)
-      has_cmd ar && cmd=(isdeb "$2" "$file2") ;;
+      { has_cmd ar || has_cmd bsdtar; } && cmd=(isdeb "$2" "$file2") ;;
     rar)
       { has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd unrar && prog=unrar; } ||
@@ -328,6 +326,7 @@ get_unpack_cmd () {
       { has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd cabextract && prog=cabextract; } ;;
     7z-compressed)
+      #{ has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd 7zr && prog=7zr; } ||
       { has_cmd 7za && prog=7za; } ;;
     iso9660-image)
@@ -536,7 +535,7 @@ isfinal () {
     fi
   fi
   if [[ -z "$LESSQUIET" && -n $cmd && $cmd != "cat" ]]; then
-    [[ -z $msg ]] && msg="append $sep to filename to view the $x file"
+    [[ -z $msg ]] && msg="==> append $sep to filename to view the $x file"
     echo $msg
   fi
   if [[ -n $cmd ]]; then
@@ -633,29 +632,25 @@ isdeb () {
     cat > "$t"
     set "$t" "$2"
   fi
-  if [[ -z "$2" ]]; then
-    if has_cmd dpkg; then
-      dpkg -I "$1"
-    elif has_cmd bsdtar; then
-      bsdtar "$1" control.tar.gz | bsdtar xOf - ./control
-    else
-      istemp ar p "$1" control.tar.gz | gzip -dc - | tar xOf - ./control
-    fi
-  fi
-  data=$(istemp "ar t" "$1"|grep data)
   if has_cmd bsdtar; then
+    data=$(bsdtar tf "$1" "data*")
     if [[ -z "$2" ]]; then
+      control=$(bsdtar tf "$1" "control*")
+      bsdtar xOf "$1" $control | bsdtar xOf - ./control
       contentline
       bsdtar xOf "$1" "$data" | bsdtar tvf -
     else
       bsdtar xOf "$1" "$data" | bsdtar xOf - "$2"
     fi
   else
+    data=$(ar t "$1"|grep data)
     ft=$(ar p "$1" "$data" | filetype -)
     get_unpack_cmd $ft -
     if [[ -z "$2" ]]; then
+      control=$(ar t "$1"|grep control)
+      ar p "$1" $control | ${cmd[@]} | tar xOf - ./control
       contentline
-      istemp "ar p" "$1" "$data" | ${cmd[@]} | tar tvf -
+      ar p "$1" "$data" | ${cmd[@]} | tar tvf -
     else
       ar p "$1" "$data" | ${cmd[@]} | tar xOf - "$2"
     fi

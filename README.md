@@ -190,7 +190,7 @@ the author by email.
 - lzip archive	requires `lzip`
 - iso images	requires `bsdtar` or `isoinfo`
 - rpm			requires `rpm2cpio` and `cpio` or `bsdtar`
-- Debian		requires `gzip, optionally `dpkg` for more info
+- Debian		requires `bsdtar` or `ar`
 - cab			requires `cabextract`
 
 ### 4.2 List of preprocessed file types
