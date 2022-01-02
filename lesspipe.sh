@@ -398,7 +398,7 @@ has_colorizer () {
       [[ -z $arg ]] && arg=/dev/stdin
       [[ -n $opt ]] && opt=" -s $2 -i" || opt=" -i" ;;
     code2color)
-      [[ -n $opt ]] && opt=" -i .$2" ;;
+      [[ -n $opt ]] && opt=" -l $2" ;;
     vimcolor)
       ;;
     *)
