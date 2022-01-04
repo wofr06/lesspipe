@@ -1,7 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-- remove use of rpmunpack
+Version 2.01 Jan 4 2022
+- experimental zsh and bash completion for archive contents
+- remove use of rpmunpack, dpkg
 - minor fixes in test suite and empty file handling
 Version 2.00 Dec 28 2021
 - code cleanup, minor fixes, support pygmentize with 256 color terminals

@@ -172,6 +172,12 @@ be written as
 \fBcat \fIsuper_archive\fP | \fBless\fP - :\fIarchive\fP:\fIcontained_file\fP
 .RE
 .PP
+.SH COMPLETING MECHANISM FOR ARCHIVE CONTENTS
+With the provided lesscomplete (for zsh and bash), _less (for zsh) and
+less_completion (for bash) files a tab completion for files in archives
+can be accomplished. Entering after an archive file name a colon (:) or an
+equal sign (=) and then pressing the tab key triggers the completion mechanism.
+This also works in chained archives.
 .SH AUTHOR
 Wolfgang Friebel
 .SH "REPORTING BUGS"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lesspipe.sh, a preprocessor for less (version 2.00)
+# lesspipe.sh, a preprocessor for less (version 2.01)
 # Author:  Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 
@@ -717,7 +717,7 @@ altsep==                    # alternate separator character
 if [[ -e "$1" && "$1" == *$sep* ]]; then
   sep=$altsep
 elif [[ "$1" == *$altsep* ]]; then
-  [[ -e "${1%$altsep*}" ]] && sep=$altsep
+  [[ -e "${1%%$altsep*}" ]] && sep=$altsep
 fi
 
 tmpdir=${TMPDIR:-/tmp}/lesspipe."$RANDOM"

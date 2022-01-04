@@ -3,8 +3,14 @@ INSTALL
 Execute the following commands (for a more detailed description see below):
 
   ./configure
-  cp lesspipe.sh code2color archive_color vimcolor sxw2txt /usr/local/bin
-
+  # required
+  cp lesspipe.sh /usr/local/bin
+  # optional for colorizing and old openoffice writer formats
+  cp code2color archive_color vimcolor sxw2txt lesscomplete /usr/local/bin
+  # optional for zsh and bash completion (archive contents)
+  cp lesscomplete /usr/local/bin           # (zsh and bash)
+  cp _less /usr/share/zsh/site-functions   #(zsh)
+  cp less_completion /etc/bashcompletion.d #(bash)
 or if you prefer make:
 
   make
@@ -64,7 +70,7 @@ magic file and your personal one. Example:
   MAGIC='/usr/share/file/magic:/Users/myaccount/.magic'
   export MAGIC
 
-Step 3: install lesspipe.sh, code2color, vimcolor, sxw2txt and archive_color
+Step 3: install lesspipe.sh and helper programs
 -----------------------------------------------------------------------
 You can copy lesspipe.sh to any appropriate place.
 Suggested location: /usr/local/bin/lesspipe.sh
@@ -78,10 +84,15 @@ This can be achieved also with make:
 
   make install [PREFIX=<path>]  # that copies the scripts to <path>/bin
 
+For zsh and bash a tab completion for archive contents is provided.
+To activate it the script lesscomplete has to be copied into a directory
+listed in $PATH, the _less function for zsh into a directory listed in $fpath
+and less_completion into a directory used by its completion mechanism.
+
 Step 4: activate lesspipe.sh
 ----------------------------
 To make use of the installed lesspipe.sh set the environment variable LESSOPEN:
-I recommend to use the fully qualified path to avoid problems with other
+The use of the fully qualified path is recommended to avoid problems with other
 scripts of the same name or with a changed search PATH:
 
   LESSOPEN="|/usr/local/bin/lesspipe.sh %s"; export LESSOPEN  #(sh like shells)

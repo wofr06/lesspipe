@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.00
+%define packageversion 2.01
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -9,7 +9,7 @@ Group:         Languages
 Source0:       lesspipe-%{packageversion}.tar.gz
 BuildArch:     noarch
 AutoReqProv:   on
-Packager:      Wolfgang Friebel <wolfgang.friebel@desy.de>
+Packager:      Wolfgang Friebel <wp.friebel@gmail.com>
 URL:           https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
 License:       GPL
 BuildRoot:     /var/tmp/%{packagename}-%{packageversion}
@@ -23,7 +23,8 @@ them before. That means file contents can be properly interpreted even if
 the files are compressed and contained in a hierarchy of archives (often
 found in RPM or DEB archives containing source tarballs). The filter is
 easily extensible for new formats. The input filter is a bash script, but
-works as well as a zsh script.
+works as well as a zsh script. For zsh and bash tab completion mechanisms
+for archive contents are provided.
 
 %prep
 %setup -n lesspipe-%{packageversion}
@@ -79,12 +80,17 @@ cd $RPM_BUILD_DIR
 %{prefix}/bin/code2color
 %{prefix}/bin/vimcolor
 %{prefix}/bin/sxw2txt
+%{prefix}/bin/lesscomplete
 %{prefix}/share/man/man1
+%{prefix}/share/zsh/site-functions/_less
+/etc/bash_completion.d/less_completion
 /etc/profile.d
 
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Tue Jan 04 2022 2.01-1 20220104 - wp.friebel@gmail.com
+- added zsh completion mechanism for archive contents
 * Tue Dec 28 2021 2.00-1 20211228 - wp.friebel@gmail.com
 - heavily rewritten version
 * Tue Jul 28 2015 1.83-1 20150728 - Wolfgang.Friebel@desy.de

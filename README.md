@@ -1,6 +1,6 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.00
+Version: 2.01
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto://wp.friebel@gmail.com)
 License: GPL
 
@@ -31,11 +31,12 @@ the author by email.
     - Colored listing of tar file contents
  6. Calling less from standard input
  7. Displaying files with special characters in the file name
- 8. (Old) documentation about lesspipe
- 9. External links
+ 8. Tab completion for zsh and bash
+ 9. (Old) documentation about lesspipe
+ 10. External links
     -   URLs to some utilities
     -  References
- 10. Contributors
+ 11. Contributors
 
 ## 0. Motivation
 
@@ -328,7 +329,27 @@ Examples:
  must be escaped by a \ when used in the shell, e.g. `less a\ b.tar.gz:a\\"b`
  will display the file a"b contained in the gzipped tar archive a b.tar.gz.
 
-## 8. (Old) documentation about lesspipe
+## 8. Tab completion for zsh and bash
+
+The existing `zsh` completion script has been enhanced to provide tab completion
+within archives similar to what is possible with the `tar` command completion.
+A `bash` completion script has been modeled loosely after the `zsh` completion.
+
+In both shells it is now possible to complete contents of archive format files
+such as tar, zip, rpm, deb files etc. This works as well in compressed files
+(e.g. tar.gz) and in chained archives, e.g.in source rpm files containing
+tar.gz files.
+
+The completion mechanism is triggered after entering a colon or an equal sign
+as for example in
+
+```
+        less archive_file:<TAB>                   # and then
+        less archive_file:partial_result<TAB>
+        less archive_file:contained_archive:<TAB> # etc.
+```
+
+## 9. (Old) documentation about lesspipe
 
  In English
  - https://ref.web.cern.ch/CERN/CNL/2002/001/unix-less/
@@ -339,11 +360,11 @@ Examples:
  - https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/
  - https://www.linux-community.de/ausgaben/linuxuser/2002/04/lesspipe/
 
-## 9. External links
+## 10. External links
 
 (last checked: Nov 30 2021):
 
-### 9.1 URLs to some utilities (with last known release)
+### 10.1 URLs to some utilities (with last known release)
 - 7zr                  https://sourceforge.net/projects/p7zip/ (2016)
 - antiword             https://www.winfield.demon.nl/ (2005)
 - cabextract           https://www.cabextract.org.uk/ (2019)
@@ -367,14 +388,14 @@ Examples:
 - xlscat               https://metacpan.org/pod/Spreadsheet::Read (2021)
 - sxw2txt              https://vinc17.net/software/sxw2txt (2015)
 
-### 9.2 References
+### 10.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)
 - [2] ftp://ftp.astron.com/pub/file/		(file)
 - [3] https://github.com/wofr06/lesspipe
 - [5] http://www.palfrader.org/code2html/	(code2html)
 - [6] http://www.darwinsys.com/file/		(file)
 
-## 10. Contributors
+## 11. Contributors
 
  The script lesspipe.sh is constantly enhanced thanks to suggestions from
  users. Thanks to (in alphabetical order):

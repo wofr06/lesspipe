@@ -55,13 +55,18 @@ test:
 install:
 	mkdir -p \$(DESTDIR)\$(PREFIX)/bin
 	mkdir -p \$(DESTDIR)\$(PREFIX)/share/man/man1
-	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor \$(DESTDIR)\$(PREFIX)/bin
+	mkdir -p \$(DESTDIR)\$(PREFIX)/share/zsh/site-functions
+	mkdir -p \$(DESTDIR)/etc/bash_completion.d
+	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete \$(DESTDIR)\$(PREFIX)/bin
 	cp ./lesspipe.1 \$(DESTDIR)\$(PREFIX)/share/man/man1
+	cp ./less_completion \$(DESTDIR)/etc/bash_completion.d
+	cp ./_less \$(DESTDIR)\$(PREFIX)/share/zsh/site-functions
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesspipe.sh
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/sxw2txt
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/code2color
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/archive_color
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/vimcolor
+	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesscomplete
 clean:
 	mv Makefile Makefile.old
 EOF
