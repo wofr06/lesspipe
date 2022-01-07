@@ -79,6 +79,8 @@ filetype () {
         ftype=matlab ;;
       *POD\ document*)
         ftype=pod ;;
+      *perl\ Storable*)
+        ftype=pst ;;
       *PEM\ certificate\ request)
         ftype=csr ;;
       *PEM\ certificate)
@@ -311,8 +313,8 @@ get_unpack_cmd () {
       prog=tar
       has_cmd bsdtar && prog=bsdtar ;;
     rpm)
-      { has_cmd cpio || has_cmd bsdtar; } &&
-      { has_cmd rpm2cpio; } && cmd=(isrpm "$2" "$file2") ;;
+      { has_cmd cpio && has_cmd rpm2cpio; } ||
+      { has_cmd bsdtar; } && cmd=(isrpm "$2" "$file2") ;;
     java-archive|zip)
       { has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd unzip && prog=unzip; } ;;
@@ -326,8 +328,8 @@ get_unpack_cmd () {
       { has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd cabextract && prog=cabextract; } ;;
     7z-compressed)
-      #{ has_cmd bsdtar && prog=bsdtar; } ||
       { has_cmd 7zr && prog=7zr; } ||
+      { has_cmd 7z && prog=7z; } ||
       { has_cmd 7za && prog=7za; } ;;
     iso9660-image)
       { has_cmd bsdtar && prog=bsdtar; } ||
@@ -501,6 +503,8 @@ isfinal () {
       [[ -z $file2 ]] && LESSQUIET=1 &&
       { { has_cmd pod2text && cmd=(pod2text "$2"); } ||
       { has_cmd perldoc && cmd=(istemp perldoc "$2"); }; } ;;
+    pst)
+      has_cmd perl && perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2" ;;
     hdf)
       { has_cmd h5dump && cmd=(istemp h5dump "$2"); } ||
       { has_cmd ncdump && cmd=(istemp ncdump "$2"); } ;;
@@ -611,16 +615,18 @@ ispdf () {
 
 isrpm () {
   if [[ -z "$2" ]]; then
-    istemp "rpm -qivp" "$1"
-    [[ $1 == - ]] && set "$t" "$1"
-    contentline
-	if has_cmd bsdtar; then
-      rpm2cpio "$1" 2>/dev/null | bsdtar tvf -
+    if has_cmd rpm; then
+      contentline
+      istemp "rpm -qivp" "$1"
+      [[ $1 == - ]] && set "$t" "$1"
+    fi
+    if has_cmd bsdtar; then
+      bsdtar tvf "$1"
     else
       rpm2cpio "$1" 2>/dev/null|cpio -i -tv 2>/dev/null
     fi
   elif has_cmd bsdtar; then
-    rpm2cpio "$1" 2>/dev/null | bsdtar xOf - "$2"
+    bsdtar xOf "$1" "$2"
   else
     rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --to-stdout "$2"
   fi
@@ -746,5 +752,11 @@ if [[ -z "$1" ]]; then
     echo "export LESSOPEN"
   fi
 else
+  if [ -x ~/.lessfilter ]; then
+    ~/.lessfilter "$1"
+    if [ $? -eq 0 ]; then
+      exit 0
+    fi
+  fi
   show "$@"
 fi

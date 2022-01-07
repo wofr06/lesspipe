@@ -380,6 +380,8 @@ less tests/filter.tgz:test_so		# shared library (.so)
 ~ .* T test
 less tests/filter.tgz:test.pod		# pod text, needs pod2text|perldoc
 ~     test
+less tests/filter.tgz:test.pod		# perl storable, needs perl
+~     test
 less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoct
 ~ test
 less tests/filter.tgz:test_nc4		# netcdf, needs h5dump|ncdump
