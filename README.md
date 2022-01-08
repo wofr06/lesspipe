@@ -340,6 +340,19 @@ such as tar, zip, rpm, deb files etc. This works as well in compressed files
 (e.g. tar.gz) and in chained archives, e.g.in source rpm files containing
 tar.gz files.
 
+The script `lesscomplete` has to be executable and be found in one of the
+directories listed in the `$PATH` environment variable. For zsh the file _less
+has to be stored in one of the directories listed in `$fpath` or the directory
+containig _less has to be added there, e.g. by:
+```
+        fpath=(~/zsh_functions $fpath)
+```
+In bash the function `less_completion` has to be added to the shell environment
+by sourcing the script (e.g. from .bashrc using the correct location):
+```
+        source ~/bash_functions/less_completion
+```
+
 The completion mechanism is triggered after entering a colon or an equal sign
 as for example in
 

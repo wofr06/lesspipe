@@ -174,6 +174,11 @@ nodash () {
 }
 
 show () {
+  if [[ "$1" == https://* ]]; then
+    x=html
+    isfinal "$1"
+    return
+  fi
   file1="${1%%$sep*}"
   rest1="${1#"$file1"}"
   while [[ "$rest1" == $sep$sep* ]]; do
@@ -213,7 +218,7 @@ show () {
     else
       # if nothing to convert, exit without a command
       [[ $colorizer == cat ]] && colorizer=
-      isfinal "$ft" "$file1" "$rest11"
+      isfinal "$file1" "$rest11"
     fi
   elif [[ "$c1" == "" ]]; then
     c1=("${cmd[@]}")
@@ -222,7 +227,7 @@ show () {
     if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
-      "${c1[@]}" | isfinal "$ft" - "$rest11"
+      "${c1[@]}" | isfinal - "$rest11"
     fi
   elif [[ "$c2" == "" ]]; then
     c2=("${cmd[@]}")
@@ -231,7 +236,7 @@ show () {
     if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
-       "${c1[@]}" | "${c2[@]}" | isfinal "$ft" - "$rest11"
+       "${c1[@]}" | "${c2[@]}" | isfinal - "$rest11"
     fi
   elif [[ "$c3" == "" ]]; then
     c3=("${cmd[@]}")
@@ -240,7 +245,7 @@ show () {
     if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
-      "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | isfinal "$ft" - "$rest11"
+      "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | isfinal - "$rest11"
     fi
   elif [[ "$c4" == "" ]]; then
     c4=("${cmd[@]}")
@@ -249,7 +254,7 @@ show () {
     if [[ "$cmd" != "" && -z $colorizer ]]; then
       show "-$rest1"
     else
-      "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | isfinal "$ft" - "$rest11"
+      "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | isfinal - "$rest11"
     fi
   elif [[ "$c5" == "" ]]; then
     c5=("${cmd[@]}")
@@ -258,7 +263,7 @@ show () {
     if [[ "$cmd" != "" && -z $colorizer ]]; then
       echo "$0: Too many levels of encapsulation"
     else
-      "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | isfinal "$ft" - "$rest11"
+      "${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | isfinal - "$rest11"
     fi
   fi
 }
@@ -410,8 +415,8 @@ has_colorizer () {
 }
 
 isfinal () {
-  if [[ "$3" == *$sep ]]; then
-    cat "$2"
+  if [[ "$2" == *$sep ]]; then
+    cat "$1"
     return
   fi
   if [[ -z "$cmd" ]]; then
@@ -419,123 +424,123 @@ isfinal () {
   [[ -n "$file2" && "$fileext" == "$file2" && "$fileext" != *.* ]] && x="$fileext"
   case "$x" in
     directory)
-      cmd=(ls -lA $COLOR "$2")
+      cmd=(ls -lA $COLOR "$1")
       if ! ls $COLOR > /dev/null 2>&1; then
-        cmd=(CLICOLOR_FORCE=1 ls -lA -G "$2")
+        cmd=(CLICOLOR_FORCE=1 ls -lA -G "$1")
         if ! ls -lA -G > /dev/null 2>&1; then
-          cmd=(ls -lA "$2")
+          cmd=(ls -lA "$1")
         fi
       fi
       msg="$x: showing the output of ${cmd[@]}" ;;
     html|xml)
-      [[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$2") ;;
+      [[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
     pdf)
-      { has_cmd pdftotext && cmd=(istemp pdftotext -layout -nopgbrk -q -- "$2" -); } ||
-      { has_cmd pdftohtml && has_htmlprog && cmd=(istemp ispdf "$2"); } ||
-      { has_cmd pdfinfo && cmd=(istemp pdfinfo "$2"); } ;;
+      { has_cmd pdftotext && cmd=(istemp pdftotext -layout -nopgbrk -q -- "$1" -); } ||
+      { has_cmd pdftohtml && has_htmlprog && cmd=(istemp ispdf "$1"); } ||
+      { has_cmd pdfinfo && cmd=(istemp pdfinfo "$1"); } ;;
     postscript)
-      has_cmd ps2ascii && nodash ps2ascii "$2" ;;
+      has_cmd ps2ascii && nodash ps2ascii "$1" ;;
     java-applet)
       # filename needs to end in .class
-      has_cmd procyon && t=$t.class && cat "$2" > $t && cmd=(procyon "$t") ;;
+      has_cmd procyon && t=$t.class && cat "$1" > $t && cmd=(procyon "$t") ;;
     markdown)
-      { has_cmd mdcat && cmd=(mdcat "$2"); } ||
-      { has_cmd pandoc && cmd=(pandoc -t plain "$2"); } ;;
+      { has_cmd mdcat && cmd=(mdcat "$1"); } ||
+      { has_cmd pandoc && cmd=(pandoc -t plain "$1"); } ;;
     docx)
-      { has_cmd pandoc && cmd=(pandoc -f docx -t plain "$2"); } ||
-      { has_cmd docx2txt && cmd=(docx2txt "$2" -); } ||
-      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
+      { has_cmd pandoc && cmd=(pandoc -f docx -t plain "$1"); } ||
+      { has_cmd docx2txt && cmd=(docx2txt "$1" -); } ||
+      { has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
     pptx)
       { has_cmd pptx2md && t2=$(nexttmp) &&
         { has_cmd mdcat && istemp "pptx2md --disable-image --disable-wmf \
-          -o $t2" "$2" && cmd=(mdcat "$t2"); } ||
+          -o $t2" "$1" && cmd=(mdcat "$t2"); } ||
         { has_cmd pandoc && istemp "pptx2md --disable-image --disable-wmf \
-          -o $t2" "$2" && cmd=(pandoc -f markdown -t plain "$t2"); }; } ||
-      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" ppt); } ;;
+          -o $t2" "$1" && cmd=(pandoc -f markdown -t plain "$t2"); }; } ||
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ppt); } ;;
     xlsx)
-      { has_cmd in2csv && cmd=(in2csv -f xlsx "$2"); } ||
-      { has_cmd xlscat && cmd=(istemp xlscat "$2"); } ||
-      { has_cmd excel2csv && cmd=(istemp excel2csv "$2"); } ||
-      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" xlsx); } ;;
+      { has_cmd in2csv && cmd=(in2csv -f xlsx "$1"); } ||
+      { has_cmd xlscat && cmd=(istemp xlscat "$1"); } ||
+      { has_cmd excel2csv && cmd=(istemp excel2csv "$1"); } ||
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" xlsx); } ;;
     odt)
-      { has_cmd pandoc && cmd=(pandoc -f odt -t plain "$2"); } ||
-      { has_cmd odt2txt && cmd=(istemp odt2txt "$2"); } ||
-      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
+      { has_cmd pandoc && cmd=(pandoc -f odt -t plain "$1"); } ||
+      { has_cmd odt2txt && cmd=(istemp odt2txt "$1"); } ||
+      { has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
     odp)
-      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" odp); } ;;
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" odp); } ;;
     ods)
-      { has_cmd xlscat && t=$t.ods && cat "$2" > $t &&  cmd=(xlscat "$t"); } ||
-      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" ods); } ;;
+      { has_cmd xlscat && t=$t.ods && cat "$1" > $t &&  cmd=(xlscat "$t"); } ||
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ods); } ;;
     msword)
-      t="$2"; [[ "$t" == - ]] && t=/dev/stdin
+      t="$1"; [[ "$t" == - ]] && t=/dev/stdin
       { has_cmd wvText && cmd=(istemp wvText "$t" /dev/stdout); } ||
-      { has_cmd antiword && cmd=(antiword "$2"); } ||
-      { has_cmd catdoc && cmd=(catdoc "$2"); } ||
-      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
+      { has_cmd antiword && cmd=(antiword "$1"); } ||
+      { has_cmd catdoc && cmd=(catdoc "$1"); } ||
+      { has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
     ms-powerpoint)
-      { has_cmd broken_catppt && cmd=(istemp catppt "$2"); } ||
-      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" ppt); } ;;
+      { has_cmd broken_catppt && cmd=(istemp catppt "$1"); } ||
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ppt); } ;;
     ms-excel)
-      { has_cmd in2csv && cmd=(in2csv -f xls "$2"); } ||
-      { has_cmd xls2csv && cmd=(istemp xls2csv "$2"); } ||
-      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" xls); } ;;
+      { has_cmd in2csv && cmd=(in2csv -f xls "$1"); } ||
+      { has_cmd xls2csv && cmd=(istemp xls2csv "$1"); } ||
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" xls); } ;;
     ooffice1)
-      { has_cmd sxw2txt && cmd=(istemp sxw2txt "$2"); } ||
-      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$2" odt); } ;;
+      { has_cmd sxw2txt && cmd=(istemp sxw2txt "$1"); } ||
+      { has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" odt); } ;;
     ipynb|epub)
-      has_cmd pandoc && cmd=(pandoc -f $x -t plain "$2") ;;
+      has_cmd pandoc && cmd=(pandoc -f $x -t plain "$1") ;;
     troff)
       if has_cmd groff; then
-        fext=$(fileext "$2")
+        fext=$(fileext "$1")
         declare macro=andoc
         [[ fext == me ]] && macro=e
         [[ fext == ms ]] && macro=s
-        cmd=(groff -s -p -t -e -Tutf8 -m$macro "$2")
+        cmd=(groff -s -p -t -e -Tutf8 -m$macro "$1")
       fi ;;
     rtf)
-      { has_cmd unrtf && cmd=(istemp "unrtf --text" "$2"); } ||
-      { has_cmd libreoffice && cmd=(isoffice2 "$2"); } ;;
+      { has_cmd unrtf && cmd=(istemp "unrtf --text" "$1"); } ||
+      { has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
     dvi)
-      has_cmd dvi2tty && cmd=(istemp "dvi2tty -q" "$2") ;;
+      has_cmd dvi2tty && cmd=(istemp "dvi2tty -q" "$1") ;;
     sharedlib)
-      cmd=(istemp nm "$2");;
+      cmd=(istemp nm "$1");;
     pod)
       [[ -z $file2 ]] && LESSQUIET=1 &&
-      { { has_cmd pod2text && cmd=(pod2text "$2"); } ||
-      { has_cmd perldoc && cmd=(istemp perldoc "$2"); }; } ;;
+      { { has_cmd pod2text && cmd=(pod2text "$1"); } ||
+      { has_cmd perldoc && cmd=(istemp perldoc "$1"); }; } ;;
     pst)
-      has_cmd perl && perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$2" ;;
+      has_cmd perl && perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$1" ;;
     hdf)
-      { has_cmd h5dump && cmd=(istemp h5dump "$2"); } ||
-      { has_cmd ncdump && cmd=(istemp ncdump "$2"); } ;;
+      { has_cmd h5dump && cmd=(istemp h5dump "$1"); } ||
+      { has_cmd ncdump && cmd=(istemp ncdump "$1"); } ;;
     matlab)
-      has_cmd matdump && cmd=(istemp "matdump -d" "$2") ;;
+      has_cmd matdump && cmd=(istemp "matdump -d" "$1") ;;
     djvu)
-      has_cmd djvutxt && cmd=(djvutxt "$2") ;;
+      has_cmd djvutxt && cmd=(djvutxt "$1") ;;
     x509|crl)
-      has_cmd openssl && cmd=(istemp "openssl $x -hash -text -noout  -in" "$2") ;;
+      has_cmd openssl && cmd=(istemp "openssl $x -hash -text -noout  -in" "$1") ;;
     csr)
-      has_cmd openssl && cmd=(istemp "openssl req -text -noout  -in" "$2") ;;
+      has_cmd openssl && cmd=(istemp "openssl req -text -noout  -in" "$1") ;;
     pgp)
-      has_cmd gpg && cmd=(gpg -d "$2") ;;
+      has_cmd gpg && cmd=(gpg -d "$1") ;;
     plist)
-      has_cmd plistutil && cmd=(istemp "plistutil -i" "$2") ;;
+      has_cmd plistutil && cmd=(istemp "plistutil -i" "$1") ;;
     mp3)
-      has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$2") ;;
+      has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1") ;;
     log)
-      has_cmd ccze && cat "$2" | ccze -A
+      has_cmd ccze && cat "$1" | ccze -A
       return ;;
   esac
   fi
   # not a specific file format
   if [[ -z "$cmd" ]]; then
-	fext=$(fileext "$2")
+	fext=$(fileext "$1")
     if [[ $fcat == audio || $fcat == video || $fcat == image ]]; then
-      { has_cmd mediainfo && cmd=(mediainfo --Full "$2"); } ||
-      { has_cmd exiftool && cmd=(exiftool "$2"); } ||
-      { has_cmd identify && $fcat == image && cmd=(identify -verbose "$2"); }
+      { has_cmd mediainfo && cmd=(mediainfo --Full "$1"); } ||
+      { has_cmd exiftool && cmd=(exiftool "$1"); } ||
+      { has_cmd identify && $fcat == image && cmd=(identify -verbose "$1"); }
     elif [[ "$fchar" == binary ]]; then
-      cmd=(nodash strings "$2")
+      cmd=(nodash strings "$1")
     fi
   fi
   if [[ -z "$LESSQUIET" && -n $cmd && $cmd != "cat" ]]; then
@@ -552,10 +557,10 @@ isfinal () {
     [[ -n "$file2" ]] && fext="$file2"
     [[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
     [[ -z "$fext" ]] && fext=$(fileext "$fileext")
-    [[ -z $colorizer ]] && colorizer=$(has_colorizer "$2" "$fext")
+    [[ -z $colorizer ]] && colorizer=$(has_colorizer "$1" "$fext")
     [[ -n $colorizer && $fcat != binary ]] && $colorizer && return
     # if fileext set, we need to filter to get rid of .fileext
-    [[ -n $fileext || "$2" == - || "$2" == $t ]] && cat "$2"
+    [[ -n $fileext || "$1" == - || "$1" == $t ]] && cat "$1"
   fi
 }
 
@@ -706,6 +711,7 @@ ishtml () {
   has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
   has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
   # different incompatible versions with the name html2text may let this fail
+  [[ "$1" == https://* ]] && return
   html2text -utf8  || html2text -from_encoding utf-8
   has_cmd html2text && nodash html2text "$1"
 }

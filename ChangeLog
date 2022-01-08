@@ -1,6 +1,10 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- add again perl storable support
+- add ~/.lessfilter support
+- better rpm handling, documentation enhancements
+- remove contrib directory, patches are partly implemented or obsolete
 Version 2.01 Jan 4 2022
 - experimental zsh and bash completion for archive contents
 - remove use of rpmunpack, dpkg
