@@ -393,7 +393,7 @@ has_colorizer () {
   case $prog in
     bat|batcat)
 			# only allow an explicitly requested language
-			opt=$fileext
+			opt=" -l $fileext"
 			{ [[ -n $fileext ]] && $prog $opt /dev/null; } || opt=
       opt="$opt $COLOR" ;;
     pygmentize)
