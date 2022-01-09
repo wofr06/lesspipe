@@ -392,6 +392,9 @@ has_colorizer () {
   [[ "$2" =~ ^[0-9]*$ ]] && opt= || opt=" -l $2"
   case $prog in
     bat|batcat)
+			# only allow an explicitly requested language
+			opt=$fileext
+			{ [[ -n $fileext ]] && $prog $opt /dev/null; } || opt=
       opt="$opt $COLOR" ;;
     pygmentize)
 		[[ -n $LESSCOLORIZER && $LESSCOLORIZER =~ pygmentize\ \ *-O\ *style=[a-z]* ]] && prog=$LESSCOLORIZER
@@ -554,6 +557,7 @@ isfinal () {
     [[ -n "$file2" ]] && fext="$file2"
     [[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
     [[ -z "$fext" ]] && fext=$(fileext "$fileext")
+	fext=${fext##*/}
     [[ -z $colorizer ]] && colorizer=$(has_colorizer "$1" "$fext")
     [[ -n $colorizer && $fcat != binary ]] && $colorizer && return
     # if fileext set, we need to filter to get rid of .fileext
