@@ -2,8 +2,15 @@
 
 _list_archive()
 {
+	local cur prev words cword
+	if declare -F _init_completions >/dev/null 2>&1; then
+		_init_completion
+	else
+		COMPREPLY=()
+		_get_comp_words_by_ref cur prev words cword
+	fi
+
     local fn
-    _init_completion -s || return
 
     set -- "${words[@]}"
 	if [[ "${words[@]}" == *[:=]* && $COMP_LINE != *\  ]]; then
