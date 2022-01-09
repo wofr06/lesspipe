@@ -353,22 +353,19 @@ get_unpack_cmd () {
 
 analyze_args () {
   # determine how we are called
-  cmdtree=`ps -T -opid= -oargs=`
-  # adjust, if we are called from the test suite
-  [[ $cmdtree =~ ./test.pl\ .* || $cmdtree =~ ./test.pl ]] && addmatch='[0-9]* '
-  cmdtree=`echo $cmdtree|sed "s/[0-9]* $addmatch//;s/ [0-9]* /;/g;s/^[^;]*;//"`
-  lessarg=${cmdtree%%;*}
-  [[ $lessarg == *test.pl\ * ]] && lessarg=${cmdtree##$lessarg;*}
-  # return if we want to watch growing files
-  [[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
-  # if lesspipe is called in pipes, return immediately for some use cases
-  if [[ $LESSOPEN == *-* ]]; then
-    # man pandoc output erroneously recognized as html
-    case $lessarg in
-      man\ *|*/man\ *|*/perldoc\ *|git\ *)
-        exit 0
-    esac
-  fi
+	cmdtree=`ps -T -oargs=`
+	while read -r line; do
+		arg1=${line%% *}; arg1=${arg1##*/}
+		case $arg1 in
+			man|git|perldoc)
+	# if lesspipe is called in pipes, return immediately for some use cases
+				exit 0 ;;
+			less)
+				lessarg=$line ;;
+		esac
+	done <<< "$cmdtree"
+	# return if we want to watch growing files
+	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
   # color is set when calling less with -r or -R or LESS contains that option
   lessarg="$LESS $lessarg"
   lessarg=`echo $lessarg|sed 's/-[a-zA-Z]*[rR]/-r/'`
