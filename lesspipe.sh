@@ -292,7 +292,7 @@ get_unpack_cmd () {
 	esac
 	# convert into utf8
 
-	if [[ -n $lclocale && $fchar != binary && $fchar != *ascii && $fchar != $lclocale ]]; then
+	if [[ -n $lclocale && $fchar != binary && $fchar != *ascii && $fchar != $lclocale && $fchar != unknown* ]]; then
 		qm="\033[7m?\033[m" # inverted question mark
 		rep=-c
 		trans=

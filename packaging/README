@@ -1,0 +1,14 @@
+The file lesspipe.spec is a template to create a lesspipe RPM package.
+After creating the required build directory structure, putting a
+lesspipe-xxx.tar.gz into the SOURCES and lesspipe.spec into the SPECS
+directories the RPM can be built by
+
+rpmbuild -ba SPECS/lesspipe.spec
+
+This template not copy the files INSTALL, README.md and the test suite,
+that could go into a lesspipe-dev package.
+
+Similarly the file control is a template for bulding a DEB package. The
+installed size is not the correct number. It would be nice to have
+complete building istructions here, but this requires the setup of
+a building environment and is not described here.

@@ -1,0 +1,24 @@
+Package: lesspipe
+Version: 2.01-1
+Section: text
+Priority: optional
+Architecture: all
+Essential: no
+Depends: gzip
+Suggests: libreoffice, elinks, mediainfo, pdftotext
+Enhances: less
+Installed-Size: 263KB
+Homepage: https://www-zeuthen.desy.de/~friebel/unix/lesspipe.html
+Maintainer: Wolfgang Friebel
+Description: lesspipe.sh is an input filter for the pager less.
+ lesspipe.sh is a sophisticated version to enhance less. It is able to process
+ a wide variety of file formats. It enables users to deeply inspect archives
+ and to display the contents of files in archives without having to unpack
+ them before. That means file contents can be properly interpreted even if
+ the files are compressed and contained in a hierarchy of archives (often
+ found in RPM or DEB archives containing source tarballs). The filter is
+ easily extensible for new formats. The input filter is a bash script, but
+ works as well as a zsh script. For zsh a completion mechanism for archive
+ contents is provided.
+
+
