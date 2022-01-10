@@ -31,30 +31,30 @@ my $filetype = $opt_l;
 
 # do a clean up if we get a CTRL-C
 our ($tdir,$script_fh, $markup_fh);
-$SIG{INT} = sub  { if ($tdir) {
-  close $script_fh if $script_fh;
-  close $markup_fh if $markup_fh;
-  unlink $tdir; print "\n"; exit 1 }};
+$SIG{INT} = sub { if ($tdir) {
+	close $script_fh if $script_fh;
+	close $markup_fh if $markup_fh;
+	unlink $tdir; print "\n"; exit 1 }};
 
 $tdir = File::Temp->newdir('/tmp/vimcolorXXXX');
 
 if (! $file or $file eq '-') {
-  $file = "$tdir/inputfile";
-  File::Copy::syscopy(\*STDIN, $file);
+	$file = "$tdir/inputfile";
+	File::Copy::syscopy(\*STDIN, $file);
 }
 
 my %ANSI_COLORS = (
-  Comment    =>  'blue',
-  Constant   =>  'red',
-  Identifier =>  'cyan',
-  Statement  =>  'yellow',
-  PreProc    =>  'magenta',
-  Type       =>  'green',
-  Special    =>  'bright_magenta',
-  Underlined =>  'underline',
-  Ignore     =>  'bright_white',
-  Error      =>  'on_red',
-  Todo       =>  'on_cyan',
+	Comment		=> 'blue',
+	Constant	=> 'red',
+	Identifier	=> 'cyan',
+	Statement	=> 'yellow',
+	PreProc		=> 'magenta',
+	Type		=> 'green',
+	Special		=> 'bright_magenta',
+	Underlined	=> 'underline',
+	Ignore		=> 'bright_white',
+	Error		=> 'on_red',
+	Todo		=> 'on_cyan',
 );
 
 # allow the environment to overwrite:
@@ -62,17 +62,17 @@ my %ANSI_COLORS = (
 my $report_colors;
 my %COLORS = %ANSI_COLORS;
 if ($ENV{TEXT_VIMCOLOR_ANSI}) {
-  my @ADD = split /\s*[=;]\s*/, $ENV{TEXT_VIMCOLOR_ANSI};
-  if (@ADD % 2) {
-    warn "### TEXT_VIMCOLOR_ANSI has wrong content: $ENV{TEXT_VIMCOLOR_ANSI}\n";
-  } else {
-    while (@ADD) {
-      my ($k, $v) = splice @ADD, -2;
-      $COLORS{$k} = $v, next if $v ne '?';
-      $report_colors=1;
-      $COLORS{$k} ||= '';
-    }
-  }
+	my @ADD = split /\s*[=;]\s*/, $ENV{TEXT_VIMCOLOR_ANSI};
+	if (@ADD % 2) {
+		warn "### TEXT_VIMCOLOR_ANSI has wrong content: $ENV{TEXT_VIMCOLOR_ANSI}\n";
+	} else {
+		while (@ADD) {
+			my ($k, $v) = splice @ADD, -2;
+			$COLORS{$k} = $v, next if $v ne '?';
+			$report_colors=1;
+			$COLORS{$k} ||= '';
+		}
+	}
 }
 
 # These extra syntax group are available but linked to the groups above by
@@ -95,12 +95,12 @@ $COLORS{$_} ||= $COLORS{$SYNTAX_LINKS{$_}} for keys %SYNTAX_LINKS;
 my %colors;
 my $reset = color('reset');
 for (keys (%COLORS)) {
-  if (colorvalid($COLORS{$_})) {
-    $colors{$_} = color($COLORS{$_});
-  } else {
-    warn "### invalid color name '$COLORS{$_}' (Term::ANSIColor) ###\n";
-    $colors{$_} = $reset;
-  }
+	if (colorvalid($COLORS{$_})) {
+		$colors{$_} = color($COLORS{$_});
+	} else {
+		warn "### invalid color name '$COLORS{$_}' (Term::ANSIColor) ###\n";
+		$colors{$_} = $reset;
+	}
 }
 # Build a lookup table to determine if a syntax exists.
 my %SYNTAX_TYPE = map {$_, 1} keys %COLORS;
@@ -109,38 +109,38 @@ my $defaults = set_defaults();
 my $syntax = do_markup($defaults, $file, $filetype);
 
 sub set_defaults {
-  return {
-    vim_command        => 'vim',
-    vim_options        => [qw( -RXZ -i NONE -u NONE -N -n ), "+set nomodeline"],
-    all_syntax_groups  => $all_groups,
-    vim_let            => {perl_include_pod => 1, 'b:is_bash' => 1},
-  };
+	return {
+		vim_command		=> 'vim',
+		vim_options		=> [qw( -RXZ -i NONE -u NONE -N -n ), "+set nomodeline"],
+		all_syntax_groups	=> $all_groups,
+		vim_let			=> {perl_include_pod => 1, 'b:is_bash' => 1},
+	};
 }
 
 # Actually run Vim and turn the script's output into a datastructure.
 sub do_markup {
-  my ($defaults, $file, $filetype) = @_;
+	my ($defaults, $file, $filetype) = @_;
 
-  my $filename = $file;
+	my $filename = $file;
 
-  # Create a temp file to put the output in.
-  my $out_file = File::Temp->new(TEMPLATE => 'vimcXXXX', DIR => '/tmp');
-  # Create a temp file for the 'script', which is given to vim
-  # with the -s option.
-  my $script_file = "$tdir/scriptfile";
-  open $script_fh, ">$script_file" or die "$!\n";
-  my $markup_file = "$tdir/markupfile";
-  open $markup_fh, ">$markup_file" or die "$!\n";
-  my $filetype_set = defined $filetype ? ":set filetype=$filetype" : '';
-  my $vim_let = $defaults->{vim_let};
+	# Create a temp file to put the output in.
+	my $out_file = File::Temp->new(TEMPLATE => 'vimcXXXX', DIR => '/tmp');
+	# Create a temp file for the 'script', which is given to vim
+	# with the -s option.
+	my $script_file = "$tdir/scriptfile";
+	open $script_fh, ">$script_file" or die "$!\n";
+	my $markup_file = "$tdir/markupfile";
+	open $markup_fh, ">$markup_file" or die "$!\n";
+	my $filetype_set = defined $filetype ? ":set filetype=$filetype" : '';
+	my $vim_let = $defaults->{vim_let};
 
-  # on linux '-s' is fast and '--cmd' adds the 2-second startup delay
-  # are there situations where --cmd is necessary or useful?
+	# on linux '-s' is fast and '--cmd' adds the 2-second startup delay
+	# are there situations where --cmd is necessary or useful?
 
-  my $markscript= <<'EOF';
+	my $markscript= <<'EOF';
 set report=1000000
 if !strlen(&filetype)
-  filetype detect
+	filetype detect
 endif
 syn on
 new
@@ -151,126 +151,126 @@ wincmd p
 let s:end = line("$")
 let s:lnum = 1
 while s:lnum <= s:end
-  let s:line = getline(s:lnum)
-  let s:len = strlen(s:line)
-  let s:new = ""
-  let s:col = 1
-  while s:col <= s:len
-    let s:startcol = s:col " The start column for processing text
-    let s:id = synID(s:lnum, s:col, 1)
-    let s:col = s:col + 1
-    while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
-    let s:id = synIDtrans(s:id)
-    let s:name = synIDattr(s:id, 'name')
-    let s:new = s:new . '>' . s:name . '>' . substitute(substitute(substitute(strpart(s:line, s:startcol - 1, s:col - s:startcol), '&', '\&a', 'g'), '<', '\&l', 'g'), '>', '\&g', 'g') . '<' . s:name . '<'
-    if s:col > s:len
-      break
-    endif
-  endwhile
-  exe "normal \<C-W>pa" . strtrans(s:new) . "\n\e\<C-W>p"
-  let s:lnum = s:lnum + 1
-  +
+	let s:line = getline(s:lnum)
+	let s:len = strlen(s:line)
+	let s:new = ""
+	let s:col = 1
+	while s:col <= s:len
+		let s:startcol = s:col " The start column for processing text
+		let s:id = synID(s:lnum, s:col, 1)
+		let s:col = s:col + 1
+		while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
+		let s:id = synIDtrans(s:id)
+		let s:name = synIDattr(s:id, 'name')
+		let s:new = s:new . '>' . s:name . '>' . substitute(substitute(substitute(strpart(s:line, s:startcol - 1, s:col - s:startcol), '&', '\&a', 'g'), '<', '\&l', 'g'), '>', '\&g', 'g') . '<' . s:name . '<'
+		if s:col > s:len
+			break
+		endif
+	endwhile
+	exe "normal \<C-W>pa" . strtrans(s:new) . "\n\e\<C-W>p"
+	let s:lnum = s:lnum + 1
+	+
 endwhile
 wincmd p
 normal dd
 EOF
-  if ($defaults->{all_syntax_groups}) {
-    my %a= (map {$_, 1} ('Normal', keys %ANSI_COLORS, keys %SYNTAX_LINKS));
-    printf $markup_fh "hi %-16s ctermfg=7\n", $_ for keys %a;
-  }
-  print $markup_fh $markscript;
-  close $markup_fh;
-  my @script_lines = (
-    map { "$_\n" }
-      # do :edit before :let or the buffer variables may get reset
-      ":edit $filename",
-      (
-        map  { ":let $_=$vim_let->{$_}" }
-        grep { defined  $vim_let->{$_} }
-          keys %$vim_let
-      ),
+	if ($defaults->{all_syntax_groups}) {
+		my %a= (map {$_, 1} ('Normal', keys %ANSI_COLORS, keys %SYNTAX_LINKS));
+		printf $markup_fh "hi %-16s ctermfg=7\n", $_ for keys %a;
+	}
+	print $markup_fh $markscript;
+	close $markup_fh;
+	my @script_lines = (
+		map { "$_\n" }
+			# do :edit before :let or the buffer variables may get reset
+			":edit $filename",
+			(
+				map  { ":let $_=$vim_let->{$_}" }
+				grep { defined	$vim_let->{$_} }
+					keys %$vim_let
+			),
 
-      ':filetype on',
-       $filetype_set,
-      ":source $markup_file",
-      ":write! $out_file",
-      ':qall!',
-  );
+			':filetype on',
+			$filetype_set,
+			":source $markup_file",
+			":write! $out_file",
+			':qall!',
+	);
 
-  print $script_fh @script_lines;
-  close $script_fh;
+	print $script_fh @script_lines;
+	close $script_fh;
 
-  run(
-    $defaults->{vim_command},
-    $defaults->{vim_options},
-    $filename, ('-s' => "$script_file")
-  );
+	run(
+		$defaults->{vim_command},
+		$defaults->{vim_options},
+		$filename, ('-s' => "$script_file")
+	);
 
-  my $data = do { local $/; <$out_file> };
+	my $data = do { local $/; <$out_file> };
 
-  # Given an array ref ($syntax), we add a new syntax chunk to it, unescaping
-  # the text & making sure that consecutive chunks of the same type are merged.
-  my ($syntax, $content, %types);
-  $data =~ s/\x0D\x0A?/\n/g;
-  $data =~ s/<(.*?)<>\1>//g; # repeating blocks of the same type
-  for (keys %colors) {
-    $types{$_} = 1 if $data =~ s/>$_>(.*?)<$_</$colors{$_}$1/g; #coloring
-  }
-  # first line without the reset sequence
-  $data =~ s/^>(.*?)>(.*?)<\1</$2/; #no color
-  $data =~ s/>(.*?)>(.*?)<\1</$reset$2/g; #no color
-  # Unescape ampersands and pointies, restore escape
-  my %s=(l=>'<',g=>'>',a=>'&');
-  $data =~s/&([lga])/$s{$1}/g;
-  $data =~ s/\^\[/\e/g;
-  # get start and end of file correct
-  $data .= $reset if $data !~ /\n$/;
-  print $data if $data;
+	# Given an array ref ($syntax), we add a new syntax chunk to it, unescaping
+	# the text & making sure that consecutive chunks of the same type are merged.
+	my ($syntax, $content, %types);
+	$data =~ s/\x0D\x0A?/\n/g;
+	$data =~ s/<(.*?)<>\1>//g; # repeating blocks of the same type
+	for (keys %colors) {
+		$types{$_} = 1 if $data =~ s/>$_>(.*?)<$_</$colors{$_}$1/g; #coloring
+	}
+	# first line without the reset sequence
+	$data =~ s/^>(.*?)>(.*?)<\1</$2/; #no color
+	$data =~ s/>(.*?)>(.*?)<\1</$reset$2/g; #no color
+	# Unescape ampersands and pointies, restore escape
+	my %s=(l=>'<',g=>'>',a=>'&');
+	$data =~s/&([lga])/$s{$1}/g;
+	$data =~ s/\^\[/\e/g;
+	# get start and end of file correct
+	$data .= $reset if $data !~ /\n$/;
+	print $data if $data;
 
-  return if ! $report_colors;
-  print "\n### Report color settings:\n";
-  print "$_ ($colors{$_}$COLORS{$_}$reset)\n" for keys %types;
+	return if ! $report_colors;
+	print "\n### Report color settings:\n";
+	print "$_ ($colors{$_}$COLORS{$_}$reset)\n" for keys %types;
 }
 
 # This is a subroutine which runs a program.
 # It takes a list of the program name and arguments.
 sub run {
-  my ($prog, @args) = @_;
+	my ($prog, @args) = @_;
 
-  {
-    my ($in, $out) = (Symbol::gensym(), Symbol::gensym());
-    my $err_fh = Symbol::gensym();
+	{
+		my ($in, $out) = (Symbol::gensym(), Symbol::gensym());
+		my $err_fh = Symbol::gensym();
 
-    my $pid = IPC::Open3::open3($in, $out, $err_fh, $prog => @args);
+		my $pid = IPC::Open3::open3($in, $out, $err_fh, $prog => @args);
 
-    # close these to avoid any ambiguity that might cause this to block
-    # (see also the paragraph about "select" in IPC::Open3)
-    close($in);
-    close($out);
+		# close these to avoid any ambiguity that might cause this to block
+		# (see also the paragraph about "select" in IPC::Open3)
+		close($in);
+		close($out);
 
-    # read handle before waitpid to avoid hanging on older systems
-    my $errout = do { local $/; <$err_fh> };
+		# read handle before waitpid to avoid hanging on older systems
+		my $errout = do { local $/; <$err_fh> };
 
-    my $gotpid = waitpid($pid, 0);
-    die "couldn't run the program '$prog'" if $gotpid == -1;
-    my $error = $? >> 8;
-    if ($error) {
-      $errout =~ s/\n+\z//;
-      my $details = $errout eq '' ? '' :
-                    "\n$prog wrote this error output:\n$errout\n";
-      die "$prog returned an error code of '$error'$details";
-    }
-  }
+		my $gotpid = waitpid($pid, 0);
+		die "couldn't run the program '$prog'" if $gotpid == -1;
+		my $error = $? >> 8;
+		if ($error) {
+			$errout =~ s/\n+\z//;
+			my $details = $errout eq '' ? '' :
+										"\n$prog wrote this error output:\n$errout\n";
+			die "$prog returned an error code of '$error'$details";
+		}
+	}
 }
 
 sub usage {
-  print <<EOF;
+	print <<EOF;
 usage: vimcolor [-h] [-l language] [filename]
 
 This program works by running the Vim text editor and getting it to apply its
 excellent syntax highlighting (aka 'font-locking') to an input file, and mark
 pieces of text according to whether it thinks they are comments, keywords,
-strings, etc.  The Perl code then reads back this markup and converts it
+strings, etc. The Perl code then reads back this markup and converts it
 to text marked with ANSI escape sequences (using Term::ANSIColor)
 based on the Vim syntax coloring of the input file.
 
@@ -279,13 +279,13 @@ OPTIONS:
  -l specify the type of file Vim should expect, if not recognized correctly
 
 ARGUMENT
- filename   name of the file to colorize. If not given or - then STDIN is used
+ filename		name of the file to colorize. If not given or - then STDIN is used
 
 You can alter the color scheme using the TEXT_VIMCOLOR_ANSI
 environment variable in the format of "SynGroup=color;"
 For example:
 
-   TEXT_VIMCOLOR_ANSI='Comment=green;Statement = magenta; '
+	TEXT_VIMCOLOR_ANSI='Comment=green;Statement = magenta; '
 
 A question mark as colorname displays in addition the color settings for
 the syntax groups found at the end of the program. By default only the
@@ -303,5 +303,5 @@ Typedef Tag SpecialChar Delimiter SpecialComment Debug
 
 and chose appropriate colors.
 EOF
-  exit;
+	exit;
 }

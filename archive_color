@@ -25,145 +25,145 @@ my $RESET = "\033[0m";
 
 
 sub get_file_type {
-    return if (length($_) < 10);
+	return if (length($_) < 10);
 
-    if (substr($_, 0, 1) eq 'l') {
-        return 'ln';
-    } elsif (substr($_, 0, 1) eq 'd') {
-        return 'di';
-    } elsif (substr($_, 0, 1) eq 's') {
-        return 'so';
-    } elsif (substr($_, 3, 1) eq 'S') {
-        return 'su';
-    } elsif (substr($_, 6, 1) eq 'S') {
-        return 'sg';
-    } elsif (substr($_, 0, 1) eq 'p') {
-        return 'pi';
-    } elsif (substr($_, 0, 1) eq 'c') {
-        return 'cd';
-    } elsif (substr($_, 0, 1) eq 'b') {
-        return 'bd';
-    } elsif (substr($_, 0, 1) eq 'D') {
-        return 'do';
-    } elsif (substr($_, 3, 1) eq 'x') {
-        return 'ex';
-    } elsif (substr($_, -3, 2) =~ /.\//) {
-        return 'di';
-    } elsif (/\.\w{1,3}$/) {
-        return '*' . $&;
-    }
+	if (substr($_, 0, 1) eq 'l') {
+		return 'ln';
+	} elsif (substr($_, 0, 1) eq 'd') {
+		return 'di';
+	} elsif (substr($_, 0, 1) eq 's') {
+		return 'so';
+	} elsif (substr($_, 3, 1) eq 'S') {
+		return 'su';
+	} elsif (substr($_, 6, 1) eq 'S') {
+		return 'sg';
+	} elsif (substr($_, 0, 1) eq 'p') {
+		return 'pi';
+	} elsif (substr($_, 0, 1) eq 'c') {
+		return 'cd';
+	} elsif (substr($_, 0, 1) eq 'b') {
+		return 'bd';
+	} elsif (substr($_, 0, 1) eq 'D') {
+		return 'do';
+	} elsif (substr($_, 3, 1) eq 'x') {
+		return 'ex';
+	} elsif (substr($_, -3, 2) =~ /.\//) {
+		return 'di';
+	} elsif (/\.\w{1,3}$/) {
+		return '*' . $&;
+	}
 }
 
 sub get_filename {
-    my $suntar_date = m{
-        (?: [A-Z]\w\w)  # Month
-        \s+
-        \d{1,2}                                               # Day
-        \s+
-        \d{2}:\d{2}                                           # Time
-        \s+
-        \d{4}                                                 # Year
-        [\s,]+
-        (.+?)                                                 # Capture group 1: filename
-        (?=\s->|$)
-    }gx;
+	my $suntar_date = m{
+		(?: [A-Z]\w\w)	# Month
+		\s+
+		\d{1,2}		# Day
+		\s+
+		\d{2}:\d{2}	# Time
+		\s+
+		\d{4}		# Year
+		[\s,]+
+		(.+?)		# Capture group 1: filename
+		(?=\s->|$)
+	}gx;
 
-    if ($suntar_date) {
-        return $1, pos();
-    }
+	if ($suntar_date) {
+		return $1, pos();
+	}
 
-    my $bsdtar_date = m{
-        (?: [A-Z]\w\w)   # Month
-        \s+
-        \d{1,2}                                                # Day
-        \s+
-        (?: (?: \d{4}) | (?: \d{2}:\d{2}))                     # Year or time
-        \s+
-        (.+?)                                                  # Capture group 1: filename
-        (?=\s->|$)
-    }gx;
+	my $bsdtar_date = m{
+		(?: [A-Z]\w\w)	# Month
+		\s+
+		\d{1,2}		# Day
+		\s+
+		(?: (?: \d{4}) | (?: \d{2}:\d{2}))	# Year or time
+		\s
+		(.+?)		# Capture group 1: filename
+		(?=\s->|$)
+	}gx;
 
-    if ($bsdtar_date) {
-        return $1, pos();
-    }
+	if ($bsdtar_date) {
+		return $1, pos();
+	}
 
-    my $bsdtar_date_dmy = m{
-        \d{1,2}                                                # Day
-        \s+
-        (?: [A-Z]\w\w)   # Month
-        \s+
-        (?: (?: \d{4}) | (?: \d{2}:\d{2}))                     # Year or time
-        \s+
-        (.+?)                                                  # Capture group 1: filename
-        (?=\s->|$)
-    }gx;
+	my $bsdtar_date_dmy = m{
+		\d{1,2}		# Day
+		\s+
+		(?: [A-Z]\w\w)	# Month
+		\s+
+		(?: (?: \d{4}) | (?: \d{2}:\d{2}))	# Year or time
+		\s+
+		(.+?)		# Capture group 1: filename
+		(?=\s->|$)
+	}gx;
 
-    if ($bsdtar_date_dmy) {
-        return $1, pos();
-    }
+	if ($bsdtar_date_dmy) {
+		return $1, pos();
+	}
 
-    my $gnutar_date = m{
-        \d{4}-\d{2}-\d{2}   # Date (%Y-%m-%d)
-        \s 
-        \d{2}:\d{2}         # Time (%H:%M)
-        (?: :\d{2})?        # [Optional] seconds in time
-        \s+
-        (.+?)               # Capture group 1: filename
-        (?=\s->|$)
-    }gx;
+	my $gnutar_date = m{
+		\d{4}-\d{2}-\d{2}	# Date (%Y-%m-%d)
+		\s
+		\d{2}:\d{2}		# Time (%H:%M)
+		(?: :\d{2})?		# [Optional] seconds in time
+		\s+
+		(.+?)			# Capture group 1: filename
+		(?=\s->|$)
+	}gx;
 
-    if ($gnutar_date) {
-        return $1, pos();
-    }
+	if ($gnutar_date) {
+		return $1, pos();
+	}
 }
 
 sub color_filename {
-    my ($color) = @_;
+	my ($color) = @_;
 
-    my ($filename, $pos) = get_filename();
+	my ($filename, $pos) = get_filename();
 
-    if ($filename && $pos) {
-        substr($_, $pos - length($filename), length($filename)) = $color . $filename . $RESET;
-    }
+	if ($filename && $pos) {
+		substr($_, $pos - length($filename), length($filename)) = $color . $filename . $RESET;
+	}
 }
 
 sub default_ls_colors {
-    return '';
+	return '';
 }
 
 if ( -t STDIN ) {
-    print "Example: tar tvzf some_tarball.tar.gz | archive_color\n";
-    exit(0);
+	print "Example: tar tvzf some_tarball.tar.gz | archive_color\n";
+	exit(0);
 }
 
 
 my %FILE_TYPE_TO_COLOR = (
-    "di" => "\033[01;34m",
-    "ln" => "\033[01;36m",
-    "ex" => "\033[01;32m",
-    "so" => "\033[01;35m",
-    "pi" => "\033[40;33m",
-    "bd" => "\033[40;33;01m",
-    "cd" => "\033[40;33;01m",
-    "su" => "\033[37;41m",
-    "sg" => "\033[30;43m",
+	"di" => "\033[01;34m",
+	"ln" => "\033[01;36m",
+	"ex" => "\033[01;32m",
+	"so" => "\033[01;35m",
+	"pi" => "\033[40;33m",
+	"bd" => "\033[40;33;01m",
+	"cd" => "\033[40;33;01m",
+	"su" => "\033[37;41m",
+	"sg" => "\033[30;43m",
 );
 
 my $tar_colors = $ENV{'TAR_COLORS'} || $ENV{'LS_COLORS'} || default_ls_colors();
 
 foreach (split(':', $tar_colors)) {
-    my ($type, $codes) = split('=');
-    $FILE_TYPE_TO_COLOR{$type} = "\033[" . $codes . "m";
+	my ($type, $codes) = split('=');
+	$FILE_TYPE_TO_COLOR{$type} = "\033[" . $codes . "m";
 }
 
 while (<>) {
-    my $type = get_file_type();
+	my $type = get_file_type();
 
-    if ($type && $FILE_TYPE_TO_COLOR{$type}) {
-        color_filename($FILE_TYPE_TO_COLOR{$type});
-    }
+	if ($type && $FILE_TYPE_TO_COLOR{$type}) {
+		color_filename($FILE_TYPE_TO_COLOR{$type});
+	}
 
-    print;
+	print;
 }
 
 

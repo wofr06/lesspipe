@@ -8,7 +8,7 @@ use Archive::Tar;
 
 # do a clean up if we get a CTRL-C
 our $tdir;
-$SIG{INT} = sub  { if ($tdir) {unlink $tdir; print "\n"; exit 1 }};
+$SIG{INT} = sub { if ($tdir) {unlink $tdir; print "\n"; exit 1 }};
 
 sub usage {
 	print <<EOF;
