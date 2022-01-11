@@ -288,10 +288,6 @@ less $T/tests/test_7z:testok/a\|b.txt	# extract file from 7z, needs 7zr|7za
 = test
 less tests/archive.tgz:test_7z:testok/a\|b.txt	# (on the fly), needs 7zr|7za
 = test
-less $T/tests/test_1file_7za		# extract the only file from 7z, needs 7zr|7za
-= test
-less tests/archive.tgz:test_1file_7za	# (on the fly), needs 7zr|7za
-= test
 less $T/tests/test_iso			# iso9660 contents, needs bsdtar
 ~ .* ISO.TXT
 less tests/archive.tgz:test_iso		# (on the fly), needs bsdtar

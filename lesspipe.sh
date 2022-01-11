@@ -298,7 +298,7 @@ get_unpack_cmd () {
 		trans=
 		echo ""|iconv --byte-subst - 2>/dev/null && rep="--unicode-subst=$qm --byte-subst=$qm --widechar-subst=$qm" # MacOS
 		echo ""|iconv -f $fchar -t $locale//TRANSLIT - 2>/dev/null && trans="-t $locale//TRANSLIT"
-		msg "==> append $sep$sep to filename to view the $fchar encoded file"
+		msg "append $sep$sep to filename to view the $fchar encoded file"
 		cmd=(iconv $rep -f $fchar $trans "$2")
 		# loop protection, just in case
 		lclocale=
@@ -543,9 +543,9 @@ isfinal () {
 			cmd=(nodash strings "$1")
 		fi
 	fi
-	if [[ -z "$LESSQUIET" && -n $cmd && $cmd != "cat" ]]; then
-		[[ -z $msg ]] && msg="==> append $sep to filename to view the $x file"
-		echo $msg
+	if [[ -n $cmd && $cmd != "cat" ]]; then
+		[[ -z $msg ]] && msg="append $sep to filename to view the $x file"
+		msg $msg
 	fi
 	if [[ -n $cmd ]]; then
 		if [[ $colorizer == archive_color && $COLOR == *always ]]; then
@@ -606,7 +606,7 @@ isarchive () {
 				contentline
 				isoinfo -fR$joliet -i "$t" ;;
 			7za|7zr)
-				is7zarchive $prog "$2"
+				istemp "$prog l" "$2"
 		esac
 	fi
 }
@@ -622,8 +622,8 @@ ispdf () {
 isrpm () {
 	if [[ -z "$2" ]]; then
 		if has_cmd rpm; then
-			contentline
 			istemp "rpm -qivp" "$1"
+			contentline
 			[[ $1 == - ]] && set "$t" "$1"
 		fi
 		if has_cmd bsdtar; then
@@ -666,23 +666,6 @@ isdeb () {
 		else
 			ar p "$1" "$data" | ${cmd[@]} | tar xOf - "$2"
 		fi
-	fi
-}
-
-is7zarchive () {
-	prog=$1
-	t="$2"
-	res=$(istemp "$prog l" "$2")
-	if [[ "$res" == *1\ files ]]; then
-		name=$(echo $res|tail -3|head -1|awk '{print $6}')
-		msg "the 7-zip archive containing only file '$name' was unpacked"
-		t=${res#*Listing\ archive:\ }
-		t2="
-"
-		t=${t%%$t2*}
-		$prog e -so "$t"
-	else
-		echo $res
 	fi
 }
 
