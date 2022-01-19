@@ -688,12 +688,21 @@ has_htmlprog () {
 	return 1
 }
 
+handle_w3m () {
+	if [[ "$1" == *\?* ]]; then
+		t=$(nexttmp)
+		ln -s "$1" $t
+		set "$t" "$1"
+	fi
+	nodash "w3m -dump -T text/html" "$1"
+}
+
 ishtml () {
 	[[ $1 == - ]] && arg1=-stdin || arg1="$1"
 	# 3 lines following can easily be reshuffled according to the preferred tool
-	has_cmd w3m && nodash "w3m -dump -T text/html" "$1" && return ||
-	has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
 	has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
+	has_cmd w3m && handle_w3m "$1" && return ||
+	has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
 	# different incompatible versions with the name html2text may let this fail
 	[[ "$1" == https://* ]] && return
 	html2text -utf8 || html2text -from_encoding utf-8
