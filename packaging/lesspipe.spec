@@ -89,6 +89,8 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Wed Jan 19 2022 2.02-1 20220119 - wp.friebel@gmail.com
+- add .lessfilter support, fixes for html and rpm handling
 * Tue Jan 04 2022 2.01-1 20220104 - wp.friebel@gmail.com
 - added zsh completion mechanism for archive contents
 * Tue Dec 28 2021 2.00-1 20211228 - wp.friebel@gmail.com

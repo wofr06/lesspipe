@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.02 Jan 19 2022
+- handle files names with a question mark in w3m, prefer elinks over w3m
 - add again perl storable support
 - add ~/.lessfilter support
 - better rpm handling, documentation enhancements

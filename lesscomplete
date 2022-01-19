@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lesscomplete, a helper script for the _less completion script (version 2.01)
+# lesscomplete, a helper script for the _less completion script
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 

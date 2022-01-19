@@ -32,11 +32,12 @@ the author by email.
  6. Calling less from standard input
  7. Displaying files with special characters in the file name
  8. Tab completion for zsh and bash
- 9. (Old) documentation about lesspipe
- 10. External links
+ 9. User defined filtering
+ 10. (Old) documentation about lesspipe
+ 11. External links
     -   URLs to some utilities
     -  References
- 11. Contributors
+ 12. Contributors
 
 ## 0. Motivation
 
@@ -183,47 +184,48 @@ the author by email.
 - brotli		requires `bro`
 - lz4			requires `lz4`
 - tar			requires optionally `archive_color` for coloring
-- ar library	requires `bsdtar` or `ar`
-- zip archive	requires `bsdtar` or `unzip`
-- jar archive	requires `bsdtar` or `unzip`
-- rar archive	requires `bsdtar` or `unrar or `rar`
-- 7-zip archive	requires `7zr`
-- lzip archive	requires `lzip`
-- iso images	requires `bsdtar` or `isoinfo`
+- ar library		requires `bsdtar` or `ar`
+- zip archive		requires `bsdtar` or `unzip`
+- jar archive		requires `bsdtar` or `unzip`
+- rar archive		requires `bsdtar` or `unrar or `rar`
+- 7-zip archive		requires `7zr`
+- lzip archive		requires `lzip`
+- iso images		requires `bsdtar` or `isoinfo`
 - rpm			requires `rpm2cpio` and `cpio` or `bsdtar`
 - Debian		requires `bsdtar` or `ar`
 - cab			requires `cabextract`
 
 ### 4.2 List of preprocessed file types
-- directory			displayed using `ls -lA`
+- directory		displayed using `ls -lA`
 - nroff(man)		requires `groff`
 - shared library	requires `nm`
 - MS Word (doc)		requires `wvText` or `antiword` or `catdoc` or `libreoffice`
 - Powerpoint (ppt)	requires `catppt`
 - Excel (xls)		requires `in2csv` (csvkit) or `xls2csv`
-- odt				requires `pandoc` or `odt2txt` or `libreoffice`
-- odp				requires `libreoffice`
-- ods				requires `xlscat` or `libreoffice`
+- odt			requires `pandoc` or `odt2txt` or `libreoffice`
+- odp			requires `libreoffice`
+- ods			requires `xlscat` or `libreoffice`
 - MS Word (docx)	requires `pandoc` or `docx2txt` or `libreoffice`
 - Powerpoint (pptx)	requires `pptx2md` or `libreoffice`
 - Excel (xlsx)		requires `in2csv` or `xlscat` or `excel2csv` or `libreoffice`
-- rtf				requires `unrtf` or `libreoffice`
-- epub				requires `pandoc`
-- html,xml			requires `w3m` or `lynx` or `elinks` or `html2text`
-- pdf				requires `pdftotext` or `pdftohtml`
-- perl pod			requires `pod2text` or `perldoc`
-- dvi				requires `dvi2tty`
-- djvu				requires `djvutxt`
-- ps				requires `ps2ascii` (from the gs package)
-- mp3				requires `id3v2`
+- rtf			requires `unrtf` or `libreoffice`
+- epub			requires `pandoc`
+- html,xml		requires `w3m` or `lynx` or `elinks` or `html2text`
+- pdf			requires `pdftotext` or `pdftohtml`
+- perl pod		requires `pod2text` or `perldoc`
+- perl storable		requires perl (and the modules Storable and Data::Dumper)
+- dvi			requires `dvi2tty`
+- djvu			requires `djvutxt`
+- ps			requires `ps2ascii` (from the gs package)
+- mp3			requires `id3v2`
 - multimedia formats	requires `mediainfo` or `exiftools`
 - image formats		requires `mediainfo` or `exiftools` or `identify`
-- hdf, nc4			requires `h5dump` or `ncdump` (NetCDF format)
+- hdf, nc4		requires `h5dump` or `ncdump` (NetCDF format)
 - crt, pem, csr, crl	requires `openssl`
-- matlab			requires `matdump`
+- matlab		requires `matdump`
 - Jupyter notebook	requires `pandoc`
-- markdown			requires `mdcat` or `pandoc`
-- log				requires `ccze`
+- markdown		requires `mdcat` or `pandoc`
+- log			requires `ccze`
 - java.class		requires `procyon`
 - MacOS X plist		requires `plistutil`
 - binary data		requires `strings`
@@ -361,8 +363,18 @@ as for example in
         less archive_file:partial_result<TAB>
         less archive_file:contained_archive:<TAB> # etc.
 ```
+## 9. User defined filtering
 
-## 9. (Old) documentation about lesspipe
+The lesspipe.sh filtering can be replaced or enhanced  by a user defined
+program. Such a program has to be called `.lessfilter` and be placed in the
+users home directory. It has to be executable and has to end with an exit
+code 0, if the filtering was done within that script. Otherwise a nonzero
+exit code means, the filtering is left to lesspipe.sh.
+
+This mechanism can be used to add filtering for new formats or e.g. inhibit
+filtering for certain file types.
+
+## 10. (Old) documentation about lesspipe
 
  In English
  - https://ref.web.cern.ch/CERN/CNL/2002/001/unix-less/
@@ -373,11 +385,11 @@ as for example in
  - https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/
  - https://www.linux-community.de/ausgaben/linuxuser/2002/04/lesspipe/
 
-## 10. External links
+## 11. External links
 
 (last checked: Nov 30 2021):
 
-### 10.1 URLs to some utilities (with last known release)
+### 11.1 URLs to some utilities (with last known release)
 - 7zr                  https://sourceforge.net/projects/p7zip/ (2016)
 - antiword             https://www.winfield.demon.nl/ (2005)
 - cabextract           https://www.cabextract.org.uk/ (2019)
@@ -401,14 +413,14 @@ as for example in
 - xlscat               https://metacpan.org/pod/Spreadsheet::Read (2021)
 - sxw2txt              https://vinc17.net/software/sxw2txt (2015)
 
-### 10.2 References
+### 11.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)
 - [2] ftp://ftp.astron.com/pub/file/		(file)
 - [3] https://github.com/wofr06/lesspipe
 - [5] http://www.palfrader.org/code2html/	(code2html)
 - [6] http://www.darwinsys.com/file/		(file)
 
-## 11. Contributors
+## 12. Contributors
 
  The script lesspipe.sh is constantly enhanced thanks to suggestions from
  users. Thanks to (in alphabetical order):
