@@ -715,7 +715,7 @@ setopt sh_word_split 2>/dev/null
 PATH=$PATH:${0%%/lesspipe.sh}
 # the current locale in lowercase (or generic utf-8)
 locale=$(locale|grep LC_CTYPE|sed 's/.*"\(.*\)"/\1/') || locale=en_US.UTF-8
-lclocale=$(echo ${locale##*.}|sed 's/\(.*\)/\L\1/')
+lclocale=$(echo ${locale##*.}|tr '[A-Z]' '[a-z]')
 
 sep=:					# file name separator
 altsep==				# alternate separator character

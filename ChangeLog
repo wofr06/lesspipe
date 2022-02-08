@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- use tr to convert into lower case, test string adjustments
 Version 2.02 Jan 19 2022
 - handle files names with a question mark in w3m, prefer elinks over w3m
 - add again perl storable support

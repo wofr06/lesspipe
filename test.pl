@@ -337,7 +337,7 @@ less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file  needs iconv
 less $T/tests/test_plain			# plain text, no output from lesspipe.sh
 = test=a
 less tests/filter.tgz:test_html		# html text, needs html_converter
-= test
+~ \s*test
 less tests/filter.tgz:test_html:	# html unmodified text
 ~ </head>
 less tests/filter.tgz:test_pdf		# pdf, needs pdftotext|pdftohtml,html_converter|pdfinfo
@@ -355,13 +355,13 @@ less tests/filter.tgz:test_xlsx		# xlsx (neu), needs in2csv|xlscat|excel2csv|lib
 less tests/filter.tgz:test_odt		# odt, needs pandoc|odt2txt|libreoffice
 = test
 less tests/filter.tgz:test_odp		# odp, needs libreoffice,html_converter
-~ test
+~ \s*test
 less tests/filter.tgz:test_ods		# ods, needs xlscat|libreoffice,html_converter
 ~ test
 less tests/filter.tgz:test_doc		# doc (old), needs wvText|antiword|catdoc|libreoffice
 ~  *test
 less tests/filter.tgz:test_ppt:ms-powerpoint	# ppt (old), catppt not always working, needs libreoffice,html_converter
-~ .*1. test
+~ .*1. test|\s*test
 less tests/filter.tgz:test_xls		# xls (old), needs in2csv|xls2csv|libreoffice,html_converter
 = test
 less tests/filter.tgz:test_ooffice1	# openoffice1 (very old), needs sxw2txt|libreoffice
