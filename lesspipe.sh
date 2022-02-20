@@ -403,11 +403,10 @@ has_colorizer () {
 		source-highlight)
 			prog="source-highlight --failsafe -f esc"
 			[[ -z $arg ]] && arg=/dev/stdin
-			[[ -n $opt ]] && opt=" -s $2 -i" || opt=" -i" ;;
-		code2color)
-			[[ -n $opt ]] && opt=" -l $2" ;;
-		vimcolor)
-			;;
+			[[ -n "$opt" && -n "$2" ]] && opt=" -s $2 -i" || opt=" -i" ;;
+		code2color|vimcolor)
+			opt=
+			[[ -n "$fileext" ]] && opt=" -l $fileext" ;;
 		*)
 			return ;;
 	esac

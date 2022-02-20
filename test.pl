@@ -426,7 +426,7 @@ less tests/filter.tgz:index.rst		# Jupyter notebook to rst git #6, needs mdcat|p
 c # test
 less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
 c false
-less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39
+LESSCOLORIZER=code2color less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39
 c test
 less tests/filter.tgz:Makefile		# bsd Makefile not (file 5.28) / is (5.39) correctly recognized git #10
 c PORTNAME

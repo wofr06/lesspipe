@@ -37,6 +37,7 @@ use Getopt::Std;
 getopts('l:hv') || exit 2;
 Usage() if $opt_h;
 
+$opt_l =~ s/^.*\.//;
 my %params = (
 	infile       => $ARGV[0] || '-',
 	langmode     => $opt_l ,
@@ -2368,6 +2369,8 @@ $LANGUAGE{'shellscript'} = {
 };
 
 $LANGUAGE{'sh'} = $LANGUAGE{'shellscript'};
+$LANGUAGE{'ebuild'} = $LANGUAGE{'shellscript'};
+$LANGUAGE{'eclass'} = $LANGUAGE{'shellscript'};
 return \%LANGUAGE;
 
 };
