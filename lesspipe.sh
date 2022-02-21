@@ -367,10 +367,10 @@ analyze_args () {
 	# return if we want to watch growing files
 	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
-	lessarg="$LESS $lessarg"
-	lessarg=`echo $lessarg|sed 's/-[a-zA-Z]*[rR]/-r/'`
+	lessarg="l $LESS $lessarg"
+	lessarg=`echo $lessarg|sed 's/ -[a-zA-Z]*[rR]/ -r/'`
 	has_cmd tput && colors=$(tput colors) || colors=0
-	if [[ $colors -ge 8 && $lessarg == *-[rR]* ]]; then
+	if [[ $colors -ge 8 && $lessarg == *\ -[rR]* ]]; then
 		COLOR="--color=always"
 	else
 		COLOR="--color=auto"

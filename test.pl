@@ -433,6 +433,10 @@ c PORTNAME
 diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped through less works git #11
 c test=a
 ### github issues (solved and unsolved) and other test cases
+less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
+c sub
+LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
+= sub test {}
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git issue #1
 = 
 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
