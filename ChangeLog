@@ -1,6 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.03 Feb 22 2022
+- fix colorize handling for code2color and vimcolor
+- better argument parsing to detect -R option for less
 - use tr to convert into lower case, test string adjustments
 Version 2.02 Jan 19 2022
 - handle files names with a question mark in w3m, prefer elinks over w3m

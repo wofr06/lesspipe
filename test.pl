@@ -433,6 +433,8 @@ c PORTNAME
 diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped through less works git #11
 c test=a
 ### github issues (solved and unsolved) and other test cases
+LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives
+c sub
 less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
 c sub
 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
