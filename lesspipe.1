@@ -1,4 +1,4 @@
-.TH LESSPIPE.SH "1" "Jan 2022" "lesspipe.sh" "User Commands"
+.TH LESSPIPE.SH "1" "Feb 2022" "lesspipe.sh" "User Commands"
 .SH NAME
 lesspipe.sh \- a filter for less
 .SH SYNOPSIS
@@ -179,8 +179,9 @@ can be accomplished. Entering after an archive file name a colon (:) or an
 equal sign (=) and then pressing the tab key triggers the completion mechanism.
 This also works in chained archives. The files lesscomplete and less_completion
 have to be in one of the directories listed in $PATH and the function _less
-for zsh in a directory listed by $fpath. New directories, e.g. ~/scripts and
-~/.fpath can be added using the commands
+for zsh in a directory listed by $fpath. The less_completion script has to
+be sourced within a bash initialization script, e.g. in ~/.bashrc. New
+directories such as ~/scripts and ~/.fpath can be added using the commands
 .RS
 \fBPATH\fP=\fI~/scripts:$PATH\fP and
 \fBfpath\fP=\fI(~/.fpath $fpath)\fP

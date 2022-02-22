@@ -253,22 +253,19 @@ output if the conditions for colorizing (see below) are met.
 
 ### 5.1 Syntax highlighting
  Syntax highlighting is not always wanted, it can be switched off by
- appending a colon after the file name if the output was colorful. If the
- wrong language was chosen for syntax highlighting then another one can be
- forced by appending a colon and a suffix to the file name as follows (assuming
- this is a file with perl syntax):
+ appending a colon after the file name. If the wrong language was chosen
+ for syntax highlighting or no language was recognized, then the correct
+ one can be forced by appending a colon and a suffix to the file name as
+ follows (assuming plfile is a file with perl syntax):
 ```
-        less config_file:pl
+        less plfile:pl or less plfile:perl (depending on the colorizer)
 ```
- That works as well to force the call of a colorizer for a given language.
-
 #### 5.1.1 Syntax highlighting choices
- The filter is able to do syntax highlighting for a wide variety of language
- and other format files. If installed, `bat`/`batcat` is used for coloring the
- output. If not, `pygmentize`, `source-highlight`, `code2color` is tried and finally
- `vimcolor` which is the slowest.
- Among these colorizers a preferred one can be forced for coloring by setting
- the ENV variable **LESSCOLORIZER** to the name of the colorizer.
+ The filter is able to do syntax highlighting for a wide variety of file
+ types. If installed, `bat`/`batcat` is used for coloring the output. If
+ not, `pygmentize`, `source-highlight`, `code2color` and `vimcolor` are
+ tried. Among these colorizers a preferred one can be forced for coloring
+ by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
  For `pygmentize` also a style option can be set:
 ```
         LESSCOLORIZER='pygmentize -O style=somename'
@@ -281,7 +278,7 @@ output if the conditions for colorizing (see below) are met.
         lessc () { /usr/share/vim/vimXX/macros/less.sh "$@"}
 ```
  is defined and `lessc filename` is used to view the colorful file contents.
- The same, but much slower can be achieved using the `vimcolor` colorizer.
+ The same can be achieved using less and `vimcolor`, but that is much slower.
 
 #### 5.1.2 List of supported languages
  To see which languages are supported the list can be printed using the
@@ -311,7 +308,7 @@ Normally `lesspipe.sh` is not called when less is used within a pipe such as
         cat somefile | less
 ```
 This restriction is removed when the **LESSOPEN** variable starts with the
-characters |- or||-.
+characters |- or ||-.
 Then the colon notation for extracting and displaying files in archives
 does not work. As a way out `lesspipe.sh` analyses the command line and looks
 for the last argument given to less. If it starts with a colon, it is
@@ -333,7 +330,7 @@ Examples:
 
 ## 8. Tab completion for zsh and bash
 
-The existing `zsh` completion script has been enhanced to provide tab completion
+An existing `zsh` completion script has been enhanced to provide tab completion
 within archives similar to what is possible with the `tar` command completion.
 A `bash` completion script has been modeled loosely after the `zsh` completion.
 
@@ -342,10 +339,10 @@ such as tar, zip, rpm, deb files etc. This works as well in compressed files
 (e.g. tar.gz) and in chained archives, e.g.in source rpm files containing
 tar.gz files.
 
-The script `lesscomplete` has to be executable and be found in one of the
-directories listed in the `$PATH` environment variable. For zsh the file _less
-has to be stored in one of the directories listed in `$fpath` or the directory
-containig _less has to be added there, e.g. by:
+To make it work, the script `lesscomplete` has to be executable and must be
+found in one of the directories listed in the `$PATH` environment variable.
+For zsh the file _less has to be stored in one of the directories listed in
+`$fpath` or the directory containig _less has to be added to `$fpath`, e.g. by:
 ```
         fpath=(~/zsh_functions $fpath)
 ```
@@ -422,8 +419,8 @@ filtering for certain file types.
 
 ## 12. Contributors
 
- The script lesspipe.sh is constantly enhanced thanks to suggestions from
- users. Thanks to (in alphabetical order):
+ The script lesspipe.sh is constantly enhanced by suggestions from users and
+ reporting bugs or deficiencies. Thanks to (in alphabetical order):
  (contributors after Sep 2015 see github history)
 
  Marc Abramowitz, James Ahlborn, Sören Andersen, Andrew Barnert,
