@@ -443,7 +443,8 @@ isfinal () {
 			# filename needs to end in .class
 			has_cmd procyon && t=$t.class && cat "$1" > $t && cmd=(procyon "$t") ;;
 		markdown)
-			{ has_cmd mdcat && cmd=(mdcat "$1"); } ||
+			[[ $COLOR = *always ]] && mdopt= || mdopt=-c
+			{ has_cmd mdcat && cmd=(mdcat $mdopt "$1"); } ||
 			{ has_cmd pandoc && cmd=(pandoc -t plain "$1"); } ;;
 		docx)
 			{ has_cmd pandoc && cmd=(pandoc -f docx -t plain "$1"); } ||
@@ -527,7 +528,7 @@ isfinal () {
 		mp3)
 			has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1") ;;
 		log)
-			has_cmd ccze && cat "$1" | ccze -A
+			has_cmd ccze && [[ $COLOR = *always ]] && cat "$1" | ccze -A
 			return ;;
 	esac
 	fi
