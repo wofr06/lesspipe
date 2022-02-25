@@ -289,6 +289,12 @@ get_unpack_cmd () {
 			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") && return ;;
 		lz4)
 			has_cmd lz4 && cmd=(lz4 -cdq "$2") && return ;;
+		xlsx)
+			has_cmd in2csv && cmd=(in2csv -f xlsx "$2") && return
+			has_cmd excel2csv && cmd=(istemp excel2csv "$2") && return ;;
+		ms-excel)
+			has_cmd in2csv && cmd=(in2csv -f xls "$2") && return
+			has_cmd xls2csv && cmd=(istemp xls2csv "$2") && return ;;
 	esac
 	# convert into utf8
 
@@ -458,9 +464,7 @@ isfinal () {
 					-o $t2" "$1" && cmd=(pandoc -f markdown -t plain "$t2"); }; } ||
 			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ppt); } ;;
 		xlsx)
-			{ has_cmd in2csv && cmd=(in2csv -f xlsx "$1"); } ||
 			{ has_cmd xlscat && cmd=(istemp xlscat "$1"); } ||
-			{ has_cmd excel2csv && cmd=(istemp excel2csv "$1"); } ||
 			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" xlsx); } ;;
 		odt)
 			{ has_cmd pandoc && cmd=(pandoc -f odt -t plain "$1"); } ||
@@ -481,8 +485,6 @@ isfinal () {
 			{ has_cmd broken_catppt && cmd=(istemp catppt "$1"); } ||
 			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ppt); } ;;
 		ms-excel)
-			{ has_cmd in2csv && cmd=(in2csv -f xls "$1"); } ||
-			{ has_cmd xls2csv && cmd=(istemp xls2csv "$1"); } ||
 			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" xls); } ;;
 		ooffice1)
 			{ has_cmd sxw2txt && cmd=(istemp sxw2txt "$1"); } ||
@@ -530,6 +532,9 @@ isfinal () {
 		log)
 			has_cmd ccze && [[ $COLOR = *always ]] && cat "$1" | ccze -A
 			return ;;
+		csv)
+			{ has_cmd csvlook && cmd=(csvlook "$1"); } ||
+			{ has_cmd pandoc && cmd=(pandoc -f csv -t plain "$1"); } ;;
 	esac
 	fi
 	# not a specific file format

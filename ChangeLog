@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- csv format files get displayed in tabular form
 Version 2.03 Feb 22 2022
 - fix colorize handling for code2color and vimcolor
 - better argument parsing to detect -R option for less
