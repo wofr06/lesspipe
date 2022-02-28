@@ -1,7 +1,10 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.04 Feb 28 2022
+- lessfilter can be in PATH or in homedir
 - csv format files get displayed in tabular form
+- do call ccze, mdcat only, if less accepts color seququences (-R)
 Version 2.03 Feb 22 2022
 - fix colorize handling for code2color and vimcolor
 - better argument parsing to detect -R option for less

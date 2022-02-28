@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.03
+%define packageversion 2.04
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -89,6 +89,8 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Mon Feb 28 2022 2.04-1 20220228 - wp.friebel@gmail.com
+- handle csv files, lessfilter can be in path
 * Tue Feb 22 2022 2.03-1 20220222 - wp.friebel@gmail.com
 - better handling of colorizing, improved code2color
 * Wed Jan 19 2022 2.02-1 20220119 - wp.friebel@gmail.com
