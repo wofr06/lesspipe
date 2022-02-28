@@ -756,11 +756,10 @@ if [[ -z "$1" ]]; then
 		echo "export LESSOPEN"
 	fi
 else
-	if [ -x ~/.lessfilter ]; then
-		~/.lessfilter "$1"
-		if [ $? -eq 0 ]; then
-			exit 0
-		fi
+	if [ -x "${HOME}/.lessfilter" ]; then
+		"${HOME}/.lessfilter" "$1" && exit 0
+	elif has_cmd lessfilter; then
+		lessfilter "$1" && exit 0
 	fi
 	show "$@"
 fi
