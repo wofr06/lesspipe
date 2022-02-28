@@ -363,10 +363,11 @@ as for example in
 ## 9. User defined filtering
 
 The lesspipe.sh filtering can be replaced or enhanced  by a user defined
-program. Such a program has to be called `.lessfilter` and be placed in the
-users home directory. It has to be executable and has to end with an exit
-code 0, if the filtering was done within that script. Otherwise a nonzero
-exit code means, the filtering is left to lesspipe.sh.
+program. Such a program has to be called either `.lessfilter` (and be placed in
+the users home directory), or `lessfilter` (and be accessible from user `PATH`).
+It has to be executable and has to end with an exit code 0, if the filtering was
+done within that script. Otherwise, a nonzero exit code means the filtering is
+left to lesspipe.sh.
 
 This mechanism can be used to add filtering for new formats or e.g. inhibit
 filtering for certain file types.
