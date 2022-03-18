@@ -396,11 +396,12 @@ has_colorizer () {
 		[[ -z $prog || $prog == $i ]] && has_cmd $i && prog=$i
 	done
 	[[ "$2" =~ ^[0-9]*$ ]] && opt= || opt=" -l $2"
+	ext=${fileext##*.}
 	case $prog in
 		bat|batcat)
 			# only allow an explicitly requested language
-			opt=" -l $fileext"
-			{ [[ -n $fileext ]] && $prog $opt /dev/null; } || opt=
+			opt=" -l $ext"
+			{ [[ -n $ext ]] && $prog $opt /dev/null; } || opt=
 			opt="$opt $COLOR" ;;
 		pygmentize)
 				[[ -n $LESSCOLORIZER && $LESSCOLORIZER =~ pygmentize\ \ *-O\ *style=[a-z]* ]] && prog=$LESSCOLORIZER
