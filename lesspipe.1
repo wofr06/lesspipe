@@ -186,6 +186,17 @@ directories such as ~/scripts and ~/.fpath can be added using the commands
 \fBPATH\fP=\fI~/scripts:$PATH\fP and
 \fBfpath\fP=\fI(~/.fpath $fpath)\fP
 .RE
+.SH USER DEFINED FILTERING
+The lesspipe.sh filtering can be replaced or enhanced  by a user defined
+program. Such a program has to be called either \fB.lessfilter\fP (and be
+placed in the users home directory), or \fBlessfilter\fP (and be accessible
+from a directory mentioned in \fI$PATH\fP).
+It has to be executable and has to end with an exit code 0, if the filtering
+was done within that script. Otherwise, a nonzero exit code means the filtering
+is left to lesspipe.sh.
+.PP
+This mechanism can be used to add filtering for new formats or e.g. inhibit
+filtering for certain file types.
 .SH AUTHOR
 Wolfgang Friebel
 .SH "REPORTING BUGS"

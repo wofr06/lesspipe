@@ -341,8 +341,9 @@ tar.gz files.
 
 To make it work, the script `lesscomplete` has to be executable and must be
 found in one of the directories listed in the `$PATH` environment variable.
-For zsh the file _less has to be stored in one of the directories listed in
-`$fpath` or the directory containig _less has to be added to `$fpath`, e.g. by:
+For zsh the file `_less` has to be stored in one of the directories listed in
+`$fpath` or the directory containig `_less` has to be added to `$fpath`, e.g.
+by:
 ```
         fpath=(~/zsh_functions $fpath)
 ```
@@ -364,10 +365,11 @@ as for example in
 
 The lesspipe.sh filtering can be replaced or enhanced  by a user defined
 program. Such a program has to be called either `.lessfilter` (and be placed in
-the users home directory), or `lessfilter` (and be accessible from user `PATH`).
-It has to be executable and has to end with an exit code 0, if the filtering was
-done within that script. Otherwise, a nonzero exit code means the filtering is
-left to lesspipe.sh.
+the users home directory), or `lessfilter` (and be accessible from a directory
+mentioned in the environment variable `PATH`).
+That program has to be executable and has to end with an exit code 0, if the
+filtering was done within that script. Otherwise, a nonzero exit code means
+the filtering is left to lesspipe.sh.
 
 This mechanism can be used to add filtering for new formats or e.g. inhibit
 filtering for certain file types.
