@@ -40,7 +40,7 @@ filetype () {
 			ftype=pptx ;;
 		openxmlformats-officedocument.spreadsheetml.sheet)
 			ftype=xlsx ;;
-		oasis.opendocument.text)
+		oasis.opendocument.text*)
 			ftype=odt ;;
 		oasis.opendocument.spreadsheet)
 			ftype=ods ;;
@@ -468,8 +468,8 @@ isfinal () {
 			{ has_cmd xlscat && cmd=(istemp xlscat "$1"); } ||
 			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" xlsx); } ;;
 		odt)
-			{ has_cmd pandoc && cmd=(pandoc -f odt -t plain "$1"); } ||
 			{ has_cmd odt2txt && cmd=(istemp odt2txt "$1"); } ||
+			{ has_cmd pandoc && cmd=(pandoc -f odt -t plain "$1"); } ||
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
 		odp)
 			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" odp); } ;;
@@ -512,7 +512,7 @@ isfinal () {
 			{ { has_cmd pod2text && cmd=(pod2text "$1"); } ||
 			{ has_cmd perldoc && cmd=(istemp perldoc "$1"); }; } ;;
 		pst)
-			has_cmd perl && perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$1" ;;
+			has_cmd perl && cmd=(perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$1") ;;
 		hdf)
 			{ has_cmd h5dump && cmd=(istemp h5dump "$1"); } ||
 			{ has_cmd ncdump && cmd=(istemp ncdump "$1"); } ;;
