@@ -85,6 +85,8 @@ filetype () {
 				ftype=csr ;;
 			*PEM\ certificate)
 				ftype=csr ;;
+			*Microsoft\ OOXML)
+				ftype=docx ;;
 			Apple\ binary\ property\ list)
 				ftype=plist ;;
 			PGP\ *ncrypted*|GPG\ encrypted*)
@@ -417,7 +419,7 @@ has_colorizer () {
 		*)
 			return ;;
 	esac
-	echo "$prog$opt $arg"
+	echo "$prog$opt"
 }
 
 isfinal () {
@@ -565,7 +567,7 @@ isfinal () {
 		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 		fext=${fext##*/}
 		[[ -z $colorizer ]] && colorizer=$(has_colorizer "$1" "$fext")
-		[[ -n $colorizer && $fcat != binary ]] && $colorizer && return
+		[[ -n $colorizer && $fcat != binary ]] && $colorizer "$1" && return
 		# if fileext set, we need to filter to get rid of .fileext
 		[[ -n $fileext || "$1" == - || "$1" == $t ]] && cat "$1"
 	fi
