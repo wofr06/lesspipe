@@ -1,12 +1,12 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.04
+Version: 2.05
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto://wp.friebel@gmail.com)
 License: GPL
 
 Latest version available as:
  [zip file on github](https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip)
- [repository on github](https://github.com/wofr06/lesspipe)
+and the [repository on github](https://github.com/wofr06/lesspipe)
 
 The development version can be cloned using git:
  `git clone https://github.com/wofr06/lesspipe.git`

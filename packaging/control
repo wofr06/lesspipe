@@ -1,5 +1,5 @@
 Package: lesspipe
-Version: 2.04-1
+Version: 2.05-1
 Section: text
 Priority: optional
 Architecture: all
@@ -18,7 +18,7 @@ Description: lesspipe.sh is an input filter for the pager less.
  the files are compressed and contained in a hierarchy of archives (often
  found in RPM or DEB archives containing source tarballs). The filter is
  easily extensible for new formats. The input filter is a bash script, but
- works as well as a zsh script. For zsh a completion mechanism for archive
- contents is provided.
+ works as well as a zsh script. For zsh and bash a completion mechanism for
+ archive contents is provided.
 
 

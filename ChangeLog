@@ -1,7 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-- better colorize handling for bat
+Version 2.05 Apr 26 2022
+- better colorize handling for bat and file names containing spaces
+- fix handling of pst (perl dump) files
 Version 2.04 Feb 28 2022
 - lessfilter can be in PATH or in homedir
 - csv format files get displayed in tabular form
