@@ -1,0 +1,51 @@
+name: "Test suite"
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  test-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get -q update
+          sudo apt-get install --no-install-recommends -qy \
+            brotli \
+            cabextract \
+            csvkit \
+            djvulibre-bin \
+            genisoimage \
+            ghostscript \
+            gnupg \
+            groff \
+            hdf5-tools \
+            id3v2 \
+            less \
+            libarchive-tools \
+            libreoffice \
+            locales-all \
+            lz4 \
+            lzip \
+            mediainfo \
+            p7zip \
+            pandoc \
+            poppler-utils \
+            python3-pygments \
+            rpm \
+            source-highlight \
+            texlive-binaries \
+            unrar \
+            unrtf \
+            vim
+
+      - name: Run test suite
+        run: TERM=ansi ./test.pl -e
