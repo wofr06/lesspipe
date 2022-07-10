@@ -97,6 +97,8 @@ filetype () {
 				ftype=pgp ;;
 			Audio\ file\ with\ ID3\ *)
 				ftype=mp3 ;;
+			'OpenOffice.org 1.x Writer document')
+				ftype=ooffice1 ;;
 			# if still unspecific, determine file type by extension
 			data)
 				### binary only file formats, type not guessed by 'file'
