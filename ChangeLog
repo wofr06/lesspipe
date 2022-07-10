@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- many changes from shellcheck for better syntax
+- better recognition of hdf and matlab files
 Version 2.05 Apr 26 2022
 - better colorize handling for bat and file names containing spaces
 - fix handling of pst (perl dump) files
