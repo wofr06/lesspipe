@@ -395,7 +395,7 @@ less tests/filter.tgz:test.pem		# SSL related files git #15
 less tests/filter.tgz:test.bplist	# Apple binary property list, needs plistutil
 ~ <dict>
 ###    no test case for decoding gpg/pgp encrypted files git #12
-less tests/filter.tgz:test_mp3		# mp3 without mp3 extension, needs mediainfo|exiftools
+less tests/filter.tgz:test_mp3		# mp3 without mp3 extension, needs exiftool, not mediainfo
 ~ Title .* test
 less tests/filter.tgz:test_mp3:mp3	# mp3, needs id3v2
 ~ Title  : test .*
