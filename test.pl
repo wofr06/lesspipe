@@ -422,7 +422,7 @@ less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2t
 c =head1
 less tests/filter.tgz:test_plain:sh	# plain text, force color (shellscript)
 c test
-less tests/filter.tgz:index.rst		# Jupyter notebook to rst git #6, needs mdcat|pandoc
+less tests/filter.tgz:index.rst		# reStructuredText, needs mdcat
 c # test
 less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
 c false
