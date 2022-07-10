@@ -48,4 +48,7 @@ jobs:
             vim
 
       - name: Run test suite
-        run: TERM=ansi ./test.pl -e
+        run: |
+          export TERM=ansi
+          eval "$(dircolors -b)"
+          ./test.pl -e
