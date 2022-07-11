@@ -440,7 +440,7 @@ c sub
 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git issue #1
-= 
+~ 
 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
