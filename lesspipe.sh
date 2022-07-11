@@ -409,7 +409,7 @@ has_colorizer () {
 			# only allow an explicitly requested language
 			opt=(-l "$ext")
 			{ [[ -n $ext ]] && "$prog" "${opt[@]}" /dev/null; } || opt=()
-			opt+=("$COLOR") ;;
+			opt+=("$COLOR" --style=plain --paging=never) ;;
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER =~ pygmentize\ \ *-O\ *style=[a-z]* ]] && opt+=(-O "${LESSCOLORIZER##* }")
