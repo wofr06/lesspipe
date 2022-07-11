@@ -31,11 +31,11 @@ jobs:
             id3v2 \
             less \
             libarchive-tools \
+            libimage-exiftool-perl \
             libreoffice \
             locales-all \
             lz4 \
             lzip \
-            mediainfo \
             p7zip \
             pandoc \
             poppler-utils \
@@ -48,4 +48,7 @@ jobs:
             vim
 
       - name: Run test suite
-        run: TERM=ansi ./test.pl -e
+        run: |
+          export TERM=ansi
+          eval "$(dircolors -b)"
+          ./test.pl -e
