@@ -29,7 +29,18 @@ configure generates by default a Makefile
 EOF
 	exit ! $opt_help ? 1 : 0;
 }
-$opt_prefix ||= '/usr/local';
+my $bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
+$bash_complete_dir ||= '/usr/share/bash-completion/completions';
+# dynamic loading not working, use the following dir instead:
+$bash_complete_dir = '/etc/bashcompletion.d';
+if ($opt_prefix and $opt_prefix !~ /^\/usr/) {
+	$bash_complete_dir = "$ENV{HOME}/.local/share/bash-completion";
+	# dynamic loading not working, use the following dir instead:
+	$bash_complete_dir = "$opt_prefix/share/bash-completion";
+	print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\n";
+} else {
+	$opt_prefix = '/usr/local';
+}
 # remove trailing slash and trailing bin directory
 print "removed trailing /bin dir from prefix\n" if $opt_prefix =~ m|/bin/?$|;
 $opt_prefix =~ s|(/bin)?/?$||;
@@ -56,10 +67,10 @@ install:
 	mkdir -p \$(DESTDIR)\$(PREFIX)/bin
 	mkdir -p \$(DESTDIR)\$(PREFIX)/share/man/man1
 	mkdir -p \$(DESTDIR)\$(PREFIX)/share/zsh/site-functions
-	mkdir -p \$(DESTDIR)/etc/bash_completion.d
+	mkdir -p \$(DESTDIR)$bash_complete_dir
 	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete \$(DESTDIR)\$(PREFIX)/bin
 	cp ./lesspipe.1 \$(DESTDIR)\$(PREFIX)/share/man/man1
-	cp ./less_completion \$(DESTDIR)/etc/bash_completion.d
+	cp ./less_completion \$(DESTDIR)$bash_complete_dir
 	cp ./_less \$(DESTDIR)\$(PREFIX)/share/zsh/site-functions
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesspipe.sh
 	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/sxw2txt
@@ -134,5 +145,5 @@ sub check_shell_vers {
 		print "You could run configure --shell=<abs_filename> to retry\n";
 		exit 1;
 	}
-	return "#!$shellcmd";
+	return "#!/usr/bin/env $selected_shell";
 }
