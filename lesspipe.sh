@@ -83,8 +83,6 @@ filetype () {
 				ftype=matlab ;;
 			*POD\ document*)
 				ftype=pod ;;
-			*perl\ Storable*)
-				ftype=pst ;;
 			*PEM\ certificate\ request)
 				ftype=csr ;;
 			*PEM\ certificate)
@@ -520,9 +518,6 @@ isfinal () {
 			[[ -z $file2 ]] && LESSQUIET=1 &&
 			{ { has_cmd pod2text && cmd=(pod2text "$1"); } ||
 			{ has_cmd perldoc && cmd=(istemp perldoc "$1"); }; } ;;
-		pst)
-			# shellcheck disable=SC2016
-			has_cmd perl && cmd=(perl -MStorable=retrieve -MData::Dumper -e '$Data::Dumper::Indent=1;print Dumper retrieve shift' "$1") ;;
 		hdf|hdf5)
 			{ has_cmd h5dump && cmd=(istemp h5dump "$1"); } ||
 			{ has_cmd ncdump && cmd=(istemp ncdump "$1"); } ;;
