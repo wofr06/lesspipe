@@ -20,14 +20,16 @@ filetype () {
 	# do not depend on the file extension, if possible
 	fname="$1"
 	if [[ "$1" == - || -z $1 ]]; then
-		declare t=$(nexttmp)
+		declare t
+		t=$(nexttmp)
 		head -c 40000 > "$t" 2>/dev/null
 		set "$t" "$2"
 		fname="$fileext"
 	fi
 	fext=$(fileext "$fname")
 	### get file type from mime type
-	declare ft=$(file -L -s -b --mime "$1" 2> /dev/null)
+	declare ft
+	ft=$(file -L -s -b --mime "$1" 2> /dev/null)
 	[[ $ft == *=* ]] && fchar="${ft##*=}" || fchar=utf-8
 	fcat="${ft%/*}"
 	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-}"
@@ -44,7 +46,7 @@ filetype () {
 			esac
 		fi
 	fi
-	echo $ftype:$fchar:$fcat
+	echo "$ftype:$fchar:$fcat"
 }
 
 nexttmp () {
@@ -66,14 +68,14 @@ istemp () {
 }
 
 show () {
-	file1="${1%%$sep*}"
+	file1="${1%%"$sep"*}"
 	rest1="${1#"$file1"}"
 	while [[ "$rest1" == $sep$sep* ]]; do
 		if [[ "$rest1" == $sep$sep ]]; then
 			break
 		else
-			rest1="${rest1#$sep$sep}"
-			file1="${rest1%%$sep*}"
+			rest1="${rest1#"$sep$sep"}"
+			file1="${rest1%%"$sep"*}"
 			rest1="${rest1#"$file1"}"
 			file1="${1%"$rest1"}"
 		fi
@@ -81,15 +83,15 @@ show () {
 	if [[ ! -e "$file1" && "$file1" != '-' ]]; then
 		exit 1
 	fi
-	rest11="${rest1#$sep}"
-	file2="${rest11%%$sep*}"
+	rest11="${rest1#"$sep"}"
+	file2="${rest11%%"$sep"*}"
 	rest2="${rest11#"$file2"}"
-	while [[ "$rest2" == $sep$sep* ]]; do
-		if [[ "$rest2" == $sep$sep ]]; then
+	while [[ "$rest2" == "$sep$sep"* ]]; do
+		if [[ "$rest2" == "$sep$sep" ]]; then
 			break
 		else
-			rest2="${rest2#$sep$sep}"
-			file2="${rest2%%$sep*}"
+			rest2="${rest2#"$sep$sep"}"
+			file2="${rest2%%"$sep"*}"
 			rest2="${rest2#"$file2"}"
 			file2="${rest11%"$rest2"}"
 		fi
@@ -99,7 +101,7 @@ show () {
 
 	if [[ "$cmd" == "" ]]; then
 		ft=$(filetype "$file1")
-		get_unpack_cmd $ft "$file1" "$rest1"
+		get_unpack_cmd "$ft" "$file1" "$rest1"
 		if [[ "$cmd" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
@@ -110,7 +112,7 @@ show () {
 	elif [[ "$c1" == "" ]]; then
 		c1=("${cmd[@]}")
 		ft=$("${c1[@]}" | filetype -) || exit 1
-		get_unpack_cmd $ft "$file1" "$rest1"
+		get_unpack_cmd "$ft" "$file1" "$rest1"
 		if [[ "$cmd" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
@@ -119,7 +121,7 @@ show () {
 	elif [[ "$c2" == "" ]]; then
 		c2=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | filetype -) || exit 1
-		get_unpack_cmd $ft "$file1" "$rest1"
+		get_unpack_cmd "$ft" "$file1" "$rest1"
 		if [[ "$cmd" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
@@ -128,7 +130,7 @@ show () {
 	elif [[ "$c3" == "" ]]; then
 		c3=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | filetype -) || exit 1
-		get_unpack_cmd $ft "$file1" "$rest1"
+		get_unpack_cmd "$ft" "$file1" "$rest1"
 		if [[ "$cmd" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
@@ -137,7 +139,7 @@ show () {
 	elif [[ "$c4" == "" ]]; then
 		c4=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | filetype -) || exit 1
-		get_unpack_cmd $ft "$file1" "$rest1"
+		get_unpack_cmd "$ft" "$file1" "$rest1"
 		if [[ "$cmd" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
@@ -146,7 +148,7 @@ show () {
 	elif [[ "$c5" == "" ]]; then
 		c5=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | filetype -) || exit 1
-		get_unpack_cmd $ft "$file1" "$rest1"
+		get_unpack_cmd "$ft" "$file1" "$rest1"
 		if [[ "$cmd" != "" && -z $colorizer ]]; then
 			echo "$0: Too many levels of encapsulation"
 		else
@@ -168,15 +170,15 @@ get_unpack_cmd () {
 			[[ $2 == - ]] || fileext="$2"
 			fileext=${fileext%%.gz}; fileext=${fileext%%.bz2}
 			[[ $x == compress ]] && x=gzip
-			has_cmd $x && cmd=($x -cd "$2") && return ;;
+			has_cmd $x && cmd=("$x" -cd "$2") && return ;;
 		zstd)
 			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") && return ;;
 		lz4)
 			has_cmd lz4 && cmd=(lz4 -cdq "$2") && return ;;
 	esac
-	[[ "$3" == $sep ]] && return
-	file2=${3#$sep}
-	file2=${file2%%$sep*}
+	[[ "$3" == "$sep" ]] && return
+	file2=${3#"$sep"}
+	file2=${file2%%"$sep"*}
 	# remember name of file to extract or file type
 	[[ -n "$file2" ]] && fileext="$file2"
 	# extract from archive
@@ -210,13 +212,13 @@ get_unpack_cmd () {
 			{ has_cmd bsdtar && prog=bsdtar; } ||
 			{ has_cmd isoinfo && prog=isoinfo; } ;;
 		archive)
-			prog=ar
+			prog='ar'
 			has_cmd bsdtar && prog=bsdtar
 	esac
 	[[ -n $prog ]] && cmd=(isarchive "$prog" "$2" "$file2")
-	if [[ -n $cmd ]]; then
+	if [[ -n ${cmd[0]} ]]; then
 		[[ -n "$file2" ]] && file2= && return
-		colorizer=cat
+		colorizer='cat'
 	fi
 }
 
@@ -250,20 +252,20 @@ isarchive () {
 			tar|bsdtar)
 				$prog tf "$2" ;;
 			rar|unrar)
-				istemp "$prog v" "$2"|egrep ':[0-9][0-9]	'|cut -c 67- ;;
+				istemp "$prog v" "$2"|grep -E ':[0-9][0-9]	'|cut -c 67- ;;
 			ar)
 				istemp "ar t" "$2" ;;
 			unzip)
 				istemp "unzip -Z -1" "$2" ;;
 			cabextract)
-				istemp "cabextract -l" "$2" |egrep '[0-9] \|'|sed 's/.*| //' ;;
+				istemp "cabextract -l" "$2" |grep -E '[0-9] \|'|sed 's/.*| //' ;;
 			isoinfo)
 				t="$2"
 				istemp "isoinfo -d -i" "$2" >/dev/null
 				istemp "isoinfo -d -i" "$t"| grep -E '^Joliet' && joliet=J
 				isoinfo -fR$joliet -i "$t" ;;
 			7za|7zr)
-				$prog l "$2"|egrep '^[0-9][0-9][0-9[0-9]'|cut -c 54-|egrep -v ' files$'
+				$prog l "$2"|grep -E '^[0-9][0-9][0-9[0-9]'|cut -c 54-|grep -Ev ' files$'
 		esac
 	fi
 }
@@ -302,11 +304,11 @@ isdeb () {
 	else
 		data=$(istemp "ar t" "$1"|grep data)
 		ft=$(ar p "$1" "$data" | filetype -)
-		get_unpack_cmd $ft -
+		get_unpack_cmd "$ft" -
 		if [[ -z "$2" ]]; then
-			istemp "ar p" "$1" "$data" | ${cmd[@]} | tar tf -
+			istemp "ar p" "$1" "$data" | "${cmd[@]}" | tar tf -
 		else
-			ar p "$1" "$data" | ${cmd[@]} | tar xOf - "$2"
+			ar p "$1" "$data" | "${cmd[@]}" | tar xOf - "$2"
 		fi
 	fi
 }
@@ -316,28 +318,28 @@ set +o noclobber
 setopt sh_word_split 2>/dev/null
 
 sep=:												# file name separator
-altsep==										# alternate separator character
-if [[ -e "$1" && "$1" == *$sep* ]]; then
+altsep='='										# alternate separator character
+if [[ -e "$1" && "$1" == *"$sep"* ]]; then
 	sep=$altsep
-elif [[ "$1" == *$altsep* ]]; then
-	[[ -e "${1%%$altsep*}" ]] && sep=$altsep
+elif [[ "$1" == *"$altsep"* ]]; then
+	[[ -e "${1%%"$altsep"*}" ]] && sep=$altsep
 elif [[ "$1" == ~* ]]; then
-	set $HOME${1#\~} $1
+	set "$HOME${1#\~}" "$1"
 fi
 
 tmpdir=${TMPDIR:-/tmp}/lesspipe."$RANDOM"
 [[ -d "$tmpdir" ]] || mkdir "$tmpdir"
 [[ -d "$tmpdir" ]] || exit 1
-trap "rm -rf '$tmpdir';exit 1" INT
-trap "rm -rf '$tmpdir'" EXIT
+trap 'rm -rf "$tmpdir";exit 1' INT
+trap 'rm -rf "$tmpdir"' EXIT
 trap - PIPE
 
 t=$(nexttmp)
 # make LESSOPEN="|- ... " work
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
-	cat > $t
+	cat > "$t"
 	[[ -n "$fext" ]] && t="$t$sep$fext"
-	set $1 "$t"
+	set "$1" "$t"
 	nexttmp >/dev/null
 fi
 
