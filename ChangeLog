@@ -1,7 +1,12 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-- many changes from shellcheck for better syntax
+Version 2.06 Aug 17 2022
+- remove perl storable (pst) files interpretation (security fix)
+- let bat recognize language, unless explicitly requested
+- call the bat colorizer with style=plain
+- many changes from ShellCheck for better syntax
+- run ShellCheck and test suite in GitHub Actions
 - better recognition of hdf and matlab files
 Version 2.05 Apr 26 2022
 - better colorize handling for bat and file names containing spaces

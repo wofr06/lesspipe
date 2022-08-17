@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lesspipe.sh, a preprocessor for less (version 2.05)
+# lesspipe.sh, a preprocessor for less (version 2.06)
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 
@@ -402,13 +402,11 @@ has_colorizer () {
 	for i in bat batcat pygmentize source-highlight code2color vimcolor ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i
 	done
-	[[ "$2" =~ ^[0-9]*$ ]] && opt=() || opt=(-l "$2")
-	ext=${fileext##*.}
+	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] && opt=() || opt=(-l "$2")
 	case $prog in
 		bat|batcat)
 			# only allow an explicitly requested language
-			opt=(-l "$ext")
-			{ [[ -n $ext ]] && "$prog" "${opt[@]}" /dev/null; } || opt=()
+			[[ -z $3 ]] && opt=() || opt=(-l "$3")
 			opt+=("$COLOR" --style=plain --paging=never) ;;
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
@@ -569,7 +567,7 @@ isfinal () {
 		[[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
 		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 		fext=${fext##*/}
-		[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext"
+		[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$file2"
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" "$1" && return
 		# if fileext set, we need to filter to get rid of .fileext
 		[[ -n $fileext || "$1" == - || "$1" == "$t" ]] && cat "$1"

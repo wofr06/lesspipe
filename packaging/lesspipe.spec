@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.05
+%define packageversion 2.06
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -89,7 +89,9 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
-* Tue Apr 26 2022 2.05-1 20220228 - wp.friebel@gmail.com
+* Wed Aug 17 2022 2.06-1 20220817 - wp.friebel@gmail.com
+- remove perl storable files handling, changes recommended by Shellcheck
+* Tue Apr 26 2022 2.05-1 20220426 - wp.friebel@gmail.com
 - fix colorizing using bat and for file names containing spaces
 * Mon Feb 28 2022 2.04-1 20220228 - wp.friebel@gmail.com
 - handle csv files, lessfilter can be in path

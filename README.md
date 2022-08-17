@@ -1,6 +1,6 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.05
+Version: 2.06
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto://wp.friebel@gmail.com)
 License: GPL
 
@@ -213,7 +213,6 @@ the author by email.
 - html,xml		requires `w3m` or `lynx` or `elinks` or `html2text`
 - pdf			requires `pdftotext` or `pdftohtml`
 - perl pod		requires `pod2text` or `perldoc`
-- perl storable		requires perl (and the modules Storable and Data::Dumper)
 - dvi			requires `dvi2tty`
 - djvu			requires `djvutxt`
 - ps			requires `ps2ascii` (from the gs package)
