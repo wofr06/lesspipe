@@ -381,7 +381,7 @@ analyze_args () {
 	# color is set when calling less with -r or -R or LESS contains that option
 	lessarg="l $LESS $lessarg"
 	# shellcheck disable=SC2001
-	lessarg=$(echo "$lessarg" | sed 's/ -[a-zA-Z]*[rR]/ -r/')
+	lessarg=$(echo "$lessarg" | sed 's/ -[a-zA-Z]*[rR]\|--raw-control-chars\|--RAW-CONTROL-CHARS/ -r/')
 	has_cmd tput && colors=$(tput colors) || colors=0
 	if [[ $colors -ge 8 && $lessarg == *\ -[rR]* ]]; then
 		COLOR="--color=always"
@@ -393,8 +393,6 @@ analyze_args () {
 }
 
 has_colorizer () {
-	arg="$1"
-	[[ "$arg" = - ]] && arg=
 	[[ $COLOR == *always ]] || return
 	[[ $2 == plain || -z $2 ]] && return
 	prog=${LESSCOLORIZER%% *}
@@ -411,14 +409,16 @@ has_colorizer () {
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER =~ pygmentize\ \ *-O\ *style=[a-z]* ]] && opt+=(-O "${LESSCOLORIZER##* }")
-			[[ $colors -ge 256 ]] && opt+=(-f terminal256) ;;
+			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
+			[[ "$1" == - ]] || opt+=("$1") ;;
 		source-highlight)
-			[[ -z $arg ]] && arg=/dev/stdin
+			arg="$1"
+			[[ -z $1 || "$1" == - ]] && arg="/dev/stdin"
 			[[ -n "${opt[*]}" && -n "$2" ]] && opt=(-s "$2") || opt=()
-			opt+=(--failsafe -f esc -i) ;;
+			opt+=(--failsafe -f esc -i "$arg") ;;
 		code2color|vimcolor)
-			opt=()
-			[[ -n "$fileext" ]] && opt=(-l "$fileext") ;;
+			opt=("$1")
+			[[ -n "$fileext" ]] && opt=(-l "$fileext" "$1") ;;
 		*)
 			return ;;
 	esac
@@ -568,7 +568,7 @@ isfinal () {
 		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 		fext=${fext##*/}
 		[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$file2"
-		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" "$1" && return
+		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" && return
 		# if fileext set, we need to filter to get rid of .fileext
 		[[ -n $fileext || "$1" == - || "$1" == "$t" ]] && cat "$1"
 	fi
