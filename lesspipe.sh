@@ -379,11 +379,13 @@ analyze_args () {
 	# return if we want to watch growing files
 	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
-	lessarg="l $LESS $lessarg"
-	# shellcheck disable=SC2001
-	lessarg=$(echo "$lessarg" | sed 's/ -[a-zA-Z]*[rR]\|--raw-control-chars\|--RAW-CONTROL-CHARS/ -r/')
+	typeset -l has_r
+	has_r="l $LESS $lessarg"
+	has_r=${has_r/[a-z]-/}
+	has_r=${has_r/--raw_control_chars/ -r}
+	has_r=${has_r//[a-qs-z]/}
 	has_cmd tput && colors=$(tput colors) || colors=0
-	if [[ $colors -ge 8 && $lessarg == *\ -[rR]* ]]; then
+	if [[ $colors -ge 8 && $has_r == *\ -r* ]]; then
 		COLOR="--color=always"
 	else
 		COLOR="--color=auto"
