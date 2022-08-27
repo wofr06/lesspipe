@@ -5,16 +5,15 @@
 use strict;
 use warnings;
 use File::Copy;
+use Getopt::Long;
 
 # find sxw2txt and other scripts in current dir, if scripts not installed yet
 $ENV{PATH} .= ':.';
 
 use vars qw($opt_help $opt_prefix $opt_nomake $opt_shell);
 
-use Getopt::Long;
 Getopt::Long::Configure("prefix_pattern=--");
-my $result = GetOptions
-	qw(help+ prefix=s shell=s yes+ default+ ask+ nomake+ fixed+);
+my $result = GetOptions('help+', 'prefix=s', 'shell=s', 'nomake+');
 if ( $ARGV[0] or ! $result or $opt_help) {
 	print << 'EOF';
 Usage: configure [options]
@@ -29,6 +28,7 @@ configure generates by default a Makefile
 EOF
 	exit ! $opt_help ? 1 : 0;
 }
+
 my $bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
 $bash_complete_dir ||= '/usr/share/bash-completion/completions';
 # dynamic loading not working, use the following dir instead:
@@ -51,40 +51,23 @@ if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
 	exit 1;
 }
 
+# gererate Makefile
+my @bad = ();
+my $shell = check_shell_vers();
 if ( ! $opt_nomake ) {
+	my $no_bash = grep {/bash/} @bad;
+	my $no_zsh = grep {/zsh/} @bad;
 	open OUT, ">Makefile";
-	print OUT << "EOF";
-# This is a generated file, do not edit it. Use configure to modify it
-PREFIX = $opt_prefix
-
-.PHONY: install
-
-all:
-	./configure --prefix=\$(PREFIX)
-test:
-	./test.pl
-install:
-	mkdir -p \$(DESTDIR)\$(PREFIX)/bin
-	mkdir -p \$(DESTDIR)\$(PREFIX)/share/man/man1
-	mkdir -p \$(DESTDIR)\$(PREFIX)/share/zsh/site-functions
-	mkdir -p \$(DESTDIR)$bash_complete_dir
-	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete \$(DESTDIR)\$(PREFIX)/bin
-	cp ./lesspipe.1 \$(DESTDIR)\$(PREFIX)/share/man/man1
-	cp ./less_completion \$(DESTDIR)$bash_complete_dir
-	cp ./_less \$(DESTDIR)\$(PREFIX)/share/zsh/site-functions
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesspipe.sh
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/sxw2txt
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/code2color
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/archive_color
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/vimcolor
-	chmod 0755 \$(DESTDIR)\$(PREFIX)/bin/lesscomplete
-clean:
-	mv Makefile Makefile.old
-EOF
+	while (<DATA>) {
+		next if /bash_complete_dir/ and $no_bash;
+		next if /zsh\/site-functions/ and $no_zsh;
+		s/opt_prefix/$opt_prefix/;
+		s/bash_complete_dir/$bash_complete_dir/;
+		print OUT;
+	}
 	close OUT;
 }
 
-my $shell = check_shell_vers();
 open F, "lesspipe.sh";
 {
 	my $line1 = <F>;
@@ -104,7 +87,6 @@ sub check_shell_vers {
 	# define useable shells, the order is important !
 	my @shells = qw( /bin/bash /bin/zsh /bin/sh);
 	@shells = ( $opt_shell ) if $opt_shell;
-	my @bad = ();
 	my $selected_shell = '';
 	my $shellcmd = '';
 	for my $shell ( @shells ) {
@@ -122,7 +104,7 @@ sub check_shell_vers {
 		$where[0] = $path if -x $path.'/'.$name;
 		my $file = $where[0].'/'.$name if $where[0];
 		if ( ! $where[0] or ! -x $file ) {
-			print "$name not found in the PATH\n";
+			print "$name not found in the PATH, continuing\n";
 			push	@bad, $shell;
 			next;
 		}
@@ -141,9 +123,36 @@ sub check_shell_vers {
 		$shellcmd = "$file$opt" if ! $shellcmd;
 	}
 	if ( !$selected_shell ) {
-		print "Sorry, no useable shell found\n", @bad;
+		print "Sorry, no useable shell found, the following were tried:\n@bad\n";
 		print "You could run configure --shell=<abs_filename> to retry\n";
 		exit 1;
 	}
 	return "#!/usr/bin/env $selected_shell";
 }
+__END__
+# This is a generated file, do not edit it. Use configure to modify it
+PREFIX = opt_prefix
+
+.PHONY: install
+
+all:
+	./configure --prefix=$(PREFIX)
+test:
+	./test.pl
+install:
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
+	mkdir -p $(DESTDIR)$(PREFIX)/share/zsh/site-functions
+	mkdir -p $(DESTDIR)bash_complete_dir
+	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(PREFIX)/bin
+	cp ./lesspipe.1 $(DESTDIR)$(PREFIX)/share/man/man1
+	cp ./less_completion $(DESTDIR)bash_complete_dir
+	cp ./_less $(DESTDIR)$(PREFIX)/share/zsh/site-functions
+	chmod 0755 $(DESTDIR)$(PREFIX)/bin/lesspipe.sh
+	chmod 0755 $(DESTDIR)$(PREFIX)/bin/sxw2txt
+	chmod 0755 $(DESTDIR)$(PREFIX)/bin/code2color
+	chmod 0755 $(DESTDIR)$(PREFIX)/bin/archive_color
+	chmod 0755 $(DESTDIR)$(PREFIX)/bin/vimcolor
+	chmod 0755 $(DESTDIR)$(PREFIX)/bin/lesscomplete
+clean:
+	mv Makefile Makefile.old

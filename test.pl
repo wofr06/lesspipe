@@ -40,11 +40,12 @@ my $args = "@ARGV";
 $args =~ s/(?:^|\s)(\d+)\s*\-\s*(\d+)(?:$|\s)/ $1-$2 /g;
 $args =~ s/,/ /g;
 for (split ' ', $args) {
-	if (/^\-([enrv]+$)/) {
+	if (/^\-([ehnrv]+$)/) {
 		my $x = $1;
 		$verbose = 1, $errors = 1 if $x =~ /v/;
 		$errors = 1 if $x =~ /e/;
 		$noaction = 1 if $x =~ /n/;
+		usage() if $x =~ /h/;
 	} elsif (/^(\d*)-(\d+)$/) {
 		push @numtest, $_ for ($1 || 1 .. $2);
 	} elsif (/^(\d+)$/) {
