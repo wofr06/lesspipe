@@ -620,7 +620,7 @@ isarchive () {
 				istemp "$prog l" "$2"
 		esac
 	fi
-	[[ $? && $3 ]] && msg "could not retrieve $3 from $2"
+	[[ $? != 0 && -n $3 ]] && msg ":$!:$?: could not retrieve $3 from $2"
 }
 
 cabextract2 () {
