@@ -407,7 +407,7 @@ has_colorizer () {
 		bat|batcat)
 			# only allow an explicitly requested language
 			[[ -z $3 ]] && opt=() || opt=(-l "$3")
-			opt+=("$COLOR" --style=plain --paging=never) ;;
+			opt+=("$COLOR" --style=plain --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER =~ pygmentize\ \ *-O\ *style=[a-z]* ]] && opt+=(-O "${LESSCOLORIZER##* }")
