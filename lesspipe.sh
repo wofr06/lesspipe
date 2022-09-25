@@ -532,7 +532,8 @@ isfinal () {
 		pgp)
 			has_cmd gpg && cmd=(gpg -d "$1") ;;
 		plist)
-			has_cmd plistutil && cmd=(istemp "plistutil -i" "$1") ;;
+			{ has_cmd plistutil && cmd=(istemp "plistutil -i" "$1"); } ||
+			{ has_cmd plutil && cmd=(istemp "plutil -p" "$1"); } ;;
 		mp3)
 			has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1") ;;
 		log)
