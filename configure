@@ -33,7 +33,7 @@ my $bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
 $bash_complete_dir ||= '/usr/share/bash-completion/completions';
 # dynamic loading not working, use the following dir instead:
 $bash_complete_dir = '/etc/bashcompletion.d';
-if ($opt_prefix and $opt_prefix !~ /^\/usr/) {
+if ( $opt_prefix ) {
 	$bash_complete_dir = "$ENV{HOME}/.local/share/bash-completion";
 	# dynamic loading not working, use the following dir instead:
 	$bash_complete_dir = "$opt_prefix/share/bash-completion";
