@@ -474,5 +474,4 @@ less $T/tests/test_plain :			# even watch growing files without +F
 ~ test=a
 less $T/tests/test.jar			# support for jar files git #8,22
 ~ .* META-INF/
-###    .lessfilter not implemented git #23 (open)
 ###    colorize markdown files (mdcat) on MacOSX and iTerm2 (see git #48)

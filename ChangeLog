@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- allow for changing the output style in bat/batcat
 Version 2.06 Aug 17 2022
 - remove perl storable (pst) files interpretation (security fix)
 - let bat recognize language, unless explicitly requested

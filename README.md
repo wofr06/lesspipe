@@ -265,9 +265,10 @@ output if the conditions for colorizing (see below) are met.
  not, `pygmentize`, `source-highlight`, `code2color` and `vimcolor` are
  tried. Among these colorizers a preferred one can be forced for coloring
  by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
- For `pygmentize` also a style option can be set:
+ For `pygmentize` and `bat/batcat` also a style option can be set:
 ```
         LESSCOLORIZER='pygmentize -O style=somename'
+        LESSCOLORIZER='bat --style=somename'
 ```
  Much better syntax highlighting is obtained using the `less` emulation of `vim`:
  The editor `vim` comes with a file `less.sh`, e.g. on Ubuntu located in
@@ -383,6 +384,7 @@ filtering for certain file types.
  - german.txt (distributed with lesspipe, not updated)
  - https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/
  - https://www.linux-community.de/ausgaben/linuxuser/2002/04/lesspipe/
+ - https://www.linux-magazin.de/ausgaben/2022/07/lesspipe-2-0/ (non free)
 
 ## 11. External links
 

@@ -405,19 +405,25 @@ has_colorizer () {
 	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] && opt=() || opt=(-l "$2")
 	case $prog in
 		bat|batcat)
+			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
+			[[ -z $style ]] && style=$BAT_STYLE
+			[[ -z $style ]] && style=plain
 			# only allow an explicitly requested language
 			[[ -z $3 ]] && opt=() || opt=(-l "$3")
-			opt+=("$COLOR" --style=plain --paging=never "$1") ;;
+			opt+=("$COLOR" --style="${style%% *}" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
-			[[ -n $LESSCOLORIZER && $LESSCOLORIZER =~ pygmentize\ \ *-O\ *style=[a-z]* ]] && opt+=(-O "${LESSCOLORIZER##* }")
+			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-O\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
+			[[ -n $style ]] && opt+=(-O style="${style%% *}")
 			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
 			[[ "$1" == - ]] || opt+=("$1") ;;
 		source-highlight)
 			arg="$1"
 			[[ -z $1 || "$1" == - ]] && arg="/dev/stdin"
 			[[ -n "${opt[*]}" && -n "$2" ]] && opt=(-s "$2") || opt=()
-			opt+=(--failsafe -f esc -i "$arg") ;;
+			style=esc
+			[[ $colors -ge 256 ]] && style=esc256
+			opt+=(--failsafe -f "$style" -i "$arg") ;;
 		code2color|vimcolor)
 			opt=("$1")
 			[[ -n "$fileext" ]] && opt=(-l "$fileext" "$1") ;;

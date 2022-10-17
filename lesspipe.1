@@ -90,10 +90,13 @@ theme might have been set in \fI~/.config/bat/config\fP.
 .PP
 Among these colorizers
 a preferred one can be forced for coloring by setting the ENV variable
-\fBLESSCOLORIZER\fP to the name of the colorizer. As pygmentize has no other way
-to change the output style, there a style option can be specified as follows:
+\fBLESSCOLORIZER\fP to the name of the colorizer. For \fIpygmentize\fP and 
+\fIbat\fP/\fIbatcat\fP the output style can be appended as an option as follows:
 .RS
 .I LESSCOLORIZER='pygmentize -O style=somename'
+.RE
+.RS
+.I LESSCOLORIZER='bat --style=somename'
 .RE
 Syntax highlighting is activated, if the environment variable \fBLESS\fP
 exists and contains the option \fI-R\fP
