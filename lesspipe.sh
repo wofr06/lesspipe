@@ -395,38 +395,37 @@ analyze_args () {
 }
 
 has_colorizer () {
+	filename=$1
+	lang=${2:-guess}
 	[[ $COLOR == *always ]] || return
-	[[ $2 == plain || -z $2 ]] && return
 	prog=${LESSCOLORIZER%% *}
 
 	for i in bat batcat pygmentize source-highlight code2color vimcolor ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i
 	done
-	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] && opt=() || opt=(-l "$2")
 	case $prog in
 		bat|batcat)
+			# by default, bat will guess language
+			bat --list-languages | sed 's/:\|,/\n/g' | grep $lang &>/dev/null && opt=(-l "$lang") || opt=()
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
-			[[ -z $style ]] && style=$BAT_STYLE
-			[[ -z $style ]] && style=plain
-			# only allow an explicitly requested language
-			[[ -z $3 ]] && opt=() || opt=(-l "$3")
-			opt+=("$COLOR" --style="${style%% *}" --paging=never "$1") ;;
+			[[ -n $style ]] && opt+=("=--style=$style")
+			opt+=("$COLOR" --paging=never "$filename") ;;
 		pygmentize)
-			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
+			pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang") || opt=(-g)
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-O\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
 			[[ -n $style ]] && opt+=(-O style="${style%% *}")
 			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
-			[[ "$1" == - ]] || opt+=("$1") ;;
+			[[ "$filename" == - ]] || opt+=("$filename") ;;
 		source-highlight)
-			arg="$1"
-			[[ -z $1 || "$1" == - ]] && arg="/dev/stdin"
-			[[ -n "${opt[*]}" && -n "$2" ]] && opt=(-s "$2") || opt=()
+			arg="$filename"
+			[[ -z $filename || "$filename" == - ]] && arg="/dev/stdin"
+			[[ -n "${opt[*]}" && -n "$lang" ]] && opt=(-s "$lang") || opt=()
 			style=esc
 			[[ $colors -ge 256 ]] && style=esc256
 			opt+=(--failsafe -f "$style" -i "$arg") ;;
 		code2color|vimcolor)
-			opt=("$1")
-			[[ -n "$fileext" ]] && opt=(-l "$fileext" "$1") ;;
+			opt=("$filename")
+			[[ -n "$fileext" ]] && opt=(-l "$fileext" "$filename") ;;
 		*)
 			return ;;
 	esac
@@ -572,11 +571,12 @@ isfinal () {
 			"${cmd[@]}"
 		fi
 	else
+		# only allow an explicitly requested language
 		[[ -n "$file2" ]] && fext="$file2"
 		[[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
 		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 		fext=${fext##*/}
-		[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$file2"
+		[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext"
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" && return
 		# if fileext set, we need to filter to get rid of .fileext
 		[[ -n $fileext || "$1" == - || "$1" == "$t" ]] && cat "$1"
