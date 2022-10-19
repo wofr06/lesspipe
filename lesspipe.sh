@@ -400,21 +400,17 @@ analyze_args () {
 
 has_colorizer () {
 	[[ $COLOR == *always ]] || return
-	[[ $2 == plain || -z $2 ]] && return
 	prog=${LESSCOLORIZER%% *}
 
 	for i in bat batcat pygmentize source-highlight code2color vimcolor ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i
 	done
-	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] && opt=() || opt=(-l "$2")
 	case $prog in
 		bat|batcat)
+			# by default, bat will guess language
+			bat --list-languages | sed 's/:\|,/\n/g' | grep "$2" &>/dev/null && opt=(-l "$2") || opt=()
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
-			[[ -z $style ]] && style=$BAT_STYLE
-			[[ -z $style ]] && style=plain
-			# only allow an explicitly requested language
-			[[ -z $3 ]] && opt=() || opt=(-l "$3")
-			grep -q -e '^--style' "$HOME/.config/bat/config" || opt+=(--style="${style%% *}")
+			[[ -n $style ]] && opt+=("=--style=$style")
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
@@ -577,6 +573,7 @@ isfinal () {
 			"${cmd[@]}"
 		fi
 	else
+		# only allow an explicitly requested language
 		[[ -n "$file2" ]] && fext="$file2"
 		[[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
 		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
