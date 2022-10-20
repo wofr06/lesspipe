@@ -553,6 +553,14 @@ isfinal () {
 	# not a specific file format
 	if [[ -z ${cmd[*]} ]]; then
 		fext=$(fileext "$1")
+		# video has many frames which cost too many time to show, so only for image
+		if [[ $fcat == image ]]; then
+			{ has_cmd chafa && chafa -f symbols "$1"; } ||
+			{ has_cmd catimg && catimg "$1"; } ||
+			{ has_cmd tiv && tiv "$1"; } ||
+			{ has_cmd plotext && plotext image -p symbols "$1"; }
+			{ has_cmd imaging && imaging "$1"; }
+		fi
 		if [[ $fcat == audio || $fcat == video || $fcat == image ]]; then
 			{ has_cmd mediainfo && cmd=(mediainfo --Full "$1"); } ||
 			{ has_cmd exiftool && cmd=(exiftool "$1"); } ||
