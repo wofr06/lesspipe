@@ -464,8 +464,7 @@ isfinal () {
 			has_cmd procyon && t=$t.class && cat "$1" > "$t" && cmd=(procyon "$t") ;;
 		markdown)
 			[[ $COLOR = *always ]] && mdopt=() || mdopt=(-c)
-			{ has_cmd mdcat && cmd=(mdcat "${mdopt[@]}" "$1"); } ||
-			{ has_cmd pandoc && cmd=(pandoc -t plain "$1"); } ;;
+			{ has_cmd mdcat && cmd=(mdcat "${mdopt[@]}" "$1"); };;
 		docx)
 			{ has_cmd pandoc && cmd=(pandoc -f docx -t plain "$1"); } ||
 			{ has_cmd docx2txt && cmd=(docx2txt "$1" -); } ||
