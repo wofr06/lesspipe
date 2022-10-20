@@ -443,13 +443,18 @@ isfinal () {
 	[[ -n "$file2" && "$fileext" == "$file2" && "$fileext" != *.* ]] && x="$fileext"
 	case "$x" in
 		directory)
-			cmd=(ls -lA "$COLOR" "$1")
-			if ! ls "$COLOR" > /dev/null 2>&1; then
-				cmd=(CLICOLOR_FORCE=1 ls -lA -G "$1")
-				if ! ls -lA -G > /dev/null 2>&1; then
-					cmd=(ls -lA "$1")
-				fi
-			fi
+			{ has_cmd exa && cmd=(exa --icons --git -h --color=always -l); } ||
+			{ has_cmd lsd && cmd=(lsd --icon=always --header --color=always -l); } ||
+			{ has_cmd colorls && cmd=(colorls --color=always -l); } ||
+			{
+				cmd=(ls -lA "$COLOR" "$1")
+				if ! ls "$COLOR" > /dev/null 2>&1; then
+					cmd=(CLICOLOR_FORCE=1 ls -lA -G "$1")
+					if ! ls -lA -G > /dev/null 2>&1; then
+						cmd=(ls -lA "$1")
+					fi
+				fi;
+			}
 			msg="$x: showing the output of ${cmd[*]}" ;;
 		html|xml)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
