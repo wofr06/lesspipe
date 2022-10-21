@@ -433,6 +433,11 @@ has_colorizer () {
 	colorizer=("$prog" "${opt[@]}")
 }
 
+pdftotext_with_pagebreak() {
+	{ has_cmd hr && has_cmd sed && pdftotext -layout -q "$1" - | sed "s/\f/$(hr ─)\n/"; } ||
+	pdftotext -layout -nopgbrk -q -- "$1" -
+}
+
 isfinal () {
 	if [[ "$2" == *$sep ]]; then
 		cat "$1"
@@ -454,7 +459,7 @@ isfinal () {
 		html|xml)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
 		pdf)
-			{ has_cmd pdftotext && cmd=(istemp pdftotext -layout -nopgbrk -q -- "$1" -); } ||
+			{ has_cmd pdftotext && cmd=(istemp pdftotext_with_pagebreak "$1"); } ||
 			{ has_cmd pdftohtml && has_htmlprog && cmd=(istemp ispdf "$1"); } ||
 			{ has_cmd pdfinfo && cmd=(istemp pdfinfo "$1"); } ;;
 		postscript)
