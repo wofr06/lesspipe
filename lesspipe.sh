@@ -573,6 +573,7 @@ isfinal () {
 		fi
 	else
 		[[ -n "$file2" ]] && fext="$file2"
+		[[ $fcat == message ]] && fext=msg
 		[[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
 		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 		fext=${fext##*/}
