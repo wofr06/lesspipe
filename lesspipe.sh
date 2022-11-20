@@ -75,6 +75,9 @@ filetype () {
 			[[ $ftype == mpeg ]] && ftype=mp3 ;;
 	esac
 	### get file type from 'file' command for an unspecific result
+	if [[ "$fcat" == message && $ftype == plain ]]; then
+		ftype=msg
+	fi
 	if [[ "$fcat" == application && "$ftype" == octet-stream || "$fcat" == text && $ftype == plain ]]; then
 		ft=$(file -L -s -b "$1" 2> /dev/null)
 		# first check if the file command yields something
@@ -141,6 +144,7 @@ filetype () {
 			esac
 		fi
 	fi
+
 	echo "$ftype:$fchar:$fcat"
 }
 
@@ -410,7 +414,7 @@ has_colorizer () {
 			[[ -z $style ]] && style=plain
 			# only allow an explicitly requested language
 			[[ -z $3 ]] && opt=() || opt=(-l "$3")
-			grep -q -e '^--style' $HOME/.config/bat/config || opt+=(--style="${style%% *}")
+			grep -q -e '^--style' "$HOME/.config/bat/config" || opt+=(--style="${style%% *}")
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
