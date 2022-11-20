@@ -410,7 +410,8 @@ has_colorizer () {
 			[[ -z $style ]] && style=plain
 			# only allow an explicitly requested language
 			[[ -z $3 ]] && opt=() || opt=(-l "$3")
-			opt+=("$COLOR" --style="${style%% *}" --paging=never "$1") ;;
+			grep -q -e '^--style' $HOME/.config/bat/config || opt+=(--style="${style%% *}")
+			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-O\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
@@ -464,7 +465,8 @@ isfinal () {
 			has_cmd procyon && t=$t.class && cat "$1" > "$t" && cmd=(procyon "$t") ;;
 		markdown)
 			[[ $COLOR = *always ]] && mdopt=() || mdopt=(-c)
-			{ has_cmd mdcat && cmd=(mdcat "${mdopt[@]}" "$1"); };;
+			{ has_cmd mdcat && cmd=(mdcat "${mdopt[@]}" "$1"); } ||
+			{ has_cmd pandoc && cmd=(pandoc -t plain "$1"); } ;;
 		docx)
 			{ has_cmd pandoc && cmd=(pandoc -f docx -t plain "$1"); } ||
 			{ has_cmd docx2txt && cmd=(docx2txt "$1" -); } ||
