@@ -58,6 +58,8 @@ filetype () {
 			ftype=epub ;;
 		matlab-data)
 			ftype=matlab ;;
+		rfc822)
+			ftype=email ;;
 	# file may report wrong type for given file names (ok in file 5.39)
 		troff)
 			case "${fname##*/}" in
@@ -75,9 +77,6 @@ filetype () {
 			[[ $ftype == mpeg ]] && ftype=mp3 ;;
 	esac
 	### get file type from 'file' command for an unspecific result
-	if [[ "$fcat" == message && $ftype == plain ]]; then
-		ftype=msg
-	fi
 	if [[ "$fcat" == application && "$ftype" == octet-stream || "$fcat" == text && $ftype == plain ]]; then
 		ft=$(file -L -s -b "$1" 2> /dev/null)
 		# first check if the file command yields something
@@ -413,7 +412,7 @@ has_colorizer () {
 			[[ -z $style ]] && style=$BAT_STYLE
 			[[ -z $style ]] && style=plain
 			# only allow an explicitly requested language
-			[[ -z $3 ]] && opt=() || opt=(-l "$3")
+			[[ -z $3 ]] && opt+=() || opt+=(-l "$3")
 			grep -q -e '^--style' "$HOME/.config/bat/config" || opt+=(--style="${style%% *}")
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
@@ -578,7 +577,7 @@ isfinal () {
 		fi
 	else
 		[[ -n "$file2" ]] && fext="$file2"
-		[[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
+		[[ $fcat == text || $fcat == message && $x != plain ]] && fext=$x
 		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 		fext=${fext##*/}
 		[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$file2"
