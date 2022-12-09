@@ -553,6 +553,9 @@ isfinal () {
 		csv)
 			{ has_cmd csvlook && cmd=(csvlook "$1"); } ||
 			{ has_cmd pandoc && cmd=(pandoc -f csv -t plain "$1"); } ;;
+		json)
+			[[ $COLOR = *always ]] && opt=(-C .) || opt=(.)
+			has_cmd jq && cmd=(jq "${opt[@]}" "$1") ;;
 	esac
 	fi
 	# not a specific file format

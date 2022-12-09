@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- better display of json files using jq
 - allow for changing the output style in bat/batcat
 Version 2.06 Aug 17 2022
 - remove perl storable (pst) files interpretation (security fix)

@@ -228,6 +228,7 @@ the author by email.
 - java.class		requires `procyon`
 - MacOS X plist		requires `plistutil`
 - binary data		requires `strings`
+- json			requires `jq`
 
 To show the unmodified html, xml or perl pod text append a colon to the file
 name. Appending in addition the file type (html, xml, pod) produces a colored
