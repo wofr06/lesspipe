@@ -417,7 +417,10 @@ has_colorizer () {
 			[[ -z $style ]] && style=plain
 			# only allow an explicitly requested language
 			[[ -z $3 ]] && opt=() || opt=(-l "$3")
-			grep -q -e '^--style' "$HOME/.config/bat/config" || opt+=(--style="${style%% *}")
+			if [[ -r "$HOME/.config/bat/config" ]]; then
+				grep -q -e '^--style' "$HOME/.config/bat/config" || opt+=(--style="${style%% *}")
+				grep -q -e '^--theme' "$HOME/.config/bat/config" || opt+=(--theme=ansi)
+			fi
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
