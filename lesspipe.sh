@@ -320,7 +320,7 @@ get_unpack_cmd () {
 		trans=()
 		echo ""|iconv --byte-subst - 2>/dev/null && rep=(--unicode-subst="$qm" --byte-subst="$qm" --widechar-subst="$qm") # MacOS
 		echo ""|iconv -f "$fchar" -t "$locale//TRANSLIT" - 2>/dev/null && trans=(-t "$locale//TRANSLIT")
-		msg "append $sep$sep to filename to view the $fchar encoded file"
+		msg "append $sep$sep to filename to view the original $fchar encoded file"
 		cmd=(iconv "${rep[@]}" -f "$fchar" "${trans[@]}" "$2")
 		# loop protection, just in case
 		lclocale=
@@ -536,7 +536,7 @@ isfinal () {
 		sharedlib)
 			cmd=(istemp nm "$1");;
 		pod)
-			[[ -z $file2 ]] && LESSQUIET=1 &&
+			[[ -z $file2 ]] &&
 			{ { has_cmd pod2text && cmd=(pod2text "$1"); } ||
 			{ has_cmd perldoc && cmd=(istemp perldoc "$1"); }; } ;;
 		hdf|hdf5)
@@ -580,7 +580,7 @@ isfinal () {
 		fi
 	fi
 	if [[ -n ${cmd[*]} && "${cmd[*]}" != "cat" ]]; then
-		[[ -z $msg ]] && msg="append $sep to filename to view the $x file"
+		[[ -z $msg ]] && msg="append $sep to filename to view the original $x file"
 		msg "$msg"
 	fi
 	if [[ -n ${cmd[*]} ]]; then
