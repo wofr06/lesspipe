@@ -633,12 +633,12 @@ isarchive () {
 				istemp "isoinfo -d -i" "$2"
 				isoinfo -d -i "$t"| grep -E '^Joliet' && joliet=J
 				contentline
-				isoinfo -fR$joliet -i "$t" ;;
+				isoinfo -fR"$joliet" -i "$t" ;;
 			7za|7zr)
 				istemp "$prog l" "$2"
 		esac
 	fi
-	[[ $? != 0 && -n $3 ]] && msg ":$!:$?: could not retrieve $3 from $2"
+	[[ $? != 0 && -n $3 ]] && msg ":$!: could not retrieve $3 from $2"
 }
 
 cabextract2 () {
@@ -745,7 +745,7 @@ setopt sh_word_split 2>/dev/null
 PATH=$PATH:${0%%/lesspipe.sh}
 # the current locale in lowercase (or generic utf-8)
 locale=$(locale|grep LC_CTYPE|sed 's/.*"\(.*\)"/\1/') || locale=en_US.UTF-8
-lclocale=$(echo ${locale##*.}|tr '[:upper:]' '[:lower:]')
+lclocale=$(echo "${locale##*.}"|tr '[:upper:]' '[:lower:]')
 
 sep=:					# file name separator
 altsep='='				# alternate separator character
