@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- correct typo in less option, recognize osascript as applescript
 - better display of json files using jq
 - allow for changing the output style in bat/batcat
 Version 2.06 Aug 17 2022
