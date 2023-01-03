@@ -170,7 +170,7 @@ get_unpack_cmd () {
 			[[ $2 == - ]] || fileext="$2"
 			fileext=${fileext%%.gz}; fileext=${fileext%%.bz2}
 			[[ $x == compress ]] && x=gzip
-			has_cmd $x && cmd=("$x" -cd "$2") && return ;;
+			has_cmd "$x" && cmd=("$x" -cd "$2") && return ;;
 		zstd)
 			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") && return ;;
 		lz4)
@@ -263,7 +263,7 @@ isarchive () {
 				t="$2"
 				istemp "isoinfo -d -i" "$2" >/dev/null
 				istemp "isoinfo -d -i" "$t"| grep -E '^Joliet' && joliet=J
-				isoinfo -fR$joliet -i "$t" ;;
+				isoinfo -fR"$joliet" -i "$t" ;;
 			7za|7zr)
 				$prog l "$2"|grep -E '^[0-9][0-9][0-9[0-9]'|cut -c 54-|grep -Ev ' files$'
 		esac
