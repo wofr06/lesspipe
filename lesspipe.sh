@@ -78,6 +78,10 @@ filetype () {
 	if [[ "$fcat" == message && $ftype == plain ]]; then
 		ftype=msg
 	fi
+	if [[ "$fcat" == message && $ftype == rfc822 ]]; then
+		fcat=text
+		ftype=email
+	fi
 	if [[ "$fcat" == application && "$ftype" == octet-stream || "$fcat" == text && $ftype == plain ]]; then
 		ft=$(file -L -s -b "$1" 2> /dev/null)
 		# first check if the file command yields something
@@ -587,7 +591,7 @@ isfinal () {
 		fi
 	else
 		[[ -n "$file2" ]] && fext="$file2"
-		[[ -z "$fext" && $fcat == text && $x != plain ]] && fext=$x
+		[[ $fcat == text && $x != plain ]] && fext=$x
 		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 		fext=${fext##*/}
 		[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$file2"

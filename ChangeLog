@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- support for displaying mail messages
 - set theme=ansi as default in bat for dark and light backgrounds
 - correct typo in less option, recognize osascript as applescript
 - better display of json files using jq
