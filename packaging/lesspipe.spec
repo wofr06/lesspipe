@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.06
+%define packageversion 2.07
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -89,6 +89,8 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Tue Jan 08 2023 2.07-1 20220817 - wp.friebel@gmail.com
+- support json, mail archives, update man page, other bat/batcat defaults
 * Wed Aug 17 2022 2.06-1 20220817 - wp.friebel@gmail.com
 - remove perl storable files handling, changes recommended by Shellcheck
 * Tue Apr 26 2022 2.05-1 20220426 - wp.friebel@gmail.com

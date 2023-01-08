@@ -1,8 +1,10 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.07 Jan 10 2023
+- man page updates
 - support for displaying mail messages
-- set theme=ansi as default in bat for dark and light backgrounds
+- set theme=ansi and style=plain in bat if not specified elsewhere
 - correct typo in less option, recognize osascript as applescript
 - better display of json files using jq
 - allow for changing the output style in bat/batcat

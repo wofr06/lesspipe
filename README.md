@@ -1,6 +1,6 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.06
+Version: 2.07
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto://wp.friebel@gmail.com)
 License: GPL
 
@@ -266,10 +266,10 @@ output if the conditions for colorizing (see below) are met.
  not, `pygmentize`, `source-highlight`, `code2color` and `vimcolor` are
  tried. Among these colorizers a preferred one can be forced for coloring
  by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
- For `pygmentize` and `bat/batcat` also a style option can be set:
+ For `pygmentize` and `bat/batcat` also a restricted set of options can be set:
 ```
-        LESSCOLORIZER='pygmentize -O style=somename'
-        LESSCOLORIZER='bat --style=somename'
+        LESSCOLORIZER='pygmentize -O style=foo'
+        LESSCOLORIZER='bat --style=foo --theme=bar'
 ```
  Much better syntax highlighting is obtained using the `less` emulation of `vim`:
  The editor `vim` comes with a file `less.sh`, e.g. on Ubuntu located in
