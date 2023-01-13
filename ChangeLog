@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- fix vimcolor hang due to wrong vim CLI arguments
 Version 2.07 Jan 10 2023
 - man page updates
 - support for displaying mail messages
