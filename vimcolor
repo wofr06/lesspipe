@@ -202,7 +202,7 @@ EOF
 
 	run(
 		$defaults->{vim_command},
-		$defaults->{vim_options},
+		@{$defaults->{vim_options}},
 		$filename, ('-s' => "$script_file")
 	);
 
