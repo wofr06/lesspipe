@@ -67,6 +67,8 @@ print "LESSOPEN=\"$ENV{LESSOPEN}\"\n\n" if $noaction;
 $ENV{LESSQUIET} =1;
 $ENV{LESSCOLORIZER} = 'vimcolor';
 $ENV{LANG} = 'en_US.UTF-8';
+(my $dir = $0) =~ s|/[^/]*$|:|;
+$ENV{PATH} = $dir . $ENV{PATH};
 
 my $duration = time();
 my ($retcode, $sumok, $sumignore, $sumnok, $num) = (0, 0, 0, 0, 0);
