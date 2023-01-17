@@ -395,8 +395,7 @@ analyze_args () {
 	# return if we want to watch growing files
 	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
-	typeset -l has_r
-	has_r="l $LESS $lessarg"
+	has_r=$(echo "l $LESS $lessarg" | tr '[:upper:]' '[:lower:]')
 	has_r=${has_r/[a-z]-/}
 	has_r=${has_r/--raw-control-chars/ -r}
 
