@@ -92,8 +92,8 @@ the author by email.
  works as well as a zsh script.
 
  The filter does different things depending on the file format. In most cases
- it is determined on the output of the `file --mime` command [2], [6], that
- returns the mime type. In some cases the mime type is to unspecific and then
+ it is determined on the output of the `file --mime` command [2], that
+ returns the mime type. In some cases the mime type is too unspecific and then
  the `file` command yielding a textual description or the file suffix is used
  to determine what to display.
 
@@ -118,18 +118,18 @@ the author by email.
         lesspipe.sh | source /dev/stdin   # (zsh)
 ```
  As `lesspipe.sh` is accepting only a single argument, a hierarchical list of file
- names has to be separated by a non blank character. A colon is rarely found
+ names has to be separated by a non-blank character. A colon is rarely found
  in file names, therefore it has been chosen as the separator character. If a
  file name does however contain at least one isolated colon, the equal sign =
  can be used as an alternate separator character. At each stage in
- extracting files from such a hierarchy the file type is determined. This
+ extracting files from such a hierarchy, the file type is determined. This
  guarantees a correct processing and display at each stage of the filtering.
 
- To view files in multifile archives the following command can be used:
+ To view files in archives, the following command can be used:
 ```
         less archive_file:contained_file
 ```
- This can be used to extract single files from a multifile archive:
+ This can be used to extract files from an archive:
 ```
         less archive_file:contained_file > extracted_file
 ```
@@ -137,22 +137,22 @@ the author by email.
 ```
         lesspipe.sh archive_file:contained_file > extracted_file
 ```
- Even a file in a multifile archive that itself is contained in yet
+ Even a file in an archive, that itself is contained in yet
  another archive can be viewed this way:
 ```
         less super_archive:archive_file:contained_file
 ```
  The script is able to extract files up to a depth of 6 where applying a
- decompression algorithm counts as a separate level. In a few rare cases the
+ decompression algorithm counts as a separate level. In a few rare cases, the
  file command does not recognize the correct format.
- In such cases the filtering can be suppressed by a trailing colon on the file
+ In such cases, the filtering can be suppressed by a trailing colon on the file
  name. That can also be used to output the original unmodified file or to
  suppress syntax highlighting (see below).
 
  Several environment variables can influence the behavior of lesspipe.sh.
 
  **LESSQUIET** will suppress additional output not belonging to the file contents
- if set to a non empty value.
+ if set to a non-empty value.
 
  **LESS** can be used to switch on colored less output (should contain -R).
 
@@ -168,7 +168,7 @@ the author by email.
  in the script), then `file` and other utilities like `cat`, `dd`,
  `grep`, `gzip`, `ln`, `ls`, `mkdir`, `rm`, `sed`, `strings` and `tar`.
  For testing and configuring lesspipe.sh `perl` is used, that is however not
- required in just using `lesspipe.sh`
+ required in just using `lesspipe.sh`.
 
 ## 4. Supported file formats
 
@@ -230,13 +230,13 @@ the author by email.
 - binary data		requires `strings`
 - json			requires `jq`
 
-To show the unmodified html, xml or perl pod text append a colon to the file
+To show the unmodified html, xml or perl pod text, append a colon to the file
 name. Appending in addition the file type (html, xml, pod) produces a colored
 output if the conditions for colorizing (see below) are met.
 
 ### 4.3 Conversion of files with alternate character encoding
  If the file utility reports text with an encoding different from the one
- used in the terminal then the text will be transformed using `iconv` into
+ used in the terminal, then the text will be transformed using `iconv` into
  the default encoding. This does assume the file command gets the file
  encoding right, which can be wrong in some situations. An appended colon
  to the file name does suppress the conversion.
@@ -266,7 +266,7 @@ output if the conditions for colorizing (see below) are met.
  not, `pygmentize`, `source-highlight`, `code2color` and `vimcolor` are
  tried. Among these colorizers a preferred one can be forced for coloring
  by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
- For `pygmentize` and `bat/batcat` also a restricted set of options can be set:
+ For `pygmentize` and `bat/batcat` a restricted set of options can be added:
 ```
         LESSCOLORIZER='pygmentize -O style=foo'
         LESSCOLORIZER='bat --style=foo --theme=bar'
@@ -274,12 +274,12 @@ output if the conditions for colorizing (see below) are met.
  Much better syntax highlighting is obtained using the `less` emulation of `vim`:
  The editor `vim` comes with a file `less.sh`, e.g. on Ubuntu located in
  /usr/share/vim/vimXX/macros (XX being the version number). Assuming that file
- location a function `lessc` (bash, zsh, ksh users)
+ location, a function `lessc` (bash, zsh, ksh users)
 ```
         lessc () { /usr/share/vim/vimXX/macros/less.sh "$@"}
 ```
  is defined and `lessc filename` is used to view the colorful file contents.
- The same can be achieved using less and `vimcolor`, but that is much slower.
+ The same can be achieved using less and `archive_color`, but that is much slower.
 
 #### 5.1.2 List of supported languages
  To see which languages are supported the list can be printed using the
@@ -304,7 +304,7 @@ contents is colored in a similar fashion as directory contents.
 
 ## 6. Calling less from standard input
 
-Normally `lesspipe.sh` is not called when less is used within a pipe such as
+Normally `lesspipe.sh` is not called when less is used within a pipe, such as
 ```
         cat somefile | less
 ```
@@ -332,7 +332,7 @@ Examples:
 ## 8. Tab completion for zsh and bash
 
 An existing `zsh` completion script has been enhanced to provide tab completion
-within archives similar to what is possible with the `tar` command completion.
+within archives, similar to what is possible with the `tar` command completion.
 A `bash` completion script has been modeled loosely after the `zsh` completion.
 
 In both shells it is now possible to complete contents of archive format files
@@ -343,12 +343,12 @@ tar.gz files.
 To make it work, the script `lesscomplete` has to be executable and must be
 found in one of the directories listed in the `$PATH` environment variable.
 For zsh the file `_less` has to be stored in one of the directories listed in
-`$fpath` or the directory containig `_less` has to be added to `$fpath`, e.g.
+`$fpath` or the directory containing `_less` has to be added to `$fpath`, e.g.
 by:
 ```
         fpath=(~/zsh_functions $fpath)
 ```
-In bash the function `less_completion` has to be added to the shell environment
+In bash, the function `less_completion` has to be added to the shell environment
 by sourcing the script (e.g. from .bashrc using the correct location):
 ```
         source ~/bash_functions/less_completion
@@ -366,7 +366,7 @@ as for example in
 
 The lesspipe.sh filtering can be replaced or enhanced  by a user defined
 program. Such a program has to be called either `.lessfilter` (and be placed in
-the users home directory), or `lessfilter` (and be accessible from a directory
+the user's home directory), or `lessfilter` (and be accessible from a directory
 mentioned in the environment variable `PATH`).
 That program has to be executable and has to end with an exit code 0, if the
 filtering was done within that script. Otherwise, a nonzero exit code means
@@ -389,11 +389,11 @@ filtering for certain file types.
 
 ## 11. External links
 
-(last checked: Nov 30 2021):
+(last checked: Jan 21 2023):
 
 ### 11.1 URLs to some utilities (with last known release)
 - 7zr                  https://sourceforge.net/projects/p7zip/ (2016)
-- antiword             https://www.winfield.demon.nl/ (2005)
+- antiword             no longer valid: https://www.winfield.demon.nl/ (2005)
 - cabextract           https://www.cabextract.org.uk/ (2019)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
 - ccze                 https://github.com/cornet/ccze (2011)
@@ -401,26 +401,26 @@ filtering for certain file types.
 - docx2txt             https://docx2txt.sourceforge.net/ (2014)
 - dvi2tty              https://www.ctan.org/tex-archive/dviware/dvi2tty/ (2016)
 - excel2csv            https://github.com/informationsea/excel2csv (2018)
-- html2text            https://www.mbayer.de/html2text/ (2016 version 1.3.2a)
+- html2text            no longer valid: https://www.mbayer.de/html2text/ (2016 version 1.3.2a)
 - id3v2                https://id3v2.sourceforge.net/ (2010)
-- lzip                 https://download.savannah.gnu.org/releases/lzip/ (2021)
-- matdump              https://github.com/tbeu/matio (2021)
-- mediainfo            https://mediaarea.net/MediaInfo/ (2021)
+- lzip                 https://download.savannah.gnu.org/releases/lzip/ (2022)
+- matdump              https://github.com/tbeu/matio (2022)
+- mediainfo            https://mediaarea.net/MediaInfo/ (2022)
 - odt2txt              https://github.com/dstosberg/odt2txt (2017)
-- pandoc               https://pandoc.org/ (2021)
-- pptx2md              https://github.com/ssine/pptx2md (2021)
-- tarcolor             https://github.com/msabramo/tarcolor (modified, 2021)
+- pandoc               https://pandoc.org/ (2023)
+- pptx2md              https://github.com/ssine/pptx2md (2022)
+- tarcolor             https://github.com/msabramo/tarcolor (2014)
+- archive_color        modified version of tarcolor (contained in this package)
 - unrtf                https://ftp.gnu.org/gnu/unrtf/ (2018)
 - wvText               https://github.com/AbiWord/wv/ (2014)
-- xlscat               https://metacpan.org/pod/Spreadsheet::Read (2021)
+- xlscat               https://metacpan.org/pod/Spreadsheet::Read (2023)
 - sxw2txt              https://vinc17.net/software/sxw2txt (2015)
 
 ### 11.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)
-- [2] ftp://ftp.astron.com/pub/file/		(file)
+- [2] http://www.darwinsys.com/file/		(file)
 - [3] https://github.com/wofr06/lesspipe
 - [5] http://www.palfrader.org/code2html/	(code2html)
-- [6] http://www.darwinsys.com/file/		(file)
 
 ## 12. Contributors
 
