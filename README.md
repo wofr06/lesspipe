@@ -279,7 +279,7 @@ output if the conditions for colorizing (see below) are met.
         lessc () { /usr/share/vim/vimXX/macros/less.sh "$@"}
 ```
  is defined and `lessc filename` is used to view the colorful file contents.
- The same can be achieved using less and `archive_color`, but that is much slower.
+ The same can be achieved using less and `vimcolor`, but that is much slower.
 
 #### 5.1.2 List of supported languages
  To see which languages are supported the list can be printed using the
