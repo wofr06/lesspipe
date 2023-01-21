@@ -23,7 +23,7 @@ filetype () {
 	if [[ "$1" == - || -z $1 ]]; then
 		declare t
 		t=$(nexttmp)
-		head -c 40000 > "$t" 2>/dev/null
+		head -c 1000000 > "$t" 2>/dev/null
 		set "$t" "$2"
 		fname="$fileext"
 	fi
@@ -580,7 +580,7 @@ isfinal () {
 	if [[ -z ${cmd[*]} ]]; then
 		fext=$(fileext "$1")
 		if [[ $fcat == audio || $fcat == video || $fcat == image ]]; then
-			{ has_cmd mediainfo && cmd=(mediainfo --Full "$1"); } ||
+			{ [[ "$1" != '-' ]] && has_cmd mediainfo && cmd=(mediainfo --Full "$1"); } ||
 			{ has_cmd exiftool && cmd=(exiftool "$1"); } ||
 			{ has_cmd identify && [[ $fcat == image ]] && cmd=(identify -verbose "$1"); }
 		elif [[ "$fchar" == binary ]]; then

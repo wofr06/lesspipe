@@ -2,6 +2,8 @@
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
 - fix vimcolor hang due to wrong vim CLI arguments
+- increase the file portion to read from STDIN to recognize its type
+- do not call mediainfo on STDIN input
 Version 2.07 Jan 10 2023
 - man page updates
 - support for displaying mail messages
