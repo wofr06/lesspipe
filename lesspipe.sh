@@ -535,6 +535,8 @@ isfinal () {
 				[[ "$fext" == me ]] && macro=e
 				[[ "$fext" == ms ]] && macro=s
 				cmd=(groff -s -p -t -e -Tutf8 -m "$macro" "$1")
+			elif has_cmd mandoc; then
+				cmd=(mandoc "$1")
 			fi ;;
 		rtf)
 			{ has_cmd unrtf && cmd=(istemp "unrtf --text" "$1"); } ||
