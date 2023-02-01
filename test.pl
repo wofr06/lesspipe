@@ -369,7 +369,7 @@ less tests/filter.tgz:test_xls		# xls (old), needs in2csv|xls2csv|libreoffice,ht
 = test
 less tests/filter.tgz:test_ooffice1	# openoffice1 (very old), needs sxw2txt|libreoffice
 = test
-less tests/filter.tgz:test_nroff	# man pages etc (nroff), needs groff
+less tests/filter.tgz:test_nroff	# man pages etc (nroff), needs groff|mandoc
 ~ .* test \(1\)
 less tests/filter.tgz:test_rtf		# rtf, needs unrtf|libreoffice
 ~ test

@@ -197,7 +197,7 @@ the author by email.
 
 ### 4.2 List of preprocessed file types
 - directory		displayed using `ls -lA`
-- nroff(man)		requires `groff`
+- nroff(man)		requires `groff` or `mandoc`
 - shared library	requires `nm`
 - MS Word (doc)		requires `wvText` or `antiword` or `catdoc` or `libreoffice`
 - Powerpoint (ppt)	requires `catppt`
