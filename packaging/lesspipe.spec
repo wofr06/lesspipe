@@ -32,7 +32,7 @@ for archive contents are provided.
 %build
 
 %define prefix /usr/local
-./configure --fixed --prefix=$RPM_BUILD_ROOT%{prefix}
+./configure --prefix=$RPM_BUILD_ROOT%{prefix}
 
 %install
 #
@@ -81,15 +81,15 @@ cd $RPM_BUILD_DIR
 %{prefix}/bin/vimcolor
 %{prefix}/bin/sxw2txt
 %{prefix}/bin/lesscomplete
-%{prefix}/share/man/man1
-%{prefix}/share/zsh/site-functions/_less
-/etc/bash_completion.d/less_completion
-/etc/profile.d
+%{prefix}/share/man/man1/*
+%{prefix}/share/zsh/site-functions
+%{prefix}/share/bash-completion
+/etc/profile.d/*
 
 %docdir %{prefix}/share/man/man1
 
 %changelog
-* Tue Jan 08 2023 2.07-1 20220817 - wp.friebel@gmail.com
+* Sun Jan 08 2023 2.07-1 - wp.friebel@gmail.com
 - support json, mail archives, update man page, other bat/batcat defaults
 * Wed Aug 17 2022 2.06-1 20220817 - wp.friebel@gmail.com
 - remove perl storable files handling, changes recommended by Shellcheck
