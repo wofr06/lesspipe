@@ -594,11 +594,17 @@ isfinal () {
 		msg "$msg"
 	fi
 	if [[ -n ${cmd[*]} ]]; then
+		# TAU: When cmd starts with environment variable settings, bash will refuse to execute it via : "${cmd[@]}"
+		# The remedy is simple : Just run it through the "env" command in that case.
+	  if [[ "$cmd" =~ '=' ]]; then
+			cmd=(env "${cmd[@]}")
+		fi
 		if [[ ${colorizer[*]} == archive_color && $COLOR == *always ]]; then
 			"${cmd[@]}" | archive_color
 		else
 			"${cmd[@]}"
 		fi
+
 	else
 		[[ -n "$file2" ]] && fext="$file2"
 		[[ $fcat == text && $x != plain ]] && fext=$x
@@ -805,4 +811,3 @@ else
 	fi
 	show "$@"
 fi
-
