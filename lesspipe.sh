@@ -381,7 +381,7 @@ get_unpack_cmd () {
 
 analyze_args () {
 	# determine how we are called
-	cmdtree=$(ps -T -oargs=)
+	cmdtree=$(ps -T -oargs= 2>/dev/null)
 	while read -r line; do
 		arg1=${line%% *}; arg1=${arg1##*/}
 		case $arg1 in
