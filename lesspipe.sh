@@ -107,6 +107,8 @@ filetype () {
 				ftype=ooffice1 ;;
 			*osascript*)
 				ftype=applescript ;;
+			*Device\ Tree\ Blob*)
+				ftype=dtb ;;
 			# if still unspecific, determine file type by extension
 			data)
 				### binary only file formats, type not guessed by 'file'
@@ -476,6 +478,8 @@ isfinal () {
 			msg="$x: showing the output of ${cmd[*]}" ;;
 		html|xml)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
+		dtb)
+			has_cmd dtc && cmd=(dtc -I dtb -O dts -qqq -o - -- "$1") ;;
 		pdf)
 			{ has_cmd pdftotext && cmd=(istemp pdftotext -layout -nopgbrk -q -- "$1" -); } ||
 			{ has_cmd pdftohtml && has_htmlprog && cmd=(istemp ispdf "$1"); } ||
