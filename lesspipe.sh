@@ -744,8 +744,10 @@ isoffice2 () {
 }
 
 isdtb () {
+	out=$(nexttmp)
 	errors=$(nexttmp)
-	dtc -I dtb -O dts -o - -- $1 2> "$errors"
+	dtc -I dtb -O dts -o - -- $1 1>"$out" 2> "$errors"
+	has_colorizer "$out" "dts" && "${colorizer[@]}" || cat "$out"
 	warrningsline
 	cat "$errors"
 }
