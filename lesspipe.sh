@@ -242,18 +242,17 @@ show () {
 	if [[ "${cmd[*]}" == "" ]]; then
 		ft=$(filetype "$file1")
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "${cmd[*]}" != "" && -z ${colorizer[*]} ]]; then
+		if [[ "${cmd[*]}" != "" ]]; then
 			show "-$rest1"
 		else
 			# if nothing to convert, exit without a command
-			[[ ${colorizer[*]} == cat ]] && colorizer=()
 			isfinal "$file1" "$rest11"
 		fi
 	elif [[ "$c1" == "" ]]; then
 		c1=("${cmd[@]}")
 		ft=$("${c1[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "${cmd[*]}" != "" && -z ${colorizer[*]} ]]; then
+		if [[ "${cmd[*]}" != "" ]]; then
 			show "-$rest1"
 		else
 			"${c1[@]}" | isfinal - "$rest11"
@@ -262,7 +261,7 @@ show () {
 		c2=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "${cmd[*]}" != "" && -z ${colorizer[*]} ]]; then
+		if [[ "${cmd[*]}" != "" ]]; then
 			show "-$rest1"
 		else
 			"${c1[@]}" | "${c2[@]}" | isfinal - "$rest11"
@@ -271,7 +270,7 @@ show () {
 		c3=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "${cmd[*]}" != "" && -z ${colorizer[*]} ]]; then
+		if [[ "${cmd[*]}" != "" ]]; then
 			show "-$rest1"
 		else
 			"${c1[@]}" | "${c2[@]}" | "${c3[@]}" | isfinal - "$rest11"
@@ -280,7 +279,7 @@ show () {
 		c4=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "${cmd[*]}" != "" && -z ${colorizer[*]} ]]; then
+		if [[ "${cmd[*]}" != "" ]]; then
 			show "-$rest1"
 		else
 			"${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | isfinal - "$rest11"
@@ -289,7 +288,7 @@ show () {
 		c5=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "${cmd[*]}" != "" && -z ${colorizer[*]} ]]; then
+		if [[ "${cmd[*]}" != "" ]]; then
 			echo "$0: Too many levels of encapsulation"
 		else
 			"${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | isfinal - "$rest11"
@@ -382,7 +381,7 @@ get_unpack_cmd () {
 	if [[ -n ${cmd[*]} ]]; then
 		[[ -n "$file2" ]] && file2= && return
 		msg "use ${x}_file${sep}contained_file to view a file in the archive"
-		has_cmd archive_color && colorizer=(archive_color) || colorizer=(cat)
+		has_cmd archive_color && colorizer=(archive_color)
 	fi
 }
 
@@ -605,15 +604,10 @@ isfinal () {
 	if [[ -n ${cmd[*]} ]]; then
 		# TAU: When cmd starts with environment variable settings, bash will refuse to execute it via : "${cmd[@]}"
 		# The remedy is simple : Just run it through the "env" command in that case.
-	  if [[ "$cmd" =~ '=' ]]; then
+		if [[ "$cmd" =~ '=' ]]; then
 			cmd=(env "${cmd[@]}")
 		fi
-		if [[ ${colorizer[*]} == archive_color && $COLOR == *always ]]; then
-			"${cmd[@]}" | archive_color
-		else
-			"${cmd[@]}"
-		fi
-
+		"${cmd[@]}"
 	else
 		[[ -n "$file2" ]] && fext="$file2"
 		[[ $fcat == text && $x != plain ]] && fext=$x
@@ -744,12 +738,15 @@ isoffice2 () {
 }
 
 isdtb () {
-	out=$(nexttmp)
 	errors=$(nexttmp)
-	dtc -I dtb -O dts -o - -- "$1" 1>"$out" 2> "$errors"
-	cat "$out"
-	warrningsline
-	cat "$errors"
+	fileext="dts"
+	has_colorizer "-" "dts"
+	[[ -z "${colorizer[*]}" ]] && colorizer=(cat)
+	dtc -I dtb -O dts -o - -- "$1" 2> "$errors" | "${colorizer[@]}"
+	if [[ -s "$errors" ]]; then
+		warrningsline
+		cat "$errors"
+	fi
 }
 
 has_htmlprog () {

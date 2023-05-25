@@ -120,7 +120,7 @@ while (<DATA>) {
 	map {s/html_converter/w3m,lynx,elinks,html2text/} @needed;
 	if ($noaction) {
 		my $needed_str = $needed ? " ($needed)" : '';
-		print $verbose ? "$num $cmd $needed_str" : $cmd, "\n";
+		print $verbose ? "$num $cmd $needed_str" : "$num $cmd\n";
 		next;
 	}
 	my $ignore = 0;
