@@ -107,6 +107,8 @@ filetype () {
 				ftype=ooffice1 ;;
 			*osascript*)
 				ftype=applescript ;;
+			*Device\ Tree\ Blob*)
+				ftype=dtb ;;
 			# if still unspecific, determine file type by extension
 			data)
 				### binary only file formats, type not guessed by 'file'
@@ -168,6 +170,11 @@ msg () {
 contentline () {
 	declare a="==================================="
 	echo "$a Contents $a"
+}
+
+warrningsline () {
+	declare a="==================================="
+	echo "$a Warnings $a"
 }
 
 nexttmp () {
@@ -476,6 +483,8 @@ isfinal () {
 			msg="$x: showing the output of ${cmd[*]}" ;;
 		html|xml)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
+		dtb)
+			has_cmd dtc && cmd=(isdtb "$1") ;;
 		pdf)
 			{ has_cmd pdftotext && cmd=(istemp pdftotext -layout -nopgbrk -q -- "$1" -); } ||
 			{ has_cmd pdftohtml && has_htmlprog && cmd=(istemp ispdf "$1"); } ||
@@ -732,6 +741,15 @@ isoffice () {
 
 isoffice2 () {
 	istemp "libreoffice --headless --cat" "$1" 2>/dev/null
+}
+
+isdtb () {
+	out=$(nexttmp)
+	errors=$(nexttmp)
+	dtc -I dtb -O dts -o - -- "$1" 1>"$out" 2> "$errors"
+	cat "$out"
+	warrningsline
+	cat "$errors"
 }
 
 has_htmlprog () {

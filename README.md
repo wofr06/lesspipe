@@ -229,6 +229,7 @@ the author by email.
 - MacOS X plist		requires `plistutil`
 - binary data		requires `strings`
 - json			requires `jq`
+- Device Tree Blobs(DTB)	requires `dtc`
 
 To show the unmodified html, xml or perl pod text, append a colon to the file
 name. Appending in addition the file type (html, xml, pod) produces a colored
@@ -415,6 +416,7 @@ filtering for certain file types.
 - wvText               https://github.com/AbiWord/wv/ (2014)
 - xlscat               https://metacpan.org/pod/Spreadsheet::Read (2023)
 - sxw2txt              https://vinc17.net/software/sxw2txt (2015)
+- dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2023)
 
 ### 11.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)
