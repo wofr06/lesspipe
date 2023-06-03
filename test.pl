@@ -438,6 +438,8 @@ c test=a
 ### github issues (solved and unsolved) and other test cases
 LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives
 c sub
+LESSCOLORIZER=pygmentize less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
+c test
 less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
 c sub
 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78

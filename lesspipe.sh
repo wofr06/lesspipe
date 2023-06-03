@@ -167,14 +167,10 @@ msg () {
 	lesspipe_version=
 }
 
-contentline () {
+separatorline () {
 	declare a="==================================="
-	echo "$a Contents $a"
-}
-
-warrningsline () {
-	declare a="==================================="
-	echo "$a Warnings $a"
+	word=$1 || "Contents"
+	echo "$a $word $a"
 }
 
 nexttmp () {
@@ -428,7 +424,7 @@ has_colorizer () {
 	case $prog in
 		bat|batcat)
 			# only allow an explicitly requested language
-			[[ -z $3 ]] && opt=() || opt=(-l "$3")
+			$prog --list-languages|grep "$3" > /dev/null && opt=(-l "$3") || opt=()
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
 			[[ -z $style ]] && style=$BAT_STYLE
 			[[ -z $style ]] && style=plain
@@ -447,15 +443,14 @@ has_colorizer () {
 			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
 			[[ "$1" == - ]] || opt+=("$1") ;;
 		source-highlight)
-			arg="$1"
-			[[ -z $1 || "$1" == - ]] && arg="/dev/stdin"
-			[[ -n "${opt[*]}" && -n "$2" ]] && opt=(-s "$2") || opt=()
+			[[ -n $1 && "$1" != - ]] && opt=(-i "$1") || opt=()
+			[[ -n $2 ]] && opt+=(-s "$2")
 			style=esc
 			[[ $colors -ge 256 ]] && style=esc256
-			opt+=(--failsafe -f "$style" -i "$arg") ;;
+			opt+=(--failsafe -f "$style") ;;
 		code2color|vimcolor)
 			opt=("$1")
-			[[ -n "$fileext" ]] && opt=(-l "$fileext" "$1") ;;
+			[[ -n "$3" ]] && opt=(-l "$3" "$1") ;;
 		*)
 			return ;;
 	esac
@@ -482,7 +477,7 @@ isfinal () {
 			msg="$x: showing the output of ${cmd[*]}" ;;
 		html|xml)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
-		dtb)
+		dtb|dts)
 			has_cmd dtc && cmd=(isdtb "$1") ;;
 		pdf)
 			{ has_cmd pdftotext && cmd=(istemp pdftotext -layout -nopgbrk -q -- "$1" -); } ||
@@ -601,19 +596,20 @@ isfinal () {
 		[[ -z $msg ]] && msg="append $sep to filename to view the original $x file"
 		msg "$msg"
 	fi
+	[[ -n "$file2" ]] && fext="$file2"
+	[[ $fcat == text && $x != plain ]] && fext=$x
+	[[ -z "$fext" ]] && fext=$(fileext "$fileext")
+	fext=${fext##*/}
+	[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$fileext"
 	if [[ -n ${cmd[*]} ]]; then
 		# TAU: When cmd starts with environment variable settings, bash will refuse to execute it via : "${cmd[@]}"
 		# The remedy is simple : Just run it through the "env" command in that case.
 		if [[ "$cmd" =~ '=' ]]; then
 			cmd=(env "${cmd[@]}")
 		fi
+		#[[ -n ${colorizer[*]} ]] && "${cmd[@]}" | "${colorizer[@]}" && return
 		"${cmd[@]}"
 	else
-		[[ -n "$file2" ]] && fext="$file2"
-		[[ $fcat == text && $x != plain ]] && fext=$x
-		[[ -z "$fext" ]] && fext=$(fileext "$fileext")
-		fext=${fext##*/}
-		[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$file2"
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" && return
 		# if fileext set, we need to filter to get rid of .fileext
 		[[ -n $fileext || "$1" == - || "$1" == "$t" ]] && cat "$1"
@@ -658,7 +654,7 @@ isarchive () {
 				t="$2"
 				istemp "isoinfo -d -i" "$2"
 				isoinfo -d -i "$t"| grep -E '^Joliet' && joliet=J
-				contentline
+				separatorline
 				isoinfo -fR"$joliet" -i "$t" ;;
 			7za|7zr)
 				istemp "$prog l" "$2"
@@ -679,7 +675,7 @@ isrpm () {
 	if [[ -z "$2" ]]; then
 		if has_cmd rpm; then
 			istemp "rpm -qivp" "$1"
-			contentline
+			separatorline
 			[[ $1 == - ]] && set "$t" "$1"
 		fi
 		if has_cmd bsdtar; then
@@ -705,7 +701,7 @@ isdeb () {
 		if [[ -z "$2" ]]; then
 			control=$(bsdtar tf "$1" "control*")
 			bsdtar xOf "$1" "$control" | bsdtar xOf - ./control
-			contentline
+			separatorline
 			bsdtar xOf "$1" "$data" | bsdtar tvf -
 		else
 			bsdtar xOf "$1" "$data" | bsdtar xOf - "$2"
@@ -717,7 +713,7 @@ isdeb () {
 		if [[ -z "$2" ]]; then
 			control=$(ar t "$1"|grep control)
 			ar p "$1" "$control" | "${cmd[@]}" | tar xOf - ./control
-			contentline
+			separatorline
 			ar p "$1" "$data" | "${cmd[@]}" | tar tvf -
 		else
 			ar p "$1" "$data" | "${cmd[@]}" | tar xOf - "$2"
@@ -739,12 +735,11 @@ isoffice2 () {
 
 isdtb () {
 	errors=$(nexttmp)
-	fileext="dts"
-	has_colorizer "-" "dts"
+	has_colorizer "-" "dts" "dts"
 	[[ -z "${colorizer[*]}" ]] && colorizer=(cat)
 	dtc -I dtb -O dts -o - -- "$1" 2> "$errors" | "${colorizer[@]}"
 	if [[ -s "$errors" ]]; then
-		warrningsline
+		separatorline "Warnings"
 		cat "$errors"
 	fi
 }

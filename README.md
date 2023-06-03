@@ -386,7 +386,7 @@ filtering for certain file types.
  - german.txt (distributed with lesspipe, not updated)
  - https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/
  - https://www.linux-community.de/ausgaben/linuxuser/2002/04/lesspipe/
- - https://www.linux-magazin.de/ausgaben/2022/07/lesspipe-2-0/ (non free)
+ - https://www.linux-magazin.de/ausgaben/2022/07/lesspipe-2-0/
 
 ## 11. External links
 
