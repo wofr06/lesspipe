@@ -41,8 +41,11 @@ Usage() if $opt_h;
 my $filename;
 if ($opt_l and $opt_l =~ /..*\../) { #dot within opt_l means file name
 	$filename = $opt_l;
-	$opt_l = undef;
+} elsif ($opt_l) {
+	$filename = "dummy.$opt_l"
 }
+$opt_l = undef;
+
 my %params = (
 	infile       => $ARGV[0] || '-',
 	langmode     => $opt_l ,

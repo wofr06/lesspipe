@@ -33,7 +33,7 @@ filetype () {
 	ft=$(file -L -s -b --mime "$1" 2> /dev/null)
 	[[ $ft == *=* ]] && fchar="${ft##*=}" || fchar=utf-8
 	fcat="${ft%/*}"
-	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-}"
+	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-script.}"; ft="${ft#x-}"
 	ftype="${ft#vnd\.}"
 	# chose better name
 	case "$ftype" in
@@ -420,11 +420,12 @@ has_colorizer () {
 	for i in bat batcat pygmentize source-highlight code2color vimcolor ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i
 	done
-	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] && opt=() || opt=(-l "$2")
+	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
+	# prefer an explicitly requested language
+	[[ -n $3 ]] && lang=$3 || lang=$2
 	case $prog in
 		bat|batcat)
-			# only allow an explicitly requested language
-			$prog --list-languages|grep "$3" > /dev/null && opt=(-l "$3") || opt=()
+			[[ -n $lang ]] && $prog --list-languages|grep -i "$lang" > /dev/null && opt=(-l "$lang")
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
 			[[ -z $style ]] && style=$BAT_STYLE
 			[[ -z $style ]] && style=plain
@@ -437,14 +438,14 @@ has_colorizer () {
 			fi
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
-			pygmentize -l "$2" /dev/null &>/dev/null && opt=(-l "$2") || opt=(-g)
+			pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang") || opt=(-g)
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-O\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
 			[[ -n $style ]] && opt+=(-O style="${style%% *}")
 			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
 			[[ "$1" == - ]] || opt+=("$1") ;;
 		source-highlight)
 			[[ -n $1 && "$1" != - ]] && opt=(-i "$1") || opt=()
-			[[ -n $2 ]] && opt+=(-s "$2")
+			[[ -n $lang ]] && opt+=(-s "$lang")
 			style=esc
 			[[ $colors -ge 256 ]] && style=esc256
 			opt+=(--failsafe -f "$style") ;;
