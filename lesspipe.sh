@@ -397,16 +397,16 @@ analyze_args () {
 	# return if we want to watch growing files
 	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
-	has_r=$(echo "l $LESS $lessarg" | tr '[:upper:]' '[:lower:]')
-	has_r=${has_r/[a-z]-/}
-	has_r=${has_r/--raw-control-chars/ -r}
-
-	has_r=${has_r//[a-qs-z]/}
+	COLOR="--color=auto"
 	has_cmd tput && colors=$(tput colors) || colors=0
-	if [[ $colors -ge 8 && $has_r == *\ -r* ]]; then
-		COLOR="--color=always"
-	else
-		COLOR="--color=auto"
+	if [[ $colors -ge 8 ]]; then
+		# shellcheck disable=SC2206
+		r_string=($LESS $lessarg)
+		for i in "${r_string[@]}"
+		do
+			[[ $i = -*[rR] ]] && COLOR="--color=always"
+			[[ $i = --raw-control-chars ]] && COLOR="--color=always"
+		done
 	fi
 	# last argument starting with colon or equal sign is used for piping into less
 	[[ $lessarg == *\ [:=]* ]] && fext=${lessarg#*[:=]}
