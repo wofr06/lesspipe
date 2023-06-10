@@ -169,7 +169,8 @@ msg () {
 
 separatorline () {
 	declare a="==================================="
-	word=$1 || "Contents"
+	word="Contents"
+	[[ -n $1 ]] && word=$1
 	echo "$a $word $a"
 }
 
