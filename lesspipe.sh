@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # lesspipe.sh, a preprocessor for less
-lesspipe_version=2.07
+lesspipe_version=2.08
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 
@@ -626,7 +626,7 @@ isarchive () {
 			tar|bsdtar)
 				[[ "$2" =~ ^[a-z_-]*:.* ]] && echo "$2: remote operation tar host:file not allowed" && return
 				if [[ "$3" =~ --* ]]; then
-					$prog Oxf "$2" "\\$3" 2>/dev/null
+					$prog Oxf "$2" "--" "$3" 2>/dev/null
 				else
 					$prog Oxf "$2" "$3" 2>/dev/null
 				fi

@@ -1,6 +1,11 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.08 Jun 26 2023
+- protect file names in tar from being used as options
+- support the device tree blob file format
+- many changes for colored output
+- fix template for creating a lesspipe rpm
 - fix vimcolor hang due to wrong vim CLI arguments
 - increase the file portion to read from STDIN to recognize its type
 - do not call mediainfo on STDIN input
