@@ -625,7 +625,12 @@ isarchive () {
 		case $prog in
 			tar|bsdtar)
 				[[ "$2" =~ ^[a-z_-]*:.* ]] && echo "$2: remote operation tar host:file not allowed" && return
-				$prog Oxf "$2" "$3" 2>/dev/null;;
+				if [[ "$3" =~ --* ]]; then
+					$prog Oxf "$2" "\\$3" 2>/dev/null
+				else
+					$prog Oxf "$2" "$3" 2>/dev/null
+				fi
+				;;
 			rar|unrar)
 				istemp "$prog p -inul" "$2" "$3" ;;
 			ar)
