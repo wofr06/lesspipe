@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- support for plain zlib files(used e.g. in backuppc, pdf)
 Version 2.08 Jun 26 2023
 - protect file names in tar from being used as options
 - support the device tree blob file format

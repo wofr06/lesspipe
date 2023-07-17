@@ -418,7 +418,7 @@ has_colorizer () {
 	[[ $2 == plain || -z $2 ]] && return
 	prog=${LESSCOLORIZER%% *}
 
-	for i in bat batcat pygmentize source-highlight code2color vimcolor ; do
+	for i in bat batcat pygmentize source-highlight vimcolor code2color ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i
 	done
 	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
@@ -581,6 +581,8 @@ isfinal () {
 		json)
 			[[ $COLOR = *always ]] && opt=(-C .) || opt=(.)
 			has_cmd jq && cmd=(jq "${opt[@]}" "$1") ;;
+		zlib)
+			has_cmd zlib-flate && zlib-flate -uncompress < "$1" && return ;;
 	esac
 	fi
 	# not a specific file format
@@ -784,7 +786,7 @@ set +o noclobber
 setopt sh_word_split 2>/dev/null
 PATH=$PATH:${0%%/lesspipe.sh}
 # the current locale in lowercase (or generic utf-8)
-locale=$(locale|grep LC_CTYPE|sed 's/.*"\(.*\)"/\1/') || locale=en_US.UTF-8
+locale=$(locale|grep LC_CTYPE|tr -d '"') || locale=utf-8
 lclocale=$(echo "${locale##*.}"|tr '[:upper:]' '[:lower:]')
 
 sep=:					# file name separator

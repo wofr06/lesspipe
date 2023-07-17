@@ -157,7 +157,7 @@ the author by email.
  **LESS** can be used to switch on colored less output (should contain -R).
 
  **LESSCOLORIZER** can be set to prefer a highlighting program from the following
- choices (`bat` `batcat` `pygmentize` `source-highlight` `code2color` `vimcolor`).
+ choices (`bat` `batcat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
  Otherwise the first program in that list that is installed will be used.
 
 ## 3. Required programs
@@ -165,9 +165,9 @@ the author by email.
  Most of the programs are checked for its existence before they get called
  in lesspipe.sh. However some of the programs are assumed to always be
  installed. That is foremost `bash` or `zsh` (have the appropriate first line
- in the script), then `file` and other utilities like `cat`, `dd`,
- `grep`, `gzip`, `ln`, `ls`, `mkdir`, `rm`, `sed`, `strings` and `tar`.
- For testing and configuring lesspipe.sh `perl` is used, that is however not
+ in the script), then `file` and other utilities like `cat`,
+ `grep`, `ln`, `ls`, `mkdir`, `rm`, `strings`, `tar` and `tr`.
+ For testing lesspipe.sh `perl` is used, that is however not
  required in just using `lesspipe.sh`.
 
 ## 4. Supported file formats
