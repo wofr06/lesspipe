@@ -405,7 +405,7 @@ analyze_args () {
 		r_string=($LESS $lessarg)
 		for i in "${r_string[@]}"
 		do
-			[[ $i = -*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
+			[[ $i =~ -[A-Za-z~]*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
 		done
 	fi
 	# last argument starting with colon or equal sign is used for piping into less
