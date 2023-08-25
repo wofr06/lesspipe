@@ -401,11 +401,12 @@ analyze_args () {
 	COLOR="--color=auto"
 	has_cmd tput && colors=$(tput colors) || colors=0
 	if [[ $colors -ge 8 ]]; then
+		[[ $LESS =~ -[A-Za-z~]*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
 		# shellcheck disable=SC2206
-		r_string=($LESS $lessarg)
+		r_string=($lessarg)
 		for i in "${r_string[@]}"
 		do
-			[[ $i =~ -[A-Za-z~]*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
+			[[ $i =~ [\s]-[A-Za-z~]*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
 		done
 	fi
 	# last argument starting with colon or equal sign is used for piping into less
