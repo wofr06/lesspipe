@@ -9,10 +9,11 @@ has_cmd () {
 }
 
 fileext () {
-	case "$1" in
-		.*.*) extension=${1##*.};;
+	fn=${1##*/}
+	case "$fn" in
+		.*.*) extension=${fn##*.};;
 		.*) extension=;;
-		*.*) extension=${1##*.};;
+		*.*) extension=${fn##*.};;
 	esac
 	echo "$extension"
 }
@@ -426,7 +427,7 @@ has_colorizer () {
 	[[ -n $3 ]] && lang=$3 || lang=$2
 	case $prog in
 		bat|batcat)
-			[[ -n $lang ]] && $prog --list-languages|grep -i "$lang" > /dev/null && opt=(-l "$lang")
+			[[ -n $lang ]] && $prog --list-languages|sed 's/.*:/,/;s/$/,/'|grep -i ",$lang," > /dev/null && opt=(-l "$lang")
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
 			[[ -z $style ]] && style=$BAT_STYLE
 			[[ -z $style ]] && style=plain
