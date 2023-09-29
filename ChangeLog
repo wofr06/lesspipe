@@ -4,6 +4,7 @@
 - language recognition for bat improved
 - correctly recognize the -r or -R option when calling less
 - support for plain zlib files(used e.g. in backuppc, pdf)
+- fix jsx and tsx files often detected as html
 Version 2.08 Jun 26 2023
 - protect file names in tar from being used as options
 - support the device tree blob file format

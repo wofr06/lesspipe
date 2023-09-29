@@ -75,6 +75,10 @@ filetype () {
 			[[ $ftype == json ]] && ftype=ipynb ;;
 		mp3)
 			[[ $ftype == mpeg ]] && ftype=mp3 ;;
+		jsx)
+			[[ $fcat == text ]] && ftype=$fext ;;
+		tsx)
+			[[ $fcat == text ]] && ftype=typescript-jsx ;;
 	esac
 	### get file type from 'file' command for an unspecific result
 	if [[ "$fcat" == message && $ftype == plain ]]; then
