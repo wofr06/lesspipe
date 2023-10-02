@@ -546,7 +546,9 @@ isfinal () {
 				[[ "$fext" == ms ]] && macro=s
 				cmd=(groff -s -p -t -e -Tutf8 -m "$macro" "$1")
 			elif has_cmd mandoc; then
-				cmd=(mandoc "$1")
+				cmd=(mandoc -l "$1")
+			elif has_cmd man; then
+				cmd=(man -l "$1")
 			fi ;;
 		rtf)
 			{ has_cmd unrtf && cmd=(istemp "unrtf --text" "$1"); } ||
@@ -688,7 +690,7 @@ ispdf () {
 isrpm () {
 	if [[ -z "$2" ]]; then
 		if has_cmd rpm; then
-			istemp "rpm -qivp" "$1"
+			istemp "rpm -qivp --changelog --nomanifest --" "$1"
 			separatorline
 			[[ $1 == - ]] && set "$t" "$1"
 		fi
