@@ -581,7 +581,7 @@ isfinal () {
 			has_cmd ccze && [[ $COLOR = *always ]] && ccze -A < "$1"
 			return ;;
 		csv)
-			{ has_cmd csvlook && cmd=(csvlook "$1"); } ||
+			{ has_cmd column && cmd=(column -o "|" -s "	,;" -t "$1"); } ||
 			{ has_cmd pandoc && cmd=(pandoc -f csv -t plain "$1"); } ;;
 		json)
 			[[ $COLOR = *always ]] && opt=(-C .) || opt=(.)

@@ -97,6 +97,11 @@ the author by email.
  the `file` command yielding a textual description or the file suffix is used
  to determine what to display.
 
+ By default less wraps long lines unless called with the option -S or
+ --chop-long-lines. That can be changed interactively by typing -S followed by
+ ENTER when viewing files with long lines. It is e.g. quite useful for tabular
+ display of csv files with many columns.
+
 ## 2. Usage
 
  (see also the man page lesspipe.1)
@@ -208,6 +213,7 @@ the author by email.
 - MS Word (docx)	requires `pandoc` or `docx2txt` or `libreoffice`
 - Powerpoint (pptx)	requires `pptx2md` or `libreoffice`
 - Excel (xlsx)		requires `in2csv` or `xlscat` or `excel2csv` or `libreoffice`
+- csv			requires `column` or `pandoc`
 - rtf			requires `unrtf` or `libreoffice`
 - epub			requires `pandoc`
 - html,xml		requires `w3m` or `lynx` or `elinks` or `html2text`
@@ -229,7 +235,7 @@ the author by email.
 - MacOS X plist		requires `plistutil`
 - binary data		requires `strings`
 - json			requires `jq`
-- Device Tree Blobs(DTB)	requires `dtc`
+- device tree blobs	requires `dtc` (extension dtb or dts)
 
 To show the unmodified html, xml or perl pod text, append a colon to the file
 name. Appending in addition the file type (html, xml, pod) produces a colored

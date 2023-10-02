@@ -89,6 +89,8 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Mon Jun 26 2023 2.08-1 - wp.friebel@gmail.com
+- improved coloring output, support for device tree blob files, bug fixes
 * Sun Jan 08 2023 2.07-1 - wp.friebel@gmail.com
 - support json, mail archives, update man page, other bat/batcat defaults
 * Wed Aug 17 2022 2.06-1 20220817 - wp.friebel@gmail.com
