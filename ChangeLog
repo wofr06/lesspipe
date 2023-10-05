@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.10 Oct 05 2023
+- column does not accept -o option (BSD systems)
 Version 2.09 Oct 03 2023
 - preferred display of csv files is through the program column
 - language recognition for bat improved

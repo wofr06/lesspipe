@@ -89,7 +89,7 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
-* Tue Oct 03 2023 2.09-1 - wp.friebel@gmail.com
+* Tue Oct 05 2023 2.10-1 - wp.friebel@gmail.com
 - added zlib support, recognize jsx and tsx, view csv files using column
 * Mon Jun 26 2023 2.08-1 - wp.friebel@gmail.com
 - improved coloring output, support for device tree blob files, bug fixes
