@@ -30,20 +30,12 @@ EOF
 }
 
 my $bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
-$bash_complete_dir ||= '/usr/share/bash-completion/completions';
-# dynamic loading not working, use the following dir instead:
-$bash_complete_dir = '/etc/bashcompletion.d';
-if ( $opt_prefix ) {
-	$bash_complete_dir = "$ENV{HOME}/.local/share/bash-completion";
-	# dynamic loading not working, use the following dir instead:
-	$bash_complete_dir = "$opt_prefix/share/bash-completion";
-	print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\n";
-} else {
-	$opt_prefix = '/usr/local';
-}
+chomp $bash_complete_dir;
+my $prefix = $opt_prefix || '/usr/local';
+
 # remove trailing slash and trailing bin directory
-print "removed trailing /bin dir from prefix\n" if $opt_prefix =~ m|/bin/?$|;
-$opt_prefix =~ s|(/bin)?/?$||;
+print "removed trailing /bin dir from prefix\n" if $prefix =~ m|/bin/?$|;
+$prefix =~ s|(/bin)?/?$||;
 if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
 	# do nothing
 } elsif ( $opt_shell) {
@@ -61,12 +53,17 @@ if ( ! $opt_nomake ) {
 	while (<DATA>) {
 		next if /bash_complete_dir/ and $no_bash;
 		next if /zsh\/site-functions/ and $no_zsh;
-		s/opt_prefix/$opt_prefix/;
-		s/bash_complete_dir/$bash_complete_dir/;
+		s/opt_prefix/$prefix/;
+		if ($bash_complete_dir and ! $opt_prefix) {
+			s/mkdir.*bash-completion.*/mkdir -p $bash_complete_dir/;
+			s/cp.*bash-completion.*/cp .\/less_completion $bash_complete_dir/;
+		}
 		print OUT;
 	}
 	close OUT;
 }
+$bash_complete_dir = "$opt_prefix/share/bash-completion" if $opt_prefix;
+print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\nOr consider installing the file less_completion in /etc/bashcompletion.d\n";
 
 open F, "lesspipe.sh";
 {
@@ -143,10 +140,10 @@ install:
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
 	mkdir -p $(DESTDIR)$(PREFIX)/share/zsh/site-functions
-	mkdir -p $(DESTDIR)bash_complete_dir
+	mkdir -p $(DESTDIR)$(PREFIX)/share/bash-completion/
 	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(PREFIX)/bin
 	cp ./lesspipe.1 $(DESTDIR)$(PREFIX)/share/man/man1
-	cp ./less_completion $(DESTDIR)bash_complete_dir
+	cp ./less_completion $(DESTDIR)$(PREFIX)/share/bash-completion/
 	cp ./_less $(DESTDIR)$(PREFIX)/share/zsh/site-functions
 	chmod 0755 $(DESTDIR)$(PREFIX)/bin/lesspipe.sh
 	chmod 0755 $(DESTDIR)$(PREFIX)/bin/sxw2txt
