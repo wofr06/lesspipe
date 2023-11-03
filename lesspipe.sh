@@ -782,9 +782,8 @@ ishtml () {
 	has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
 	has_cmd w3m && handle_w3m "$1" && return ||
 	has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
-	# different incompatible versions with the name html2text may let this fail
-	[[ "$1" == https://* ]] && return
-	html2text -utf8 || html2text -from_encoding utf-8
+	# different versions of html2text existing, therefore no encoding handling
+	[[ "$1" == https://* ]] && return ||
 	has_cmd html2text && nodash html2text "$1"
 }
 
