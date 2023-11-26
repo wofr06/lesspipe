@@ -76,9 +76,11 @@ filetype () {
 		mp3)
 			[[ $ftype == mpeg ]] && ftype=mp3 ;;
 		jsx)
-			[[ $fcat == text ]] && ftype=$fext ;;
+			[[ $fcat == text ]] && ftype=jsx ;;
 		tsx)
 			[[ $fcat == text ]] && ftype=typescript-jsx ;;
+		csv)
+			[[ $fcat == text ]] && ftype=csv ;;
 	esac
 	### get file type from 'file' command for an unspecific result
 	if [[ "$fcat" == message && $ftype == plain ]]; then
@@ -583,7 +585,7 @@ isfinal () {
 			has_cmd ccze && [[ $COLOR = *always ]] && ccze -A < "$1"
 			return ;;
 		csv)
-			{ has_cmd column && cmd=(column -s "	,;" -t "$1"); } ||
+			{ has_cmd column && cmd=(istemp "column -s	,; -t" "$1"); } ||
 			{ has_cmd pandoc && cmd=(pandoc -f csv -t plain "$1"); } ;;
 		json)
 			[[ $COLOR = *always ]] && opt=(-C .) || opt=(.)
