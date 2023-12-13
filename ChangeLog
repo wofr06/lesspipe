@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.11 Dec 13 2023
+- fix output of archive listings when no coloring is requested
 - column does not accept std input
 - fix html output with html2text
 - correct location of bash completion directory

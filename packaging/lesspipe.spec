@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.07
+%define packageversion 2.11
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -89,6 +89,8 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Wed Dec 13 2023 2.11-1 - wp.friebel@gmail.com
+- changed output for csv files
 * Tue Oct 05 2023 2.10-1 - wp.friebel@gmail.com
 - added zlib support, recognize jsx and tsx, view csv files using column
 * Mon Jun 26 2023 2.08-1 - wp.friebel@gmail.com
