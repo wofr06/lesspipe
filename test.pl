@@ -67,6 +67,7 @@ print "LESSOPEN=\"$ENV{LESSOPEN}\"\n\n" if $noaction;
 $ENV{LESSQUIET} =1;
 $ENV{LESSCOLORIZER} = 'vimcolor';
 $ENV{LANG} = 'en_US.UTF-8';
+$ENV{LC_ALL} = 'en_US.UTF-8';
 $ENV{TZ} = '';
 (my $dir = $0) =~ s|/[^/]*$|:|;
 $ENV{PATH} = $dir . $ENV{PATH};
@@ -446,9 +447,9 @@ c sub
 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1
-~
+~ 
 LESS= less tests/dir.zip	# do not colorize listing git #140
-= drwxrwxr-x  0 1000   1000        0 Dez 12 20:56 dir/
+~ drwxrwxr-x  0 1000   1000        0 Dec 12 20:56 dir/
 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
