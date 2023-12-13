@@ -444,13 +444,15 @@ less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
 c sub
 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
-less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git issue #1
+less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1
 ~ 
+LESS= less tests/dir.zip	# do not colorize listing git #140
+= drwxrwxr-x  0 1000   1000        0 Dez 12 21:56 dir/
 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
 = test
-less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces git issue 69
+less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces git #69
 ~ .*test\[a\]\(b\)\{c\}
 less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc.
 = test
@@ -462,7 +464,7 @@ less $T/tests/special.tgz=aaa::b::c::d	# file name with colon (use alternate sep
 = test
 less $T/tests/symlink			# symbolic link to file name with special chars
 = test=a
-cat $T/tests/test_zip|less			# can use pipes with LESSOPEN =|-... git issue #2
+cat $T/tests/test_zip|less			# can use pipes with LESSOPEN =|-... git #2
 ~ .*10240.*
 cat $T/tests/test_zip|less - :tests/test.tar	# extract files from piped file
 ~ .* tests/textfile

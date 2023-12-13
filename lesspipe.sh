@@ -385,7 +385,9 @@ get_unpack_cmd () {
 	if [[ -n ${cmd[*]} ]]; then
 		[[ -n "$file2" ]] && file2= && return
 		msg "use ${x}_file${sep}contained_file to view a file in the archive"
-		has_cmd archive_color && colorizer=(archive_color)
+		if [[ $COLOR = --color=always ]]; then
+			has_cmd archive_color && colorizer=(archive_color)
+		fi
 	fi
 }
 
