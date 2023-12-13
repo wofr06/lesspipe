@@ -447,7 +447,7 @@ LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1
 ~ 
 LESS= less tests/dir.zip	# do not colorize listing git #140
-= drwxrwxr-x  0 1000   1000        0 Dez 12 21:56 dir/
+= drwxrwxr-x  0 1000   1000        0 Dez 12 20:56 dir/
 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
