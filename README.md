@@ -192,7 +192,7 @@ the author by email.
 - ar library		requires `bsdtar` or `ar`
 - zip archive		requires `bsdtar` or `unzip`
 - jar archive		requires `bsdtar` or `unzip`
-- rar archive		requires `bsdtar` or `unrar or `rar`
+- rar archive		requires `bsdtar` or `unrar` or `rar`
 - 7-zip archive		requires `7zr`
 - lzip archive		requires `lzip`
 - iso images		requires `bsdtar` or `isoinfo`
