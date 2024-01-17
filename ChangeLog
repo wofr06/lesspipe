@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- use again csvlook for display of csv files if available
+- use csvtable for tabular display of csv files, needs Text::CSV from perl
 Version 2.11 Dec 13 2023
 - fix output of archive listings when no coloring is requested
 - column does not accept std input

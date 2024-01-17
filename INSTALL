@@ -5,12 +5,15 @@ Execute the following commands (for a more detailed description see below):
   ./configure
   # required
   cp lesspipe.sh /usr/local/bin
+
   # optional for colorizing and old openoffice writer formats
   cp code2color archive_color vimcolor sxw2txt lesscomplete /usr/local/bin
+
   # optional for zsh and bash completion (archive contents)
   cp lesscomplete /usr/local/bin           # (zsh and bash)
   cp _less /usr/share/zsh/site-functions   #(zsh)
   cp less_completion /etc/bashcompletion.d #(bash)
+
 or if you prefer make:
 
   make

@@ -213,7 +213,7 @@ the author by email.
 - MS Word (docx)	requires `pandoc` or `docx2txt` or `libreoffice`
 - Powerpoint (pptx)	requires `pptx2md` or `libreoffice`
 - Excel (xlsx)		requires `in2csv` or `xlscat` or `excel2csv` or `libreoffice`
-- csv			requires `column` or `pandoc`
+- csv			requires `csvtable` or `csvlook` or `column` or `pandoc`
 - rtf			requires `unrtf` or `libreoffice`
 - epub			requires `pandoc`
 - html,xml		requires `w3m` or `lynx` or `elinks` or `html2text`
@@ -404,6 +404,7 @@ filtering for certain file types.
 - cabextract           https://www.cabextract.org.uk/ (2019)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
 - ccze                 https://github.com/cornet/ccze (2011)
+- csvtable             https://github.com/wofr06/csvtable (2024)
 - djvutxt              https://sourceforge.net/projects/djvu/ (2021)
 - docx2txt             https://docx2txt.sourceforge.net/ (2014)
 - dvi2tty              https://www.ctan.org/tex-archive/dviware/dvi2tty/ (2016)

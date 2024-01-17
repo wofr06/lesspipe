@@ -587,6 +587,9 @@ isfinal () {
 			has_cmd ccze && [[ $COLOR = *always ]] && ccze -A < "$1"
 			return ;;
 		csv)
+			msg "type -S<ENTER> for better display of very wide tables"
+			{ has_cmd csvtable && csvtable -h >/dev/null 2>&1 && cmd=(csvtable "$1"); } ||
+			{ has_cmd csvlook && cmd=(csvlook -S "$1"); } ||
 			{ has_cmd column && cmd=(istemp "column -s	,; -t" "$1"); } ||
 			{ has_cmd pandoc && cmd=(pandoc -f csv -t plain "$1"); } ;;
 		json)
