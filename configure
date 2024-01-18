@@ -10,10 +10,10 @@ use Getopt::Long;
 # find sxw2txt and other scripts in current dir, if scripts not installed yet
 $ENV{PATH} .= ':.';
 
-use vars qw($opt_help $opt_prefix $opt_nomake $opt_shell);
+use vars qw($opt_help $opt_prefix $opt_nomake $opt_shell $opt_all_completions);
 
 Getopt::Long::Configure("prefix_pattern=--");
-my $result = GetOptions('help+', 'prefix=s', 'shell=s', 'nomake+');
+my $result = GetOptions('help+', 'prefix=s', 'shell=s', 'nomake+', 'all-completions+');
 if ( $ARGV[0] or ! $result or $opt_help) {
 	print << 'EOF';
 Usage: configure [options]
@@ -21,6 +21,7 @@ Options:
  --help			print this message
  --shell=<filename>	specify an alternative shell path (zsh/bash) to use
  --nomake		do not generate a Makefile
+ --all-completions	always install all completions
 Directory and file names:
  --prefix=PREFIX	install lesspipe.sh in PREFIX/bin (/usr/local)
 
@@ -47,8 +48,8 @@ if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
 my @bad = ();
 my $shell = check_shell_vers();
 if ( ! $opt_nomake ) {
-	my $no_bash = grep {/bash/} @bad;
-	my $no_zsh = grep {/zsh/} @bad;
+	my $no_bash = (grep {/bash/} @bad and ! $opt_all_completions);
+	my $no_zsh = (grep {/zsh/} @bad and ! $opt_all_completions);
 	open OUT, ">Makefile";
 	while (<DATA>) {
 		next if /bash_complete_dir/ and $no_bash;
