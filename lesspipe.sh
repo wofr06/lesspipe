@@ -577,7 +577,7 @@ isfinal () {
 		csr)
 			has_cmd openssl && cmd=(istemp "openssl req -text -noout -in" "$1") ;;
 		pgp)
-			has_cmd gpg && cmd=(gpg -d "$1") ;;
+			has_cmd gpg && cmd=(gpg --decrypt --quiet --no-tty --batch --yes "$1") ;;
 		plist)
 			{ has_cmd plistutil && cmd=(istemp "plistutil -i" "$1"); } ||
 			{ has_cmd plutil && cmd=(istemp "plutil -p" "$1"); } ;;
