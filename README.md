@@ -399,7 +399,8 @@ filtering for certain file types.
 (last checked: Jan 21 2023):
 
 ### 11.1 URLs to some utilities (with last known release)
-- 7zr                  https://sourceforge.net/projects/p7zip/ (2016)
+- 7zz                  https://sourceforge.net/projects/sevenzip/ (2023)
+- 7zr (outdated!)      https://sourceforge.net/projects/p7zip/ (2016)
 - antiword             no longer valid: https://www.winfield.demon.nl/ (2005)
 - cabextract           https://www.cabextract.org.uk/ (2019)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)

@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- use 7zip instead of now outdated p7zip if available
 - propagate file extension to newly created temporary files
 - use again csvlook for display of csv files if available
 - use csvtable for tabular display of csv files, needs Text::CSV from perl

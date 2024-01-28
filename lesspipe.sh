@@ -371,6 +371,7 @@ get_unpack_cmd () {
 			{ has_cmd bsdtar && prog=bsdtar; } ||
 			{ has_cmd cabextract && prog=cabextract; } ;;
 		7z-compressed)
+			{ has_cmd 7zz && prog=7zz; } ||
 			{ has_cmd 7zr && prog=7zr; } ||
 			{ has_cmd 7z && prog=7z; } ||
 			{ has_cmd 7za && prog=7za; } ;;
@@ -657,7 +658,7 @@ isarchive () {
 				istemp cabextract2 "$2" "$3" ;;
 			isoinfo)
 				istemp "isoinfo -i" "$2" "-x$3" ;;
-			7za|7zr)
+			7zz|7za|7zr)
 				istemp "$prog e -so" "$2" "$3"
 		esac
 	else
@@ -679,7 +680,7 @@ isarchive () {
 				isoinfo -d -i "$t"| grep -E '^Joliet' && joliet=J
 				separatorline
 				isoinfo -fR"$joliet" -i "$t" ;;
-			7za|7zr)
+			7zz|7za|7zr)
 				istemp "$prog l" "$2"
 		esac
 	fi
