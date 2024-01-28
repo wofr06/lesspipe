@@ -25,8 +25,8 @@ filetype () {
 		declare t
 		t=$(nexttmp)
 		head -c 1000000 > "$t" 2>/dev/null
+		[[ -z $fileext ]] && fname="$t" || fname="$fileext"
 		set "$t" "$2"
-		fname="$fileext"
 	fi
 	fext=$(fileext "$fname")
 	### get file type from mime type
@@ -182,7 +182,7 @@ separatorline () {
 }
 
 nexttmp () {
-	declare new="$tmpdir/lesspipe.$RANDOM"
+	declare new="$tmpdir/lesspipe.$RANDOM.${ft%%:*}"
 	echo "$new"
 }
 

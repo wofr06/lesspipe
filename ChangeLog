@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- propagate file extension to newly created temporary files
 - use again csvlook for display of csv files if available
 - use csvtable for tabular display of csv files, needs Text::CSV from perl
 Version 2.11 Dec 13 2023
