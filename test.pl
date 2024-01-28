@@ -285,13 +285,13 @@ less $T/tests/test_cab:a\ text.gz		# extract gzipped file from cab, needs cabext
 = test
 less tests/archive.tgz:test_cab:a\ text.gz	# (on the fly), needs cabextract
 = test
-less $T/tests/test_7z			# 7z contents, needs 7zr|7za
+less $T/tests/test_7z			# 7z contents, needs 7zz|7zr|7za
 ~ .* testok/aaa.txt
-less tests/archive.tgz:test_7z		# (on the fly), needs 7zr|7za
+less tests/archive.tgz:test_7z		# (on the fly), needs 7zz|7zr|7za
 ~ .* testok/aaa.txt
-less $T/tests/test_7z:testok/a\|b.txt	# extract file from 7z, needs 7zr|7za
+less $T/tests/test_7z:testok/a\|b.txt	# extract file from 7z, needs 7zz|7zr|7za
 = test
-less tests/archive.tgz:test_7z:testok/a\|b.txt	# (on the fly), needs 7zr|7za
+less tests/archive.tgz:test_7z:testok/a\|b.txt	# (on the fly), needs 7zz|7zr|7za
 = test
 less $T/tests/test_iso			# iso9660 contents, needs bsdtar
 ~ .* ISO.TXT
@@ -363,7 +363,7 @@ less tests/filter.tgz:test_odp		# odp, needs libreoffice,html_converter
 ~ \s*test
 less tests/filter.tgz:test_ods		# ods, needs xlscat|libreoffice,html_converter
 ~ test
-less tests/filter.tgz:test_doc		# doc (old), needs wvText|antiword|catdoc|libreoffice
+less tests/filter.tgz:test_doc		# doc (old), needs wvText|catdoc|libreoffice
 ~  *test
 less tests/filter.tgz:test_ppt:ms-powerpoint	# ppt (old), catppt not always working, needs libreoffice,html_converter
 ~ .*1. test|\s*test

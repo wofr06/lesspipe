@@ -193,7 +193,7 @@ the author by email.
 - zip archive		requires `bsdtar` or `unzip`
 - jar archive		requires `bsdtar` or `unzip`
 - rar archive		requires `bsdtar` or `unrar` or `rar`
-- 7-zip archive		requires `7zr`
+- 7-zip archive		requires `7zz` or `7zr` or `7z` or `7za`
 - lzip archive		requires `lzip`
 - iso images		requires `bsdtar` or `isoinfo`
 - rpm			requires `rpm2cpio` and `cpio` or `bsdtar`
@@ -204,7 +204,7 @@ the author by email.
 - directory		displayed using `ls -lA`
 - nroff(man)		requires `groff` or `mandoc`
 - shared library	requires `nm`
-- MS Word (doc)		requires `wvText` or `antiword` or `catdoc` or `libreoffice`
+- MS Word (doc)		requires `wvText` or `catdoc` or `libreoffice`
 - Powerpoint (ppt)	requires `catppt`
 - Excel (xls)		requires `in2csv` (csvkit) or `xls2csv`
 - odt			requires `pandoc` or `odt2txt` or `libreoffice`
@@ -401,7 +401,6 @@ filtering for certain file types.
 ### 11.1 URLs to some utilities (with last known release)
 - 7zz                  https://sourceforge.net/projects/sevenzip/ (2023)
 - 7zr (outdated!)      https://sourceforge.net/projects/p7zip/ (2016)
-- antiword             no longer valid: https://www.winfield.demon.nl/ (2005)
 - cabextract           https://www.cabextract.org.uk/ (2019)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
 - ccze                 https://github.com/cornet/ccze (2011)

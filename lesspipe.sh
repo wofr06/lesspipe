@@ -530,7 +530,6 @@ isfinal () {
 		msword)
 			t="$1"; [[ "$t" == - ]] && t=/dev/stdin
 			{ has_cmd wvText && cmd=(istemp wvText "$t" /dev/stdout); } ||
-			{ has_cmd antiword && cmd=(antiword "$1"); } ||
 			{ has_cmd catdoc && cmd=(catdoc "$1"); } ||
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
 		ms-powerpoint)
