@@ -396,33 +396,33 @@ filtering for certain file types.
 
 ## 11. External links
 
-(last checked: Jan 21 2023):
+(last checked: Jan 29 2024):
 
 ### 11.1 URLs to some utilities (with last known release)
 - 7zz                  https://sourceforge.net/projects/sevenzip/ (2023)
 - 7zr (outdated!)      https://sourceforge.net/projects/p7zip/ (2016)
-- cabextract           https://www.cabextract.org.uk/ (2019)
+- cabextract           https://www.cabextract.org.uk/ (2023)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
-- ccze                 https://github.com/cornet/ccze (2011)
+- ccze                 https://github.com/software-revive/ccze-rv (2020)
 - csvtable             https://github.com/wofr06/csvtable (2024)
-- djvutxt              https://sourceforge.net/projects/djvu/ (2021)
+- djvutxt              https://djvu.sourceforge.net/ (2020)
 - docx2txt             https://docx2txt.sourceforge.net/ (2014)
 - dvi2tty              https://www.ctan.org/tex-archive/dviware/dvi2tty/ (2016)
 - excel2csv            https://github.com/informationsea/excel2csv (2018)
-- html2text            no longer valid: https://www.mbayer.de/html2text/ (2016 version 1.3.2a)
+- html2text            https://github.com/grobian/html2text (2023)
 - id3v2                https://id3v2.sourceforge.net/ (2010)
-- lzip                 https://download.savannah.gnu.org/releases/lzip/ (2022)
-- matdump              https://github.com/tbeu/matio (2022)
-- mediainfo            https://mediaarea.net/MediaInfo/ (2022)
+- lzip                 https://www.nongnu.org/lzip/lzip.html (2024)
+- matdump              https://sourceforge.net/projects/matio/ (2023)
+- mediainfo            https://mediaarea.net/MediaInfo/ (2023)
 - odt2txt              https://github.com/dstosberg/odt2txt (2017)
 - pandoc               https://pandoc.org/ (2023)
-- pptx2md              https://github.com/ssine/pptx2md (2022)
+- pptx2md              https://github.com/ssine/pptx2md (2023)
 - tarcolor             https://github.com/msabramo/tarcolor (2014)
 - archive_color        modified version of tarcolor (contained in this package)
-- unrtf                https://ftp.gnu.org/gnu/unrtf/ (2018)
+- unrtf                https://www.gnu.org/software/unrtf/ (2018)
 - wvText               https://github.com/AbiWord/wv/ (2014)
-- xlscat               https://metacpan.org/pod/Spreadsheet::Read (2023)
-- sxw2txt              https://vinc17.net/software/sxw2txt (2015)
+- xlscat               https://metacpan.org/pod/Spreadsheet::Read (2024)
+- sxw2txt              https://vinc17.net/software/sxw2txt (2010)
 - dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2023)
 
 ### 11.2 References
