@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # lesscomplete, a helper script for the _less completion script
+# synced with lesspipe 2.11
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 #( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 
@@ -8,10 +9,11 @@ has_cmd () {
 }
 
 fileext () {
-	case "$1" in
-		.*.*) extension=${1##*.};;
+	fn=${1##*/}
+	case "$fn" in
+		.*.*) extension=${fn##*.};;
 		.*) extension=;;
-		*.*) extension=${1##*.};;
+		*.*) extension=${fn##*.};;
 	esac
 	echo "$extension"
 }
@@ -22,9 +24,9 @@ filetype () {
 	if [[ "$1" == - || -z $1 ]]; then
 		declare t
 		t=$(nexttmp)
-		head -c 40000 > "$t" 2>/dev/null
+		head -c 1000000 > "$t" 2>/dev/null
+		[[ -z $fileext ]] && fname="$t" || fname="$fileext"
 		set "$t" "$2"
-		fname="$fileext"
 	fi
 	fext=$(fileext "$fname")
 	### get file type from mime type
@@ -32,10 +34,10 @@ filetype () {
 	ft=$(file -L -s -b --mime "$1" 2> /dev/null)
 	[[ $ft == *=* ]] && fchar="${ft##*=}" || fchar=utf-8
 	fcat="${ft%/*}"
-	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-}"
+	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-script.}"; ft="${ft#x-}"
 	ftype="${ft#vnd\.}"
 	### get file type from 'file' command for an unspecific result
-	if [[ "$fcat" == application && "$ftype" == octet-stream ]]; then
+	if [[ "$fcat" == application && "$ftype" == octet-stream || "$fcat" == text && $ftype == plain ]]; then
 		ft=$(file -L -s -b "$1" 2> /dev/null)
 		if [[ $ft == data ]]; then
 			case "$fext" in
@@ -46,11 +48,12 @@ filetype () {
 			esac
 		fi
 	fi
+
 	echo "$ftype:$fchar:$fcat"
 }
 
 nexttmp () {
-	declare new="$tmpdir/lesspipe.$RANDOM"
+	declare new="$tmpdir/lesspipe.$RANDOM.${ft%%:*}"
 	echo "$new"
 }
 
@@ -70,8 +73,8 @@ istemp () {
 show () {
 	file1="${1%%"$sep"*}"
 	rest1="${1#"$file1"}"
-	while [[ "$rest1" == $sep$sep* ]]; do
-		if [[ "$rest1" == $sep$sep ]]; then
+	while [[ "$rest1" == "$sep$sep"* ]]; do
+		if [[ "$rest1" == "$sep$sep" ]]; then
 			break
 		else
 			rest1="${rest1#"$sep$sep"}"
@@ -99,14 +102,14 @@ show () {
 	rest2="${rest11#"$file2"}"
 	rest11="$rest1"
 
-	if [[ "$cmd" == "" ]]; then
+	if [[ "${cmd[*]}" == "" ]]; then
 		ft=$(filetype "$file1")
 		get_unpack_cmd "$ft" "$file1" "$rest1"
 		if [[ "$cmd" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
 			# if nothing to convert, exit without a command
-			#[[ $colorizer == cat ]] && colorizer=
+
 			isfinal "$ft" "$file1" "$rest11"
 		fi
 	elif [[ "$c1" == "" ]]; then
@@ -161,7 +164,10 @@ get_unpack_cmd () {
 	fchar="${1%:*}"; fchar="${fchar#*:}"
 	fcat="${1##*:}"
 	x="${1%%:*}"
-	cmd=
+	cmd=()
+	if [[ "$3" == $sep$sep ]]; then
+		return
+	fi
 	declare t
 	# uncompress
 	case $x in
@@ -190,13 +196,13 @@ get_unpack_cmd () {
 			prog=tar
 			has_cmd bsdtar && prog=bsdtar ;;
 		rpm)
-			{ has_cmd cpio || has_cmd bsdtar; } &&
-			{ has_cmd rpm2cpio && cmd=(isrpm "$2" "$file2"); } ;;
+			{ has_cmd cpio && has_cmd rpm2cpio; } ||
+			{ has_cmd bsdtar; } && cmd=(isrpm "$2" "$file2") ;;
 		java-archive|zip)
 			{ has_cmd bsdtar && prog=bsdtar; } ||
 			{ has_cmd unzip && prog=unzip; } ;;
 		debian*-package)
-			has_cmd ar && cmd=(isdeb "$2" "$file2") ;;
+			{ has_cmd ar || has_cmd bsdtar; } && cmd=(isdeb "$2" "$file2") ;;
 		rar)
 			{ has_cmd bsdtar && prog=bsdtar; } ||
 			{ has_cmd unrar && prog=unrar; } ||
@@ -208,6 +214,7 @@ get_unpack_cmd () {
 			{ has_cmd bsdtar && prog=bsdtar; } ||
 			{ has_cmd 7zz && prog=7zz; } ||
 			{ has_cmd 7zr && prog=7zr; } ||
+			{ has_cmd 7z && prog=7z; } ||
 			{ has_cmd 7za && prog=7za; } ;;
 		iso9660-image)
 			{ has_cmd bsdtar && prog=bsdtar; } ||
@@ -278,12 +285,12 @@ cabextract2 () {
 isrpm () {
 	if [[ -z "$2" ]]; then
 		if has_cmd bsdtar; then
-			rpm2cpio "$1" 2>/dev/null | bsdtar tf -
+			bsdtar tf "$1"
 		else
 			rpm2cpio "$1" 2>/dev/null|cpio -i -t 2>/dev/null
 		fi
 	elif has_cmd bsdtar; then
-		rpm2cpio "$1" 2>/dev/null | bsdtar xOf - "$2"
+		bsdtar xOf "$1" "$2"
 	else
 		rpm2cpio "$1" 2>/dev/null|cpio -i --quiet --to-stdout "$2"
 	fi
@@ -303,11 +310,11 @@ isdeb () {
 			bsdtar xOf "$1" "$data" | bsdtar xOf - "$2"
 		fi
 	else
-		data=$(istemp "ar t" "$1"|grep data)
+		data=$(ar t "$1"|grep data)
 		ft=$(ar p "$1" "$data" | filetype -)
 		get_unpack_cmd "$ft" -
 		if [[ -z "$2" ]]; then
-			istemp "ar p" "$1" "$data" | "${cmd[@]}" | tar tf -
+			ar p "$1" "$data" | "${cmd[@]}" | tar tf -
 		else
 			ar p "$1" "$data" | "${cmd[@]}" | tar xOf - "$2"
 		fi
@@ -318,14 +325,12 @@ isdeb () {
 set +o noclobber
 setopt sh_word_split 2>/dev/null
 
-sep=:												# file name separator
-altsep='='										# alternate separator character
+sep=:					# file name separator
+altsep='='				# alternate separator character
 if [[ -e "$1" && "$1" == *"$sep"* ]]; then
 	sep=$altsep
 elif [[ "$1" == *"$altsep"* ]]; then
 	[[ -e "${1%%"$altsep"*}" ]] && sep=$altsep
-elif [[ "$1" == ~* ]]; then
-	set "$HOME${1#\~}" "$1"
 fi
 
 tmpdir=${TMPDIR:-/tmp}/lesspipe."$RANDOM"
