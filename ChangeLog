@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- respect bat options from LESSCOLORIZER
 - propagate lesspipe changes to lesscomplete
 - don't use antiword any longer, outdated
 - use 7zip instead of now outdated p7zip if available

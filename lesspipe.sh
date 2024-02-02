@@ -446,6 +446,8 @@ has_colorizer () {
 			if [[ -r "$HOME/.config/bat/config" ]]; then
 				grep -q -e '^--style' "$HOME/.config/bat/config" || opt+=(--style="${style%% *}")
 				grep -q -e '^--theme' "$HOME/.config/bat/config" || opt+=(--theme="${theme%% *}")
+			else
+				opt+=(--style="${style%% *}" --theme="${theme%% *}")
 			fi
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
