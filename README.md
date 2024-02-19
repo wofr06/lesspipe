@@ -114,7 +114,11 @@ the author by email.
 ```
  If `lesspipe.sh` is not in the UNIX search path or if the wrong `lesspipe.sh` is
  found in the search path, then the full path to `lesspipe.sh` should be given
- in the above commands.
+ in the above commands. The above commands work only in the described manner
+ if the file name is lesspipe.sh.
+
+ If it is installed under a different name then calling it without an argument
+ will work as a filter with LESSQUIET set and expecting input from STDIN.
 
  The command to set **LESSOPEN** can also be displayed by calling `lesspipe.sh`
  without arguments. This can even be used to set **LESSOPEN** directly:

@@ -53,8 +53,13 @@ This can even be used to set \fBLESSOPEN\fP directly:
 .I lesspipe.sh|source /dev/stdin
 (zsh)
 .RE
+The above commands work only in the described manner if the file name is
+\fBlesspipe.sh\fP.
+If it is installed under a different name then calling it without an argument
+will work as a filter with \fBLESSQUIET\fP set and expecting input from STDIN.
+.PP
 Having set the environment variable as described above, \fBless\fP
-will then display textual information for a wide range of file formats.
+:will then display textual information for a wide range of file formats.
 .PP
 The filter is normally not called if input is piped to less as in
 .RS

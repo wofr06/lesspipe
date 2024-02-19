@@ -829,7 +829,7 @@ if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
 	nexttmp >/dev/null
 fi
 
-if [[ -z "$1" ]]; then
+if [[ -z "$1" && "$0" == */lesspipe.sh ]]; then
 	[[ "$0" == /* ]] || pat=$(pwd)/
 	if [[ "$SHELL" == *csh ]]; then
 		echo "setenv LESSOPEN \"|$pat$0 %s\""
@@ -843,5 +843,10 @@ else
 	elif has_cmd lessfilter; then
 		lessfilter "$1" && exit 0
 	fi
-	show "$@"
+	if [[ -z "$1" ]]; then
+		LESSQUIET=1
+		show -
+	else
+		show "$@"
+	fi
 fi
