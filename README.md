@@ -33,11 +33,12 @@ the author by email.
  7. Displaying files with special characters in the file name
  8. Tab completion for zsh and bash
  9. User defined filtering
- 10. (Old) documentation about lesspipe
- 11. External links
+ 10. Debugging
+ 11. (Old) documentation about lesspipe
+ 12. External links
     -   URLs to some utilities
     -  References
- 12. Contributors
+ 13. Contributors
 
 ## 0. Motivation
 
@@ -386,7 +387,22 @@ the filtering is left to lesspipe.sh.
 This mechanism can be used to add filtering for new formats or e.g. inhibit
 filtering for certain file types.
 
-## 10. (Old) documentation about lesspipe
+## 10. Debugging
+
+If the script does not work as expected for a given file contents, one could
+try to output the commands executed by lesspipe.sh. That is achieved by
+
+```
+        bash -x lesspipe.sh file_name > /dev/null # or zsh -x
+```
+It is also possible setting temporarily the **LESSOPEN** variable to e.g.
+```
+        LESSOPEN='|bash -x /usr/local/bin/lesspipe.sh %s'
+```
+and then use `less` with the file to be displayed. The normal output goes to
+STDOUT and the commands executed to STDERR.
+
+## 11. (Old) documentation about lesspipe
 
  In English
  - https://ref.web.cern.ch/CERN/CNL/2002/001/unix-less/
@@ -398,11 +414,11 @@ filtering for certain file types.
  - https://www.linux-community.de/ausgaben/linuxuser/2002/04/lesspipe/
  - https://www.linux-magazin.de/ausgaben/2022/07/lesspipe-2-0/
 
-## 11. External links
+## 12. External links
 
 (last checked: Jan 29 2024):
 
-### 11.1 URLs to some utilities (with last known release)
+### 12.1 URLs to some utilities (with last known release)
 - 7zz                  https://sourceforge.net/projects/sevenzip/ (2023)
 - 7zr (outdated!)      https://sourceforge.net/projects/p7zip/ (2016)
 - cabextract           https://www.cabextract.org.uk/ (2023)
@@ -429,13 +445,13 @@ filtering for certain file types.
 - sxw2txt              https://vinc17.net/software/sxw2txt (2010)
 - dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2023)
 
-### 11.2 References
+### 12.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)
 - [2] http://www.darwinsys.com/file/		(file)
 - [3] https://github.com/wofr06/lesspipe
 - [5] http://www.palfrader.org/code2html/	(code2html)
 
-## 12. Contributors
+## 13. Contributors
 
  The script lesspipe.sh is constantly enhanced by suggestions from users and
  reporting bugs or deficiencies. Thanks to (in alphabetical order):
