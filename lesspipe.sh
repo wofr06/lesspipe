@@ -517,18 +517,15 @@ isfinal () {
 				{ has_cmd pandoc && istemp "pptx2md --disable-image --disable-wmf \
 					-o $t2" "$1" && cmd=(pandoc -f markdown -t plain "$t2"); }; } ||
 			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ppt); } ;;
-		xlsx)
-			{ has_cmd xlscat && cmd=(istemp xlscat "$1"); } ||
-			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" xlsx); } ;;
+		xlsx|ods)
+			{ has_cmd xlscat && cmd=(istemp "xlscat -L -R all" "$1"); } ||
+			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" "$x"); } ;;
 		odt)
 			{ has_cmd odt2txt && cmd=(istemp odt2txt "$1"); } ||
 			{ has_cmd pandoc && cmd=(pandoc -f odt -t plain "$1"); } ||
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
 		odp)
 			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" odp); } ;;
-		ods)
-			{ has_cmd xlscat && t=$t.ods && cat "$1" > "$t" && cmd=(xlscat "$t"); } ||
-			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ods); } ;;
 		msword)
 			t="$1"; [[ "$t" == - ]] && t=/dev/stdin
 			{ has_cmd wvText && cmd=(istemp wvText "$t" /dev/stdout); } ||
