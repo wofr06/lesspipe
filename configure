@@ -32,7 +32,7 @@ EOF
 
 my $bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
 chomp $bash_complete_dir;
-my $prefix = $opt_prefix || '/usr/local';
+my $prefix = $opt_prefix || $ENV{PREFIX} || '/usr/local';
 
 # remove trailing slash and trailing bin directory
 print "removed trailing /bin dir from prefix\n" if $prefix =~ m|/bin/?$|;
@@ -63,7 +63,7 @@ if ( ! $opt_nomake ) {
 	}
 	close OUT;
 }
-$bash_complete_dir = "$opt_prefix/share/bash-completion" if $opt_prefix;
+$bash_complete_dir = "$prefix/share/bash-completion";
 print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\nOr consider installing the file less_completion in /etc/bashcompletion.d\n";
 
 open F, "lesspipe.sh";
