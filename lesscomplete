@@ -323,13 +323,14 @@ isdeb () {
 # the main program
 set +o noclobber
 setopt sh_word_split 2>/dev/null
-
+a="${1/#\~/$HOME}"
+a="${a//\\}"
 sep=:					# file name separator
 altsep='='				# alternate separator character
-if [[ -e "$1" && "$1" == *"$sep"* ]]; then
+if [[ -e "$a" && "$a" == *"$sep"* ]]; then
 	sep=$altsep
-elif [[ "$1" == *"$altsep"* ]]; then
-	[[ -e "${1%%"$altsep"*}" ]] && sep=$altsep
+elif [[ "$a" == *"$altsep"* ]]; then
+	[[ -e "${a%%"$altsep"*}" ]] && sep=$altsep
 fi
 
 tmpdir=${TMPDIR:-/tmp}/lesspipe."$RANDOM"
@@ -344,8 +345,8 @@ t=$(nexttmp)
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
 	cat > "$t"
 	[[ -n "$fext" ]] && t="$t$sep$fext"
-	set "$1" "$t"
+	a="$t"
 	nexttmp >/dev/null
 fi
 
-show "$@"
+show "$a"
