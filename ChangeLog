@@ -1,6 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.12 Mar 18 2024
+- improve completion for file names with special chars
+- better output when using xlscat
 - respect bat options from LESSCOLORIZER
 - propagate lesspipe changes to lesscomplete
 - don't use antiword any longer, outdated

@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.11
+%define packageversion 2.12
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -89,6 +89,8 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Mon Mar 18 2024 2.12-1 - wp.friebel@gmail.com
+- improved completion mechanism
 * Wed Dec 13 2023 2.11-1 - wp.friebel@gmail.com
 - changed output for csv files
 * Tue Oct 05 2023 2.10-1 - wp.friebel@gmail.com
