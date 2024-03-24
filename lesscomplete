@@ -210,18 +210,26 @@ get_unpack_cmd () {
 		ms-cab-compressed)
 			{ has_cmd bsdtar && prog=bsdtar; } ||
 			{ has_cmd cabextract && prog=cabextract; } ;;
-		7z-compressed)
-			{ has_cmd 7zz && prog=7zz; } ||
-			{ has_cmd 7zr && prog=7zr; } ||
-			{ has_cmd 7z && prog=7z; } ||
-			{ has_cmd 7za && prog=7za; } ;;
 		iso9660-image)
 			{ has_cmd bsdtar && prog=bsdtar; } ||
 			{ has_cmd isoinfo && prog=isoinfo; } ;;
+		cpio)
+			{ has_cmd cpio && prog=cpio; } ||
+			{ has_cmd bsdtar && prog=bsdtar; } ;;
 		archive)
 			prog='ar'
 			has_cmd bsdtar && prog=bsdtar
 	esac
+	# 7z formats and fall back to 7z supported formats
+	if [[ -z $prog ]]; then
+		case "$x" in
+			7z-compressed|lzma|xz|cab|arj|bzip2|cpio|iso)
+				{ has_cmd 7zz && prog=7zz; } ||
+				{ has_cmd 7zr && prog=7zr; } ||
+				{ has_cmd 7z && prog=7z; } ||
+				{ has_cmd 7za && prog=7za; } ;;
+		esac
+	fi
 	[[ -n $prog ]] && cmd=(isarchive "$prog" "$2" "$file2")
 	if [[ -n ${cmd[0]} ]]; then
 		[[ -n "$file2" ]] && file2= && return
@@ -251,6 +259,12 @@ isarchive () {
 				istemp cabextract2 "$2" "$3" ;;
 			isoinfo)
 				istemp "isoinfo -i" "$2" "-x$3" ;;
+			cpio)
+				if [[ "$2" == - ]]; then
+					cpio -i --quiet --to-stdout "$3"
+				else
+					cpio -i --quiet --to-stdout --file "$2" "$3"
+				fi ;;
 			7zz|7za|7zr)
 				istemp "$prog e -so" "$2" "$3"
 		esac
@@ -271,6 +285,12 @@ isarchive () {
 				istemp "isoinfo -d -i" "$2" >/dev/null
 				istemp "isoinfo -d -i" "$t"| grep -E '^Joliet' && joliet=J
 				isoinfo -fR"$joliet" -i "$t" ;;
+			cpio)
+				if [[ "$2" == - ]]; then
+					cpio -t --quiet
+				else
+					cpio -t --quiet --file "$2"
+				fi ;;
 			7zz|7za|7zr)
 				istemp "$prog l" "$2"|grep -E '^[0-9][0-9][0-9[0-9]'|cut -c 54-|grep -Ev ' files$'
 		esac

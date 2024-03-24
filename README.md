@@ -188,8 +188,8 @@ the author by email.
 ### 4.1 Supported compression methods and archive formats
 - gzip, compress	requires `gzip`
 - bzip2			requires `bzip2`
-- lzma			requires `lzma`
-- xz			requires `xz`
+- lzma			requires `lzma` or `7z`
+- xz			requires `xz` or `7z`
 - zstd			requires `zstd`
 - brotli		requires `bro`
 - lz4			requires `lz4`
@@ -200,10 +200,11 @@ the author by email.
 - rar archive		requires `bsdtar` or `unrar` or `rar`
 - 7-zip archive		requires `7zz` or `7zr` or `7z` or `7za`
 - lzip archive		requires `lzip`
-- iso images		requires `bsdtar` or `isoinfo`
+- iso images		requires `bsdtar` or `isoinfo` or `7z`
 - rpm			requires `rpm2cpio` and `cpio` or `bsdtar`
 - Debian		requires `bsdtar` or `ar`
-- cab			requires `cabextract`
+- cab			requires `cabextract` or `7z`
+- cpio			requires `cpio` or `bsdtar` or `7z`
 
 ### 4.2 List of preprocessed file types
 - directory		displayed using `ls -lA`

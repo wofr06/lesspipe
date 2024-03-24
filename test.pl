@@ -317,6 +317,8 @@ less $T/tests/test_ar:a=b			# extract file from ar
 = test
 less tests/archive.tgz:test_ar:a=b	# (on the fly)
 = test
+less tests/archive.tgz:test_cpio:textfile	# (on the fly) needs cpio
+= test
 ### uncompress tests not covered in archive tests
 less tests/compress.tgz:test.tar.bz2:tests/textfile	# extract from bzip2
 = test
@@ -381,9 +383,7 @@ less tests/filter.tgz:test_so		# shared library (.so)
 ~ .* T test
 less tests/filter.tgz:test.pod		# pod text, needs pod2text|perldoc
 ~     test
-less tests/filter.tgz:test.pod		# perl storable, needs perl
-~     test
-less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoct
+less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoc
 ~ test
 less tests/filter.tgz:test_nc4		# netcdf, needs h5dump|ncdump
 ~ data:|\s*DATA .

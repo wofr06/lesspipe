@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- support for cpio archives
+- fall back to 7z for supported formats
 Version 2.12 Mar 18 2024
 - improve completion for file names with special chars
 - better output when using xlscat
