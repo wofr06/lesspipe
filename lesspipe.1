@@ -15,10 +15,10 @@ With the help of that filter \fBless\fP
 will display the uncompressed contents of compressed (\fIgzip, bzip2,
 compress, zstd, lz4, lzip, xz, lzma or brotli\fP) files. For files
 containing archives and directories, a table of contents will be displayed
-(\fItar, ar, zip, i7-zip, rar, jar, cpio, rpm, deb ms-cabinet and iso formats\fP).
+(\fItar, ar, zip, 7-zip, rar, jar, cpio, rpm, deb ms-cabinet and iso formats\fP).
 Many other files will be reformatted for display. It includes
 \fIpdf, dvi, markdown, Office (MS and Openoffice)\fP suites formats,
-\fINetCDF, matlab, device tree blob, html\fP and \fImedia (image, audio and
+\fINetCDF, matlab, device tree blob, html, xml\fP and \fImedia (image, audio and
 video)\fP formats. This does require helper programs being installed.
 .PP
 The filter can also be applied recursively to extract and display
@@ -72,22 +72,27 @@ be forced by starting \fBLESSOPEN\fP with the characters \fI|-\fP.
 and command errors is implemented only partly, usually on failures of
 commands within \fBlesspipe.sh\fP the error messages get displayed.
 .PP
-The now obsolete variable \fBLESS_ADVANCED_PREPROCESSOR\fP
-was used to decide, whether \fIhtml\fP, \fIxml\fP and \fIperl pod\fP  should
-be shown as pure text or not. This has been changed, these formats are now
-always interpreted, unless a colon is appended to the file name. If the
-correct file type (\fIhtml\fP, \fIxml\fP, \fIpod\fP) follows, the output can
-get colorized (see below).
-.PP
-.RS
-Example: \fIless index.html:html\fP
-.RE
-.PP
 To suppress informal messages in the first line of the filter output the
 ENV variable \fBLESSQUIET\fP can be set to a nonempty value.
 .PP
 To disengage the filter temporarily a colon can be appended to the file name.
 If the file name contains a colon, then an equal sign should be used instead.
+.SH HTML, XML and Perl POD Files
+Files in the \fIhtml\fP, \fIxml\fP and \fIperl pod\fP format are always
+rendered. Sometimes however the original contents of the file should be viewed
+instead. As mentioned before that can be achieved by appending a colon to the
+file name. If the correct file type (\fIhtml\fP, \fIxml\fP, \fIpod\fP) follows,
+the output can get colorized (see also the section below).
+.PP
+.RS
+Example: \fIless index.html:html\fP
+.RE
+.PP
+If the binary \fIxmq\fP is installed, then \fIxml\fP is rendered differently,
+so that the xml structure is better recognized. A similar display for
+\fIhtml\fP contents using \fIxmq\fP is achieved by appending a colon to the
+file name. To get the original html file contents, two colons are
+required in this case.
 .SH OUTPUT COLORIZATION
 The filter is able to do syntax highlighting for a wide variety of
 file types. If installed, \fIbat\fP/\fIbatcat\fP is used for

@@ -345,7 +345,7 @@ less $T/tests/test_plain			# plain text, no output from lesspipe.sh
 = test=a
 less tests/filter.tgz:test_html		# html text, needs html_converter
 ~ \s*test
-less tests/filter.tgz:test_html:	# html unmodified text
+less tests/filter.tgz:test_html::	# html unmodified text
 ~ </head>
 less tests/filter.tgz:test_pdf		# pdf, needs pdftotext|pdftohtml,html_converter|pdfinfo
 = test

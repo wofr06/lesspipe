@@ -222,7 +222,7 @@ the author by email.
 - csv			requires `csvtable` or `csvlook` or `column` or `pandoc`
 - rtf			requires `unrtf` or `libreoffice`
 - epub			requires `pandoc`
-- html,xml		requires `w3m` or `lynx` or `elinks` or `html2text`
+- html,xml		requires one of `xmq`, `w3m`, `lynx`, `elinks` or `html2text`
 - pdf			requires `pdftotext` or `pdftohtml`
 - perl pod		requires `pod2text` or `perldoc`
 - dvi			requires `dvi2tty`
@@ -243,9 +243,16 @@ the author by email.
 - json			requires `jq`
 - device tree blobs	requires `dtc` (extension dtb or dts)
 
-To show the unmodified html, xml or perl pod text, append a colon to the file
-name. Appending in addition the file type (html, xml, pod) produces a colored
-output if the conditions for colorizing (see below) are met.
+Files in the html, xml and perl pod format are always rendered. Sometimes
+however the original contents of the file should be viewed instead.
+That can be achieved by appending a colon to the file name. If the correct
+file type (html, xml, pod) follows, the output can get colorized (see also
+the section below).
+
+If the binary xmq is installed, then xml is rendered differently, so that
+the xml structure is better recognized. A similar display for html contents
+using xmq is achieved by appending a colon to the file name. To get the
+original html file contents, two colons are required in this case.
 
 ### 4.3 Conversion of files with alternate character encoding
  If the file utility reports text with an encoding different from the one
@@ -445,6 +452,7 @@ STDOUT and the commands executed to STDERR.
 - xlscat               https://metacpan.org/pod/Spreadsheet::Read (2024)
 - sxw2txt              https://vinc17.net/software/sxw2txt (2010)
 - dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2023)
+- xmq                  https://github.com/libxmq/xmq/releases/latest (2024)
 
 ### 12.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)

@@ -419,12 +419,12 @@ analyze_args () {
 	COLOR="--color=auto"
 	has_cmd tput && colors=$(tput colors) || colors=0
 	if [[ $colors -ge 8 ]]; then
-		[[ $LESS =~ -[A-Za-z~]*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
+		lessarg="$LESS $lessarg"
 		# shellcheck disable=SC2206
 		r_string=($lessarg)
 		for i in "${r_string[@]}"
 		do
-			[[ $i =~ [\s]-[A-Za-z~]*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
+			[[ $i =~ ^-[A-Za-z~]*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
 		done
 	fi
 	# last argument starting with colon or equal sign is used for piping into less
@@ -481,6 +481,11 @@ has_colorizer () {
 
 isfinal () {
 	if [[ "$2" == *$sep ]]; then
+		if [[ "$2" == "$sep" && "$x" == html ]]; then
+			colarg="--mono"
+			[[ $COLOR == *always ]] && colarg="--color"
+			has_cmd xmq && msg "xmq output, append :: to the filename to see the original contents" && xmq --html "$1" render-terminal "$colarg" && return
+		fi
 		cat "$1"
 		return
 	fi
@@ -497,7 +502,12 @@ isfinal () {
 				fi
 			fi
 			msg="$x: showing the output of ${cmd[*]}" ;;
-		html|xml)
+		xml)
+			colarg="--mono"
+			[[ $COLOR == *always ]] && colarg="--color"
+			{ [[ -z $file2 ]] && has_cmd xmq && cmd=(xmq --xml "$1" render-terminal "$colarg"); } ||
+			{ [[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1"); } ;;
+		html)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
 		dtb|dts)
 			has_cmd dtc && cmd=(isdtb "$1") ;;
