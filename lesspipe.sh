@@ -141,6 +141,8 @@ filetype () {
 		if [[ $fchar != binary ]]; then
 		# text only file formats
 			case "$fext" in
+				html|xml)
+					ftype="$fext" ;;
 				pod)
 					ftype=pod ;;
 				pm)
