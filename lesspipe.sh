@@ -2,7 +2,6 @@
 # lesspipe.sh, a preprocessor for less
 lesspipe_version=2.12
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
-#( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 
 has_cmd () {
 	command -v "$1" > /dev/null
@@ -11,9 +10,9 @@ has_cmd () {
 fileext () {
 	fn=${1##*/}
 	case "$fn" in
-		.*.*) extension=${fn##*.};;
-		.*) extension=;;
-		*.*) extension=${fn##*.};;
+		.*.*) extension=${fn##*.} ;;
+		.*) extension= ;;
+		*.*) extension=${fn##*.} ;;
 	esac
 	echo "$extension"
 }
@@ -75,12 +74,10 @@ filetype () {
 			[[ $ftype == json ]] && ftype=ipynb ;;
 		mp3)
 			[[ $ftype == mpeg ]] && ftype=mp3 ;;
-		jsx)
-			[[ $fcat == text ]] && ftype=jsx ;;
+		jsx|csv)
+			[[ $fcat == text ]] && ftype="$fext" ;;
 		tsx)
 			[[ $fcat == text ]] && ftype=typescript-jsx ;;
-		csv)
-			[[ $fcat == text ]] && ftype=csv ;;
 	esac
 	### get file type from 'file' command for an unspecific result
 	if [[ "$fcat" == message && $ftype == plain ]]; then
@@ -133,30 +130,18 @@ filetype () {
 		case "$fext" in
 			crt|pem)
 				ftype=x509 ;;
-			crl)
-				ftype=crl ;;
-			csr)
-				ftype=csr ;;
+			crl|csr)
+				ftype="$fext" ;;
 		esac
 		if [[ $fchar != binary ]]; then
 		# text only file formats
 			case "$fext" in
-				html|xml)
+				html|htm|xml|pod|log)
 					ftype="$fext" ;;
-				pod)
-					ftype=pod ;;
 				pm)
 					ftype=perl ;;
-				crt|pem)
-					ftype=x509 ;;
-				crl)
-					ftype=crl ;;
-				csr)
-					ftype=csr ;;
 				md|MD|mkd|markdown|rst)
 					ftype=markdown ;;
-				log)
-					ftype=log ;;
 				ebuild|eclass)
 					ftype='sh' ;;
 			esac
@@ -484,9 +469,8 @@ has_colorizer () {
 isfinal () {
 	if [[ "$2" == *$sep ]]; then
 		if [[ "$2" == "$sep" && "$x" == html ]]; then
-			colarg="--mono"
-			[[ $COLOR == *always ]] && colarg="--color"
-			has_cmd xmq && msg "xmq output, append :: to the filename to see the original contents" && xmq --html "$1" render-terminal "$colarg" && return
+			[[ $COLOR == *always ]] && colarg="--color" || colarg="--mono"
+			has_cmd xmq && isxmq "$1" html && return
 		fi
 		cat "$1"
 		return
@@ -505,10 +489,9 @@ isfinal () {
 			fi
 			msg="$x: showing the output of ${cmd[*]}" ;;
 		xml)
-			colarg="--mono"
-			[[ $COLOR == *always ]] && colarg="--color"
-			{ [[ -z $file2 ]] && has_cmd xmq && cmd=(xmq --xml "$1" render-terminal "$colarg"); } ||
-			{ [[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1"); } ;;
+			[[ -z $file2 ]] &&
+			{ { has_cmd xmq && cmd=(isxmq "$1" xml); } ||
+			{ has_htmlprog && cmd=(ishtml "$1"); }; } ;;
 		html)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
 		dtb|dts)
@@ -536,50 +519,40 @@ isfinal () {
 					-o $t2" "$1" && cmd=(mdcat "$t2"); } ||
 				{ has_cmd pandoc && istemp "pptx2md --disable-image --disable-wmf \
 					-o $t2" "$1" && cmd=(pandoc -f markdown -t plain "$t2"); }; } ||
-			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ppt); } ;;
+			{ can_do_office && cmd=(isoffice "$1" ppt); } ;;
 		xlsx|ods)
 			{ has_cmd xlscat && cmd=(istemp "xlscat -L -R all" "$1"); } ||
-			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" "$x"); } ;;
+			{ can_do_office && cmd=(isoffice "$1" "$x"); } ;;
 		odt)
 			{ has_cmd odt2txt && cmd=(istemp odt2txt "$1"); } ||
 			{ has_cmd pandoc && cmd=(pandoc -f odt -t plain "$1"); } ||
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
 		odp)
-			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" odp); } ;;
+			{ can_do_office && cmd=(isoffice "$1" odp); } ;;
 		msword)
 			t="$1"; [[ "$t" == - ]] && t=/dev/stdin
 			{ has_cmd wvText && cmd=(istemp wvText "$t" /dev/stdout); } ||
 			{ has_cmd catdoc && cmd=(catdoc "$1"); } ||
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
 		ms-powerpoint)
-			{ has_cmd broken_catppt && cmd=(istemp catppt "$1"); } ||
-			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" ppt); } ;;
+			{ can_do_office && cmd=(isoffice "$1" ppt); } ;;
 		ms-excel)
-			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" xls); } ;;
+			{ can_do_office && cmd=(isoffice "$1" xls); } ;;
 		ooffice1)
 			{ has_cmd sxw2txt && cmd=(istemp sxw2txt "$1"); } ||
-			{ has_cmd libreoffice && has_htmlprog && cmd=(isoffice "$1" odt); } ;;
+			{ can_do_office && cmd=(isoffice "$1" odt); } ;;
 		ipynb|epub)
 			has_cmd pandoc && cmd=(pandoc -f "$x" -t plain "$1") ;;
 		troff)
-			if has_cmd groff; then
-				fext=$(fileext "$1")
-				declare macro=andoc
-				[[ "$fext" == me ]] && macro=e
-				[[ "$fext" == ms ]] && macro=s
-				cmd=(groff -s -p -t -e -Tutf8 -m "$macro" "$1")
-			elif has_cmd mandoc; then
-				cmd=(mandoc -l "$1")
-			elif has_cmd man; then
-				cmd=(man -l "$1")
-			fi ;;
+			{ has_cmd mandoc && cmd=(nodash mandoc "$1"); } ||
+			{ has_cmd man && cmd=(nodash man "$1"); } ;;
 		rtf)
 			{ has_cmd unrtf && cmd=(istemp "unrtf --text" "$1"); } ||
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
 		dvi)
 			has_cmd dvi2tty && cmd=(istemp "dvi2tty -q" "$1") ;;
 		sharedlib)
-			cmd=(istemp nm "$1");;
+			cmd=(istemp nm "$1") ;;
 		pod)
 			[[ -z $file2 ]] &&
 			{ { has_cmd pod2text && cmd=(pod2text "$1"); } ||
@@ -787,6 +760,12 @@ isoffice2 () {
 	istemp "libreoffice --headless --cat" "$1" 2>/dev/null
 }
 
+isxmq () {
+	[[ $COLOR == *always ]] && colarg="--color" || colarg="--mono"
+	msg "xmq output, append :$2 to the filename to see the (colored) contents"
+	xmq "$1" render-terminal "$colarg"
+}
+
 isdtb () {
 	errors=$(nexttmp)
 	has_colorizer "-" "dts" "dts"
@@ -796,6 +775,13 @@ isdtb () {
 		separatorline "Warnings"
 		cat "$errors"
 	fi
+}
+
+can_do_office () {
+	if has_htmlprog && has_cmd libreoffice; then
+		return 0
+	fi
+	return 1
 }
 
 has_htmlprog () {

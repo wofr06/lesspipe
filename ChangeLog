@@ -92,10 +92,12 @@ Version 2.00-alpha Dec 8 2021
 - new testsuite test.pl
 Version 1.91 Nov 10 2021
 - testsuite works, most files get colored properly
-Versions 1.88 - 1.90
-- attempts to make colorization work and pass tests in the testsuite
+Version 1.90 Oct 6 2021
 - make all tests in the test suite work
-- add support for mp4 files
+Version 1.89 Sep 18 2021
+- attempts to make colorization work and pass tests in the testsuite
+Version 1.88 Sep 18 2021
+- add support for mp4 files and Jupiter notebook formats
 Version 1.87 Aug 7 2021
 - fix broken media file display (#54)
 - fix broken archive display (#57)
@@ -104,7 +106,9 @@ Version 1.86 Jul 21 2021
 - force html2text to use UTF8 instead of ASCII
 - fix pdf file type display
 Version 1.85 Aug 25 2020
-- addition of many new file formats and bug fixes
+- improved MS office files handling and bug fixes
+Version 1.84 Jul 7 2019
+- support for brotli, several MS Office files and media files
 Version 1.83 Jul 28 2015
 - shortcut for unreadable files, prefer pdftotext over pdftohtml (Peter Wu)
 - add bsdtar as a command to unpack rar files (coadde)
