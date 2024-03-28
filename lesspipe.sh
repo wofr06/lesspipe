@@ -544,6 +544,11 @@ isfinal () {
 		ipynb|epub)
 			has_cmd pandoc && cmd=(pandoc -f "$x" -t plain "$1") ;;
 		troff)
+			fext=$(fileext "$1")
+			declare macro=andoc
+			[[ "$fext" == me ]] && macro=e
+			[[ "$fext" == ms ]] && macro=s
+			{ has_cmd groff && cmd=(groff -s -p -t -e -Tutf8 -m "$macro" "$1"); } ||
 			{ has_cmd mandoc && cmd=(nodash mandoc "$1"); } ||
 			{ has_cmd man && cmd=(nodash man "$1"); } ;;
 		rtf)
