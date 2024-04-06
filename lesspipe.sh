@@ -98,7 +98,7 @@ filetype () {
 			*PEM\ certificate\ request)
 				ftype=csr ;;
 			*PEM\ certificate)
-				ftype=csr ;;
+				ftype=x509 ;;
 			*Microsoft\ OOXML)
 				ftype=docx ;;
 			Apple\ binary\ property\ list)
