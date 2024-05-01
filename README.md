@@ -124,7 +124,7 @@ the author by email.
  The command to set **LESSOPEN** can also be displayed by calling `lesspipe.sh`
  without arguments. This can even be used to set **LESSOPEN** directly:
 ```
-        eval lesspipe.sh                  # (bash) or
+        eval "$(lesspipe.sh)"             # (bash) or
         lesspipe.sh | source /dev/stdin   # (zsh)
 ```
  As `lesspipe.sh` is accepting only a single argument, a hierarchical list of file
