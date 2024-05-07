@@ -22,12 +22,13 @@ use Term::ANSIColor qw(color colorvalid);
 use IPC::Open3;
 use Getopt::Std;
 
-our ($opt_h, $opt_l);
-&getopts('hl:') || usage();
+our ($opt_c, $opt_h, $opt_l);
+&getopts('chl:') || usage();
 usage() if $opt_h;
 
 my ($file) = shift;
 my $filetype = $opt_l;
+my $report_colors = $opt_c;
 
 # do a clean up if we get a CTRL-C
 our ($tdir,$script_fh, $markup_fh);
@@ -57,10 +58,39 @@ my %ANSI_COLORS = (
 	Todo		=> 'on_cyan',
 );
 
+# get colors from the active color scheme
+my $colorcmds = "$tdir/commands";
+my $colorfile = "$tdir/colors";
+open F, ">$colorcmds" or die "$!";
+print F "redir! >$colorfile\ncolorscheme\n";
+print F "hi $_\n" for keys %ANSI_COLORS;
+print F "redir END\nq!\n";
+close F;
+run('vim', qw(--not-a-term -RXZi NONE -S), $colorcmds, $colorfile);
+open F, $colorfile or die $!;
+my ($key, %colattrs);
+my %t = map {$_, $_} qw(bold underline reverse italic blink undercurl standout);
+$t{undercurl} = 'underline';
+$t{standout} = 'reverse';
+while (<F>) {
+	last if /^unknown/; # skip rest of file, no color support
+	next if /^\s*$/;
+	$key = $1 if /^(\w+)/;
+	$colattrs{$key} .= $1 =~ /(\d+)/  ? "ANSI$1 " : "$1 " if /ctermfg=(\w+)/;
+	if (/term=([\w,]+)/) {
+		for my $what (split /,/, $1) {
+			$colattrs{$key} .= "$t{$what} " if exists $t{$what};
+		}
+	}
+}
+close F;
+my %COLORS = %ANSI_COLORS;
+for (keys %ANSI_COLORS) {
+	$COLORS{$_} = $colattrs{$_} if $colattrs{$_} !~ /\bnone\b/i; 
+}
+
 # allow the environment to overwrite:
 
-my $report_colors;
-my %COLORS = %ANSI_COLORS;
 if ($ENV{TEXT_VIMCOLOR_ANSI}) {
 	my @ADD = split /\s*[=;]\s*/, $ENV{TEXT_VIMCOLOR_ANSI};
 	if (@ADD % 2) {
@@ -68,9 +98,7 @@ if ($ENV{TEXT_VIMCOLOR_ANSI}) {
 	} else {
 		while (@ADD) {
 			my ($k, $v) = splice @ADD, -2;
-			$COLORS{$k} = $v, next if $v ne '?';
-			$report_colors=1;
-			$COLORS{$k} ||= '';
+			$COLORS{$k} = $v;
 		}
 	}
 }
@@ -110,10 +138,10 @@ my $syntax = do_markup($defaults, $file, $filetype);
 
 sub set_defaults {
 	return {
-		vim_command		=> 'vim',
-		vim_options		=> [qw( -RXZ -i NONE -u NONE -N -n ), "+set nomodeline"],
-		all_syntax_groups	=> $all_groups,
-		vim_let			=> {perl_include_pod => 1, 'b:is_bash' => 1},
+		vim_command => 'vim',
+		vim_options => [qw(--not-a-term -RXZ -i NONE -u NONE -N -n ), "+set nomodeline"],
+		all_syntax_groups => $all_groups,
+		vim_let => {perl_include_pod => 1, 'b:is_bash' => 1},
 	};
 }
 
@@ -133,9 +161,6 @@ sub do_markup {
 	open $markup_fh, ">$markup_file" or die "$!\n";
 	my $filetype_set = defined $filetype ? ":set filetype=$filetype" : '';
 	my $vim_let = $defaults->{vim_let};
-
-	# on linux '-s' is fast and '--cmd' adds the 2-second startup delay
-	# are there situations where --cmd is necessary or useful?
 
 	my $markscript= <<'EOF';
 set report=1000000
@@ -265,7 +290,7 @@ sub run {
 
 sub usage {
 	print <<EOF;
-usage: vimcolor [-h] [-l language] [filename]
+usage: vimcolor [-c] [-h] [-l language] [filename]
 
 This program works by running the Vim text editor and getting it to apply its
 excellent syntax highlighting (aka 'font-locking') to an input file, and mark
@@ -275,31 +300,30 @@ to text marked with ANSI escape sequences (using Term::ANSIColor)
 based on the Vim syntax coloring of the input file.
 
 OPTIONS:
- -h print this help and exit
- -l specify the type of file Vim should expect, if not recognized correctly
+    -c report color settings at the end of the program
+    -h print this help and exit
+    -l specify the type of file Vim should expect, if not recognized correctly
 
 ARGUMENT
- filename		name of the file to colorize. If not given or - then STDIN is used
+    filename  name of the file to colorize. If not given or - then STDIN is used
 
-You can alter the color scheme using the TEXT_VIMCOLOR_ANSI
-environment variable in the format of "SynGroup=color;"
+A color scheme set in vim is respected. You can alter the color scheme using
+the TEXT_VIMCOLOR_ANSI environment variable in the format of "SynGroup=color;"
 For example:
 
-	TEXT_VIMCOLOR_ANSI='Comment=green;Statement = magenta; '
+    TEXT_VIMCOLOR_ANSI='Comment=green;Statement = magenta; '
 
-A question mark as colorname displays in addition the color settings for
-the syntax groups found at the end of the program. By default only the
-following SynGroup syntax groups are used:
+By default only the following SynGroup syntax groups are used:
 
-Comment Constant Identifier Statement PreProc Type Special Underlined
-Ignore Error Todo
+    Comment Constant Identifier Statement PreProc Type Special Underlined
+    Ignore Error Todo
 
 If you want to benefit from finer-grained syntax highlighting you can
 request in TEXT_VIMCOLOR_ANSI additional syntax groups from the list
 
-Character Number Boolean Float Function Conditional Repeat Label Operator
-Keyword Exception Include Define Macro PreCondit StorageClass Structure
-Typedef Tag SpecialChar Delimiter SpecialComment Debug
+    Character Number Boolean Float Function Conditional Repeat Label Operator
+    Keyword Exception Include Define Macro PreCondit StorageClass Structure
+    Typedef Tag SpecialChar Delimiter SpecialComment Debug
 
 and chose appropriate colors.
 EOF
