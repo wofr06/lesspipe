@@ -1,7 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-- respect color scheme setting of vim in vimcolor
+- respect color scheme setting of vim in vimcolor, add listing of file types
 - improve xml (and html) display using the xmq binary
 - fix color detection (-R) again
 - support for cpio archives

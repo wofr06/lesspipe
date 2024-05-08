@@ -311,7 +311,7 @@ batcat --list-languages
 pygmentize -L lexers
 source-highlight --lang-list
 code2color -h
-vim -c "echo getcompletion('', 'filetype')" -c quit
+vimcolor -L
 ```
 
 ### 5.2 Colored Directory listing

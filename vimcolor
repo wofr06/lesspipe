@@ -22,13 +22,9 @@ use Term::ANSIColor qw(color colorvalid);
 use IPC::Open3;
 use Getopt::Std;
 
-our ($opt_c, $opt_h, $opt_l);
-&getopts('chl:') || usage();
+our ($opt_c, $opt_h, $opt_l, $opt_L);
+&getopts('chl:L') || usage();
 usage() if $opt_h;
-
-my ($file) = shift;
-my $filetype = $opt_l;
-my $report_colors = $opt_c;
 
 # do a clean up if we get a CTRL-C
 our ($tdir,$script_fh, $markup_fh);
@@ -38,6 +34,11 @@ $SIG{INT} = sub { if ($tdir) {
 	unlink $tdir; print "\n"; exit 1 }};
 
 $tdir = File::Temp->newdir('/tmp/vimcolorXXXX');
+languages(@ARGV) if $opt_L;
+
+my ($file) = shift;
+my $filetype = $opt_l;
+my $report_colors = $opt_c;
 
 if (! $file or $file eq '-') {
 	$file = "$tdir/inputfile";
@@ -59,14 +60,14 @@ my %ANSI_COLORS = (
 );
 
 # get colors from the active color scheme
-my $colorcmds = "$tdir/commands";
+my $cmds = "$tdir/commands";
 my $colorfile = "$tdir/colors";
-open F, ">$colorcmds" or die "$!";
-print F "redir! >$colorfile\ncolorscheme\n";
-print F "hi $_\n" for keys %ANSI_COLORS;
-print F "redir END\nq!\n";
+open F, ">$cmds" or die "$!";
+print F "redir! >$colorfile|colorscheme|";
+print F "hi $_|" for keys %ANSI_COLORS;
+print F "q!";
 close F;
-run('vim', qw(--not-a-term -RXZi NONE -S), $colorcmds, $colorfile);
+run('vim', qw(--not-a-term -RXZi NONE -S), $cmds, $colorfile);
 open F, $colorfile or die $!;
 my ($key, %colattrs);
 my %t = map {$_, $_} qw(bold underline reverse italic blink undercurl standout);
@@ -288,9 +289,27 @@ sub run {
 	}
 }
 
+sub languages {
+	my ($pat) = @_;
+	my $cmds = "$tdir/commands";
+	my $typefile = "$tdir/types";
+	open F, ">$cmds" or die "$!";
+	print F "redir! >$typefile|echow getcompletion(\'$pat\', 'filetype')|q!";
+	close F;
+	run('vim', qw(--not-a-term -RXZi NONE -S), $cmds, $typefile);
+	open F, $typefile or die $!;
+	$_ = <F>; $_ = <F>;
+	s/[\[\]',]//g;
+	print "$_\n";
+	close F;
+	exit;
+}
+
 sub usage {
 	print <<EOF;
-usage: vimcolor [-c] [-h] [-l language] [filename]
+usage: vimcolor [-c] [-l language] [filename]
+usage: vimcolor -h
+usage: vimcolor -L [pattern]
 
 This program works by running the Vim text editor and getting it to apply its
 excellent syntax highlighting (aka 'font-locking') to an input file, and mark
@@ -303,6 +322,7 @@ OPTIONS:
     -c report color settings at the end of the program
     -h print this help and exit
     -l specify the type of file Vim should expect, if not recognized correctly
+    -L list supported languages (file types) [that match pattern] and exit
 
 ARGUMENT
     filename  name of the file to colorize. If not given or - then STDIN is used
