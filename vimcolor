@@ -69,25 +69,25 @@ print F "q!";
 close F;
 run('vim', qw(--not-a-term -RXZi NONE -S), $cmds, $colorfile);
 open F, $colorfile or die $!;
-my ($key, %colattrs);
+my ($key, %attrs);
 my %t = map {$_, $_} qw(bold underline reverse italic blink undercurl standout);
 $t{undercurl} = 'underline';
 $t{standout} = 'reverse';
 while (<F>) {
 	last if /^unknown/; # skip rest of file, no color support
 	next if /^\s*$/;
-	$key = $1 if /^(\w+)/;
-	$colattrs{$key} .= $1 =~ /(\d+)/  ? "ANSI$1 " : "$1 " if /ctermfg=(\w+)/;
+	$key = $1 if /^(\w+)\s+\w/;
+	$attrs{$key} .= ($1 =~ /(\d+)/  ? "ANSI$1 " : "$1 ") if /ctermfg=(\w+)/;
 	if (/term=([\w,]+)/) {
 		for my $what (split /,/, $1) {
-			$colattrs{$key} .= "$t{$what} " if exists $t{$what};
+			$attrs{$key} .= "$t{$what} " if exists $t{$what};
 		}
 	}
 }
 close F;
 my %COLORS = %ANSI_COLORS;
 for (keys %ANSI_COLORS) {
-	$COLORS{$_} = $colattrs{$_} if $colattrs{$_} !~ /\bnone\b/i; 
+	$COLORS{$_} = $attrs{$_} if $attrs{$_} && $attrs{$_} !~ /\bnone\b/i; 
 }
 
 # allow the environment to overwrite:
