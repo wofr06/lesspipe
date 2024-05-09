@@ -205,6 +205,8 @@ the author by email.
 - Debian		requires `bsdtar` or `ar`
 - cab			requires `cabextract` or `7z`
 - cpio			requires `cpio` or `bsdtar` or `7z`
+- appimage      requires `unsquashfs`
+- snap          requires `snap` and `unsquashfs`
 
 ### 4.2 List of preprocessed file types
 - directory		displayed using `ls -lA`

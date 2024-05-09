@@ -2,7 +2,6 @@
 # lesscomplete, a helper script for the _less completion script
 # synced with lesspipe 2.12
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
-#( [[ -n 1 && -n 2 ]] ) > /dev/null 2>&1 || exec zsh -y --ksh-arrays -- "$0" ${1+"$@"}
 
 has_cmd () {
 	command -v "$1" > /dev/null
@@ -11,9 +10,9 @@ has_cmd () {
 fileext () {
 	fn=${1##*/}
 	case "$fn" in
-		.*.*) extension=${fn##*.};;
-		.*) extension=;;
-		*.*) extension=${fn##*.};;
+		.*.*) extension=${fn##*.} ;;
+		.*) extension= ;;
+		*.*) extension=${fn##*.} ;;
 	esac
 	echo "$extension"
 }
@@ -37,15 +36,20 @@ filetype () {
 	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-script.}"; ft="${ft#x-}"
 	ftype="${ft#vnd\.}"
 	### get file type from 'file' command for an unspecific result
-	if [[ "$fcat" == application && "$ftype" == octet-stream || "$fcat" == text && $ftype == plain ]]; then
-		ft=$(file -L -s -b "$1" 2> /dev/null)
-		if [[ $ft == data ]]; then
-			case "$fext" in
-				br|bro|tbr)
-					ftype=brotli ;;
-				lz4|lt4|tz4|tlz4)
-					ftype=lz4 ;;
-			esac
+	if [[ "$fcat" == application ]]; then
+		if [[ "$ftype" == octet-stream || "$fcat" == text && $ftype == plain ]]; then
+			ft=$(file -L -s -b "$1" 2> /dev/null)
+			if [[ $ft == data ]]; then
+				case "$fext" in
+					br|bro|tbr)
+						ftype=brotli ;;
+					lz4|lt4|tz4|tlz4)
+						ftype=lz4 ;;
+				esac
+			fi
+		fi
+		if [[ "$fext" == appimage || "$fext" == snap ]]; then
+			ftype="$fext"
 		fi
 	fi
 
@@ -218,7 +222,9 @@ get_unpack_cmd () {
 			{ has_cmd bsdtar && prog=bsdtar; } ;;
 		archive)
 			prog='ar'
-			has_cmd bsdtar && prog=bsdtar
+			has_cmd bsdtar && prog=bsdtar ;;
+		appimage|snap)
+			has_cmd unsquashfs && cmd=(isimage "$x" "$2" "$file2") ;;
 	esac
 	# 7z formats and fall back to 7z supported formats
 	if [[ -z $prog ]]; then
@@ -299,6 +305,17 @@ isarchive () {
 
 cabextract2 () {
 	cabextract -pF "$2" "$1"
+}
+
+isimage () {
+	if [[ "$1" == appimage ]]; then
+		offset="-o $("$2" --appimage-offset)"
+	fi
+	if [[ -z "$3" ]]; then
+		istemp "unsquashfs -d . -lc $offset" "$2"
+	else
+		istemp "unsquashfs -cat $offset"  "$2" "$3"
+	fi
 }
 
 isrpm () {

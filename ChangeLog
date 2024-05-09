@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- added support for appimage and snap files
 - respect color scheme setting of vim in vimcolor, add listing of file types
 - improve xml (and html) display using the xmq binary
 - fix color detection (-R) again

@@ -78,6 +78,10 @@ filetype () {
 			[[ $fcat == text ]] && ftype="$fext" ;;
 		tsx)
 			[[ $fcat == text ]] && ftype=typescript-jsx ;;
+		appimage)
+			[[ $fcat == application && -x "$1" ]] && ftype="$fext" ;;
+		snap)
+			[[ $fcat == application ]] && ftype="$fext" ;;
 	esac
 	### get file type from 'file' command for an unspecific result
 	if [[ "$fcat" == message && $ftype == plain ]]; then
@@ -365,7 +369,9 @@ get_unpack_cmd () {
 			{ has_cmd bsdtar && prog=bsdtar; } ;;
 		archive)
 			prog='ar'
-			has_cmd bsdtar && prog=bsdtar
+			has_cmd bsdtar && prog=bsdtar ;;
+		appimage|snap)
+			has_cmd unsquashfs && cmd=(isimage "$x" "$2" "$file2") ;;
 	esac
 	# 7z formats and fall back to 7z supported formats
 	if [[ -z $prog ]]; then
@@ -701,6 +707,21 @@ cabextract2 () {
 
 ispdf () {
 	istemp pdftohtml -i -q -s -noframes -nodrm -stdout "$1"|ishtml -
+}
+
+isimage () {
+	if [[ "$1" == appimage ]]; then
+		offset="-o $("$2" --appimage-offset)"
+	fi
+	if [[ -z "$3" ]]; then
+		if [[ "$1" == snap ]]; then
+			has_cmd snap && snap info "$2"
+			separatorline
+		fi
+		istemp "unsquashfs -d . -llc $offset" "$2"
+	else
+		istemp "unsquashfs -cat $offset"  "$2" "$3"
+	fi
 }
 
 isrpm () {
