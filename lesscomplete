@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # lesscomplete, a helper script for the _less completion script
-# synced with lesspipe 2.12
+# synced with lesspipe 2.13
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 
 has_cmd () {
