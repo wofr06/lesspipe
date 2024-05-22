@@ -450,8 +450,9 @@ has_colorizer () {
 					grep -q -e '^--theme' "$HOME/.config/bat/config" || theme=ansi
 				fi
 			fi
-			[[ -n $style ]] && opt+=(--style="${style%% *}")
-			[[ -n $theme ]] && opt+=(--theme="${theme%%[|&;<>]*}")
+			[[ -z $style ]] && style=plain
+			[[ -z $theme ]] && theme=ansi
+			opt+=(--style="${style%% *}" --theme="${theme%%[|&;<>]*}")
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang") || opt=(-g)
