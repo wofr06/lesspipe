@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # lesspipe.sh, a preprocessor for less
-lesspipe_version=2.13
+lesspipe_version=2.12
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 
 has_cmd () {
@@ -440,16 +440,18 @@ has_colorizer () {
 			[[ -n $lang ]] && $prog --list-languages|sed 's/.*:/,/;s/$/,/'|grep -i ",$lang," > /dev/null && opt=(-l "$lang")
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
 			[[ -z $style ]] && style=$BAT_STYLE
-			[[ -z $style ]] && style=plain
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--theme=* ]] && theme="${LESSCOLORIZER/* --theme=/}"
 			[[ -z $theme ]] && theme=$BAT_THEME
-			[[ -z $theme ]] && theme=ansi
 			if [[ -r "$HOME/.config/bat/config" ]]; then
-				grep -q -e '^--style' "$HOME/.config/bat/config" || opt+=(--style="${style%% *}")
-				grep -q -e '^--theme' "$HOME/.config/bat/config" || opt+=(--theme="${theme%% *}")
-			else
-				opt+=(--style="${style%% *}" --theme="${theme%% *}")
+				if [[ -z $style ]]; then
+					grep -q -e '^--style' "$HOME/.config/bat/config" || style=plain
+				fi
+				if [[ -z $theme ]]; then
+					grep -q -e '^--theme' "$HOME/.config/bat/config" || theme=ansi
+				fi
 			fi
+			[[ -n $style ]] && opt+=(--style="${style%% *}")
+			[[ -n $theme ]] && opt+=(--theme="${theme%%[|&;<>]*}")
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang") || opt=(-g)

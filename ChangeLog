@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- prefer bat styles and themes from ENV or command line over config file
 Version 2.13 May 10 2024
 - added support for appimage and snap files
 - respect color scheme setting of vim in vimcolor, add listing of file types
