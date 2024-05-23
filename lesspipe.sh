@@ -511,7 +511,7 @@ isfinal () {
 			{ has_cmd pdftohtml && has_htmlprog && cmd=(istemp ispdf "$1"); } ||
 			{ has_cmd pdfinfo && cmd=(istemp pdfinfo "$1"); } ;;
 		postscript)
-			has_cmd ps2ascii && nodash ps2ascii "$1" ;;
+			has_cmd ps2ascii && nodash ps2ascii "$1" 2>/dev/null ;;
 		java-applet)
 			# filename needs to end in .class
 			has_cmd procyon && t=$t.class && cat "$1" > "$t" && cmd=(procyon "$t") ;;
@@ -525,10 +525,10 @@ isfinal () {
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
 		pptx)
 			{ has_cmd pptx2md && t2=$(nexttmp) &&
-				{ has_cmd mdcat && istemp "pptx2md --disable-image --disable-wmf \
+				{ { has_cmd mdcat && istemp "pptx2md --disable-image --disable-wmf \
 					-o $t2" "$1" && cmd=(mdcat "$t2"); } ||
 				{ has_cmd pandoc && istemp "pptx2md --disable-image --disable-wmf \
-					-o $t2" "$1" && cmd=(pandoc -f markdown -t plain "$t2"); }; } ||
+					-o $t2" "$1" && cmd=(pandoc -f markdown -t plain "$t2"); } }; } ||
 			{ can_do_office && cmd=(isoffice "$1" ppt); } ;;
 		xlsx|ods)
 			{ has_cmd xlscat && cmd=(istemp "xlscat -L -R all" "$1"); } ||
@@ -585,7 +585,7 @@ isfinal () {
 			has_cmd openssl && cmd=(istemp "openssl req -text -noout -in" "$1") ;;
 		pgp)
 			has_cmd gpg && cmd=(gpg --decrypt --quiet --no-tty --batch --yes "$1") ;;
-		plist)
+		bplist|plist)
 			{ has_cmd plistutil && cmd=(istemp "plistutil -i" "$1"); } ||
 			{ has_cmd plutil && cmd=(istemp "plutil -p" "$1"); } ;;
 		mp3)

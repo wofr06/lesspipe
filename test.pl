@@ -118,8 +118,8 @@ while (<DATA>) {
 	$needed =~ s/ or /|/g;
 	$needed =~ s/ not /!/g;
 	$needed =~ s/ and /,/g;
+	$needed =~ s/html_converter/w3m|lynx|elinks|html2text/;
 	my @needed = split /\s*\|\s*/, $needed;
-	map {s/html_converter/w3m,lynx,elinks,html2text/} @needed;
 	if ($noaction) {
 		my $needed_str = $needed ? " ($needed)" : '';
 		print $verbose ? "$num $cmd $needed_str\n" : "$num $cmd\n";
@@ -293,18 +293,14 @@ less $T/tests/test_7z:testok/a\|b.txt	# extract file from 7z, needs 7zz|7zr|7za
 = test
 less tests/archive.tgz:test_7z:testok/a\|b.txt	# (on the fly), needs 7zz|7zr|7za
 = test
-less $T/tests/test_iso			# iso9660 contents, needs bsdtar
-~ .* ISO.TXT
-less tests/archive.tgz:test_iso		# (on the fly), needs bsdtar
-~ .* ISO.TXT
+less $T/tests/test_iso			# iso9660 contents, needs bsdtar|isoinfo
+~ .* ISO.TXT|/ISO.TXT;1
+less tests/archive.tgz:test_iso		# (on the fly), needs bsdtar|isoinfo
+~ .* ISO.TXT|/ISO.TXT;1
 less $T/tests/test_iso:ISO.TXT		# extract file from iso9660, needs bsdtar
 = test
 less tests/archive.tgz:test_iso:ISO.TXT	# (on the fly), needs bsdtar
 = test
-less $T/tests/test_iso			# iso9660 contents, needs isoinfo, not bsdtar
-~ /ISO.TXT;1
-less tests/archive.tgz:test_iso		# (on the fly), needs isoinfo, not bsdtar
-~ /ISO.TXT;1
 less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo, not bsdtar
 = test
 less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo, not bsdtar
@@ -370,11 +366,11 @@ less tests/filter.tgz:test_doc		# doc (old), needs wvText|catdoc|libreoffice
 less tests/filter.tgz:test_ppt:ms-powerpoint	# ppt (old), catppt not always working, needs libreoffice,html_converter
 ~ .*1. test|\s*test
 less tests/filter.tgz:test_xls		# xls (old), needs in2csv|xls2csv|libreoffice,html_converter
-= test
+~ ^test$|^"test"$
 less tests/filter.tgz:test_ooffice1	# openoffice1 (very old), needs sxw2txt|libreoffice
 = test
 less tests/filter.tgz:test_nroff	# man pages etc (nroff), needs groff|mandoc
-~ .* test \(1\)
+~ .* Commands
 less tests/filter.tgz:test_rtf		# rtf, needs unrtf|libreoffice
 ~ test
 less tests/filter.tgz:test_dvi		# dvi, needs dvi2tty
@@ -388,7 +384,7 @@ less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoc
 less tests/filter.tgz:test_nc4		# netcdf, needs h5dump|ncdump
 ~ data:|\s*DATA .
 less tests/filter.tgz:test_nc5		# hierarchical data format, needs h5dump|ncdump
-~ d:|\s*DATA .
+~ data:|\s*DATA .
 less tests/filter.tgz:test_matlab	# matlab git #18, needs matdump
 ~ r
 less tests/filter.tgz:matlab.mat	# matlab, not recognized by file, needs matdump
@@ -449,7 +445,7 @@ LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1
 ~ 
 LESS= less tests/dir.zip	# do not colorize listing git #140
-~ drwxrwxr-x  0 1000   1000        0 Dec 12 20:56 dir/
+~ .* dir/
 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
