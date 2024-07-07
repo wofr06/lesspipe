@@ -167,7 +167,7 @@ the author by email.
  **LESS** can be used to switch on colored less output (should contain -R).
 
  **LESSCOLORIZER** can be set to prefer a highlighting program from the following
- choices (`bat` `batcat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
+ choices (`nvimpager` `bat` `batcat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
  Otherwise the first program in that list that is installed will be used.
 
 ## 3. Required programs
@@ -284,8 +284,9 @@ original html file contents, two colons are required in this case.
 ```
 #### 5.1.1 Syntax highlighting choices
  The filter is able to do syntax highlighting for a wide variety of file
- types. If installed, `bat`/`batcat` is used for coloring the output. If
- not, `pygmentize`, `source-highlight`, `code2color` and `vimcolor` are
+ types. If installed, `nvimpager` is used for coloring the output. If
+ not, `bat`/`batcat`, `pygmentize`, `source-highlight`, `code2color`
+ and `vimcolor` are
  tried. Among these colorizers a preferred one can be forced for coloring
  by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
  For `pygmentize` and `bat/batcat` a restricted set of options can be added:
@@ -313,7 +314,7 @@ batcat --list-languages
 pygmentize -L lexers
 source-highlight --lang-list
 code2color -h
-vimcolor -L
+vimcolor -L (both for vimcolor and nvimpager)
 ```
 
 ### 5.2 Colored Directory listing
@@ -455,6 +456,7 @@ STDOUT and the commands executed to STDERR.
 - sxw2txt              https://vinc17.net/software/sxw2txt (2010)
 - dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2023)
 - xmq                  https://github.com/libxmq/xmq/releases/latest (2024)
+- nvimpager            https://github.com/lucc/nvimpager (2025)
 
 ### 12.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)

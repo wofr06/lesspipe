@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- add nvimpager as (preferred) colorizer 
+- if installed use nvim instead of vim for coloring with vimcolor
 - prefer bat styles and themes from ENV or command line over config file
 Version 2.13 May 10 2024
 - added support for appimage and snap files

@@ -429,7 +429,7 @@ has_colorizer () {
 	[[ $2 == plain || -z $2 ]] && return
 	prog=${LESSCOLORIZER%% *}
 
-	for i in bat batcat pygmentize source-highlight vimcolor code2color ; do
+	for i in nvimpager bat batcat pygmentize source-highlight vimcolor code2color ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i
 	done
 	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
@@ -470,6 +470,9 @@ has_colorizer () {
 		code2color|vimcolor)
 			opt=("$1")
 			[[ -n "$3" ]] && opt=(-l "$3" "$1") ;;
+		nvimpager)
+			opt=(-c "$1")
+			[[ -n "$3" ]] && opt=(-c "$1" -c "set filetype=$3") ;;
 		*)
 			return ;;
 	esac
