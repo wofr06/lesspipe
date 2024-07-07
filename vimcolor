@@ -34,6 +34,7 @@ $SIG{INT} = sub { if ($tdir) {
 	unlink $tdir; print "\n"; exit 1 }};
 
 $tdir = File::Temp->newdir('/tmp/vimcolorXXXX');
+my $defaults = set_defaults();
 languages(@ARGV) if $opt_L;
 
 my ($file) = shift;
@@ -67,7 +68,7 @@ print F "redir! >$colorfile|colorscheme|";
 print F "hi $_|" for keys %ANSI_COLORS;
 print F "q!";
 close F;
-run('vim', qw(--not-a-term -RXZi NONE -S), $cmds, $colorfile);
+run($defaults->{vim_command}, $defaults->{vim_options}, '-S', $cmds, $colorfile);
 open F, $colorfile or die $!;
 my ($key, %attrs);
 my %t = map {$_, $_} qw(bold underline reverse italic blink undercurl standout);
@@ -77,7 +78,7 @@ while (<F>) {
 	last if /^unknown/; # skip rest of file, no color support
 	next if /^\s*$/;
 	$key = $1 if /^(\w+)\s+\w/;
-	$attrs{$key} .= ($1 =~ /(\d+)/  ? "ANSI$1 " : "$1 ") if /ctermfg=(\w+)/;
+	$attrs{$key} .= ($1 =~ /(\d+)/ ? "ANSI$1 " : "$1 ") if /ctermfg=(\w+)/;
 	if (/term=([\w,]+)/) {
 		for my $what (split /,/, $1) {
 			$attrs{$key} .= "$t{$what} " if exists $t{$what};
@@ -134,13 +135,15 @@ for (keys (%COLORS)) {
 # Build a lookup table to determine if a syntax exists.
 my %SYNTAX_TYPE = map {$_, 1} keys %COLORS;
 
-my $defaults = set_defaults();
 my $syntax = do_markup($defaults, $file, $filetype);
 
 sub set_defaults {
+	my $ex = 'vim';
+	$ex = 'nvim' if grep{ -e "$_/nvim" } split /:/, $ENV{PATH};
+	my @opts = $ex eq 'vim' ? qw(--not-a-term -XZ) : qw(headless);
 	return {
-		vim_command => 'vim',
-		vim_options => [qw(--not-a-term -RXZ -i NONE -u NONE -N -n ), "+set nomodeline"],
+		vim_command => $ex,
+		vim_options => [@opts, qw(-R -i NONE -u NONE -N -n), "+set nomodeline"],
 		all_syntax_groups => $all_groups,
 		vim_let => {perl_include_pod => 1, 'b:is_bash' => 1},
 	};
@@ -291,12 +294,13 @@ sub run {
 
 sub languages {
 	my ($pat) = @_;
+	$pat ||= '';
 	my $cmds = "$tdir/commands";
 	my $typefile = "$tdir/types";
 	open F, ">$cmds" or die "$!";
-	print F "redir! >$typefile|echow getcompletion(\'$pat\', 'filetype')|q!";
+	print F "redir! >$typefile|echo getcompletion(\'$pat\', 'filetype')|q!";
 	close F;
-	run('vim', qw(--not-a-term -RXZi NONE -S), $cmds, $typefile);
+	run($defaults->{vim_command}, $defaults->{vim_options}, '-S', $cmds, $typefile);
 	open F, $typefile or die $!;
 	$_ = <F>; $_ = <F>;
 	s/[\[\]',]//g;

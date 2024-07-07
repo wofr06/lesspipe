@@ -354,7 +354,7 @@ less tests/filter.tgz:test_docx		# docx (neu) git #24,26,27,37, needs pandoc|doc
 less tests/filter.tgz:test_pptx		# pptx (neu), needs pptx2md,mdcat|pptx2md,pandoc|libreoffice,html_converter
 ~ processing slide 1...|.*test.*
 less tests/filter.tgz:test_xlsx		# xlsx (neu), needs in2csv|xlscat|excel2csv|libreoffice
-= test
+~ ^test$
 less tests/filter.tgz:test_odt		# odt, needs pandoc|odt2txt|libreoffice
 = test
 less tests/filter.tgz:test_odp		# odp, needs libreoffice,html_converter
