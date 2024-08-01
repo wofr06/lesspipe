@@ -457,7 +457,7 @@ has_colorizer () {
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang") || opt=(-g)
-			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-O\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
+			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-[OP]\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
 			[[ -n $style ]] && opt+=(-O style="${style%% *}")
 			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
 			[[ "$1" == - ]] || opt+=("$1") ;;
