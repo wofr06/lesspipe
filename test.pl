@@ -440,6 +440,8 @@ LESSCOLORIZER=pygmentize less tests/filter.tgz:test_dtb	# device tree blob, need
 c test
 less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
 c sub
+less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154
+c name
 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1

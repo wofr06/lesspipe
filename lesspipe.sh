@@ -11,7 +11,7 @@ fileext () {
 	fn=${1##*/}
 	case "$fn" in
 		.*.*) extension=${fn##*.} ;;
-		.*) extension= ;;
+		.*) extension=${fn#.} ;;
 		*.*) extension=${fn##*.} ;;
 	esac
 	echo "$extension"
