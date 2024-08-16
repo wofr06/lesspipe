@@ -1,6 +1,6 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.13
+Version: 2.14
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto://wp.friebel@gmail.com)
 License: GPL
 
@@ -193,7 +193,7 @@ the author by email.
 - zstd			requires `zstd`
 - brotli		requires `bro`
 - lz4			requires `lz4`
-- tar			requires optionally `archive_color` for coloring
+- tar			requires optionally `archive_color` for colorizing
 - ar library		requires `bsdtar` or `ar`
 - zip archive		requires `bsdtar` or `unzip`
 - jar archive		requires `bsdtar` or `unzip`
@@ -284,10 +284,10 @@ original html file contents, two colons are required in this case.
 ```
 #### 5.1.1 Syntax highlighting choices
  The filter is able to do syntax highlighting for a wide variety of file
- types. If installed, `nvimpager` is used for coloring the output. If
+ types. If installed, `nvimpager` is used for colorizing the output. If
  not, `bat`/`batcat`, `pygmentize`, `source-highlight`, `code2color`
  and `vimcolor` are
- tried. Among these colorizers a preferred one can be forced for coloring
+ tried. Among these colorizers a preferred one can be forced for colorizing
  by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
  For `pygmentize` and `bat/batcat` a restricted set of options can be added:
 ```

@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.13
+%define packageversion 2.14
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -89,6 +89,8 @@ cd $RPM_BUILD_DIR
 %docdir %{prefix}/share/man/man1
 
 %changelog
+* Fri Aug 16 2024 2.14-1 - wp.friebel@gmail.com
+- prefer nvimpager for coloring if installed
 * Fri May 10 2024 2.13-1 - wp.friebel@gmail.com
 - support appimage and snap files 
 * Mon Mar 18 2024 2.12-1 - wp.friebel@gmail.com

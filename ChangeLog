@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.14 Aug 16 2024
+- allow for colorizing dotfiles
 - add nvimpager as (preferred) colorizer 
 - if installed use nvim instead of vim for coloring with vimcolor
 - prefer bat styles and themes from ENV or command line over config file
