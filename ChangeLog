@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- force unicode/utf8 for html2text
 Version 2.14 Aug 16 2024
 - allow for colorizing dotfiles
 - add nvimpager as (preferred) colorizer 

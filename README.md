@@ -456,7 +456,7 @@ STDOUT and the commands executed to STDERR.
 - sxw2txt              https://vinc17.net/software/sxw2txt (2010)
 - dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2023)
 - xmq                  https://github.com/libxmq/xmq/releases/latest (2024)
-- nvimpager            https://github.com/lucc/nvimpager (2025)
+- nvimpager            https://github.com/lucc/nvimpager (2024)
 
 ### 12.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)

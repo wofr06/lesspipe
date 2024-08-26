@@ -835,13 +835,15 @@ handle_w3m () {
 
 ishtml () {
 	[[ $1 == - ]] && arg1=-stdin || arg1="$1"
+	htmlopt=--unicode-snob
+	has_cmd html2text && echo ""|html2text -utf8 2>/dev/null && htmlopt=-utf8
 	# 3 lines following can easily be reshuffled according to the preferred tool
 	has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
 	has_cmd w3m && handle_w3m "$1" && return ||
 	has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
-	# different versions of html2text existing, therefore no encoding handling
+	# different versions of html2text existingi, force unicode
 	[[ "$1" == https://* ]] && return ||
-	has_cmd html2text && nodash html2text "$1"
+	has_cmd html2text && nodash html2text "$htmlopt" "$1"
 }
 
 # the main program
