@@ -168,7 +168,7 @@ the author by email.
 
  **LESSCOLORIZER** can be set to prefer a highlighting program from the following
  choices (`nvimpager` `bat` `batcat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
- Otherwise the first program in that list that is installed will be used.
+ Otherwise the first program in that list that is installed will be used, with the caveat that `bat` will use [ansi theme](https://github.com/wofr06/lesspipe/issues/155#issuecomment-2312972276) instead of its default colors.
 
 ## 3. Required programs
 
@@ -292,7 +292,7 @@ original html file contents, two colons are required in this case.
  For `pygmentize` and `bat/batcat` a restricted set of options can be added:
 ```
         LESSCOLORIZER='pygmentize -O style=foo'
-        LESSCOLORIZER='bat --style=foo --theme=bar'
+        LESSCOLORIZER='bat --style=foo --theme=bar' # --theme=default for default theme
 ```
  Much better syntax highlighting is obtained using the `less` emulation of `vim`:
  The editor `vim` comes with a file `less.sh`, e.g. on Ubuntu located in
