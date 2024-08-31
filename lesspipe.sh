@@ -476,7 +476,8 @@ has_colorizer () {
 				ft=${3##*/}
 				ft=${ft##*.}
 				opt=(-c "$1" --cmd "set filetype=$ft")
-			fi ;;
+			fi
+			;;
 		*)
 			return ;;
 	esac
@@ -655,10 +656,10 @@ isarchive () {
 		case $prog in
 			tar|bsdtar)
 				[[ "$2" =~ ^[a-z_-]*:.* ]] && echo "$2: remote operation tar host:file not allowed" && return
-				if [[ "$3" =~ --* ]]; then
-					$prog Oxf "$2" "--" "$3" 2>/dev/null
+				if [[ "$3" =~ .*/$ ]]; then
+					$prog Otvf "$2" -- "$3"
 				else
-					$prog Oxf "$2" "$3" 2>/dev/null
+					$prog Oxf "$2" -- "$3" 2>/dev/null
 				fi
 				;;
 			rar|unrar)
