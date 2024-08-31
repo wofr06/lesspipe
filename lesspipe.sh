@@ -472,7 +472,11 @@ has_colorizer () {
 			[[ -n "$3" ]] && opt=(-l "$3" "$1") ;;
 		nvimpager)
 			opt=(-c "$1")
-			[[ -n "$3" ]] && opt=(-c "$1" -c "set filetype=$3") ;;
+			if [[ -n "$3" ]]; then
+				ft=${3##*/}
+				ft=${ft##*.}
+				opt=(-c "$1" --cmd "set filetype=$ft")
+			fi ;;
 		*)
 			return ;;
 	esac
