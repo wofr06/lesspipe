@@ -437,17 +437,18 @@ has_colorizer () {
 	[[ -n $3 ]] && lang=$3 || lang=$2
 	case $prog in
 		bat|batcat)
+		        batconfig=$(bat --config-file)
 			[[ -n $lang ]] && $prog --list-languages|sed 's/.*:/,/;s/$/,/'|grep -i ",$lang," > /dev/null && opt=(-l "$lang")
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
 			[[ -z $style ]] && style=$BAT_STYLE
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--theme=* ]] && theme="${LESSCOLORIZER/* --theme=/}"
 			[[ -z $theme ]] && theme=$BAT_THEME
-			if [[ -r "$HOME/.config/bat/config" ]]; then
+			if [[ -r "$batconfig" ]]; then
 				if [[ -z $style ]]; then
-					grep -q -e '^--style' "$HOME/.config/bat/config" || style=plain
+					grep -q -e '^--style' "$batconfig" || style=plain
 				fi
 				if [[ -z $theme ]]; then
-					grep -q -e '^--theme' "$HOME/.config/bat/config" || theme=ansi
+					grep -q -e '^--theme' "$batconfig" || theme=ansi
 				fi
 			else
 				[[ -z $style ]] && style=plain
