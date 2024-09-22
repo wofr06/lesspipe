@@ -437,7 +437,7 @@ has_colorizer () {
 	[[ -n $3 ]] && lang=$3 || lang=$2
 	case $prog in
 		bat|batcat)
-		        batconfig=$(bat --config-file)
+		        batconfig=$($prog --config-file)
 			[[ -n $lang ]] && $prog --list-languages|sed 's/.*:/,/;s/$/,/'|grep -i ",$lang," > /dev/null && opt=(-l "$lang")
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
 			[[ -z $style ]] && style=$BAT_STYLE
