@@ -454,8 +454,8 @@ has_colorizer () {
 				[[ -z $style ]] && style=plain
 				[[ -z $theme ]] && theme=ansi
 			fi
-			[[ -n $style ]] && opt+=(--style="${style%% *}")
-			[[ -n $theme ]] && opt+=(--theme="${theme%%[|&;<>]*}")
+			style="${style%% *}" theme="${theme%%[|&;<>]*}"
+			opt+=(${style:+--style="$style"} ${theme:+--theme="$theme"})
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
 			pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang") || opt=(-g)
