@@ -398,13 +398,7 @@ analyze_args () {
 	cmdtree=$(ps -T -oargs= 2>/dev/null)
 	while read -r line; do
 		arg1=${line%% *}; arg1=${arg1##*/}
-		case $arg1 in
-			man|git|perldoc)
-	# if lesspipe is called in pipes, return immediately for some use cases
-				exit 0 ;;
-			less)
-				lessarg=$line ;;
-		esac
+		[[ $arg1 == less ]] && lessarg=$line
 	done <<< "$cmdtree"
 	# return if we want to watch growing files
 	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
@@ -568,9 +562,9 @@ isfinal () {
 			declare macro=andoc
 			[[ "$fext" == me ]] && macro=e
 			[[ "$fext" == ms ]] && macro=s
-			{ has_cmd groff && cmd=(groff -s -p -t -e -Tutf8 -m "$macro" "$1"); } ||
 			{ has_cmd mandoc && cmd=(nodash mandoc "$1"); } ||
-			{ has_cmd man && cmd=(nodash man "$1"); } ;;
+			{ has_cmd man && cmd=(man -l "$1"); } ||
+			{ [[ $COLOR == *always ]] && has_cmd groff && cmd=(groff -s -p -t -e -Tutf8 -m "$macro" "$1"); } ;;
 		rtf)
 			{ has_cmd unrtf && cmd=(istemp "unrtf --text" "$1"); } ||
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
@@ -581,7 +575,7 @@ isfinal () {
 		pod)
 			[[ -z $file2 ]] &&
 			{ { has_cmd pod2text && cmd=(pod2text "$1"); } ||
-			{ has_cmd perldoc && cmd=(istemp perldoc "$1"); }; } ;;
+			{ has_cmd perldoc && cmd=(istemp "perldoc -T" "$1"); }; } ;;
 		hdf|hdf5)
 			{ has_cmd h5dump && cmd=(istemp h5dump "$1"); } ||
 			{ has_cmd ncdump && cmd=(istemp ncdump "$1"); } ;;
