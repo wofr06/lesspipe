@@ -1,6 +1,10 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- display all certificates in pem files, not only the 1st one
+- do not exit if called from other programs (man, git, perldoc)
+- improve option processing in bat
+- change (again) order of programs to process man pages
 - force unicode/utf8 for html2text
 Version 2.14 Aug 16 2024
 - allow for colorizing dotfiles

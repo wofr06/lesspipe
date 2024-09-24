@@ -584,7 +584,7 @@ isfinal () {
 		djvu)
 			has_cmd djvutxt && cmd=(djvutxt "$1") ;;
 		x509|crl)
-			has_cmd openssl && cmd=(istemp "openssl $x -hash -text -noout -in" "$1") ;;
+			has_cmd openssl && cmd=(istemp "openssl storeutl -text -noout" "$1") ;;
 		csr)
 			has_cmd openssl && cmd=(istemp "openssl req -text -noout -in" "$1") ;;
 		pgp)
