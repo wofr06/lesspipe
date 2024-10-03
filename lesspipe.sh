@@ -434,20 +434,14 @@ has_colorizer () {
 			batconfig=$($prog --config-file)
 			[[ -n $lang ]] && $prog --list-languages|sed 's/.*:/,/;s/$/,/'|grep -i ",$lang," > /dev/null && opt=(-l "$lang")
 			opt2=${LESSCOLORIZER##*--}
-			if [[ $opt2 == style=* ]]; then
-				style=${opt2##*=}
-			elif [[ $opt2 == theme=* ]]; then
-				theme=${opt2##*=}
-			fi
-			opt2=$(echo ${LESSCOLORIZER%[ ]--*}|sed 's/ $//g')
+			[[ $opt2 == style=* ]] && style=${opt2##*=}
+			[[ $opt2 == theme=* ]] && theme=${opt2##*=}
+			opt2=$(echo "$LESSCOLORIZER"|tr -s ' ')
+			opt2=${opt2%[ ]--*}
 			opt2=${opt2##*--}
-			if [[ $opt2 == style=* ]]; then
-				style=${opt2##*=}
-			elif [[ $opt2 == theme=* ]]; then
-				theme=${opt2##*=}
-			fi
+			[[ $opt2 == style=* ]] && style=${opt2##*=}
+			[[ $opt2 == theme=* ]] && theme=${opt2##*=}
 			[[ -n $theme ]] && theme=$(echo "${theme##*=}"|tr -d '/"\047\134/')
-
 			[[ -z $style ]] && style=$BAT_STYLE
 			[[ -z $theme ]] && theme=$BAT_THEME
 			if [[ -r "$batconfig" ]]; then
