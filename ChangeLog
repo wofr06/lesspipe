@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.15 Oct 03 2024
+- improved parsing of bat/batcat options in LESSCOLORIZE 
 - display all certificates in pem files, not only the 1st one
 - do not exit if called from other programs (man, git, perldoc)
 - improve option processing in bat

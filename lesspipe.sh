@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # lesspipe.sh, a preprocessor for less
-lesspipe_version=2.14
+lesspipe_version=2.15
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 
 has_cmd () {
