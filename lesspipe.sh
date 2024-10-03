@@ -431,11 +431,24 @@ has_colorizer () {
 	[[ -n $3 ]] && lang=$3 || lang=$2
 	case $prog in
 		bat|batcat)
-		        batconfig=$($prog --config-file)
+			batconfig=$($prog --config-file)
 			[[ -n $lang ]] && $prog --list-languages|sed 's/.*:/,/;s/$/,/'|grep -i ",$lang," > /dev/null && opt=(-l "$lang")
-			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--style=* ]] && style="${LESSCOLORIZER/* --style=/}"
+			opt2=${LESSCOLORIZER##*--}
+			if [[ $opt2 == style=* ]]; then
+				style=${opt2##*=}
+			elif [[ $opt2 == theme=* ]]; then
+				theme=${opt2##*=}
+			fi
+			opt2=$(echo ${LESSCOLORIZER%[ ]--*}|sed 's/ $//g')
+			opt2=${opt2##*--}
+			if [[ $opt2 == style=* ]]; then
+				style=${opt2##*=}
+			elif [[ $opt2 == theme=* ]]; then
+				theme=${opt2##*=}
+			fi
+			[[ -n $theme ]] && theme=$(echo "${theme##*=}"|tr -d '/"\047\134/')
+
 			[[ -z $style ]] && style=$BAT_STYLE
-			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *\ *--theme=* ]] && theme="${LESSCOLORIZER/* --theme=/}"
 			[[ -z $theme ]] && theme=$BAT_THEME
 			if [[ -r "$batconfig" ]]; then
 				if [[ -z $style ]]; then
@@ -728,7 +741,7 @@ isimage () {
 		fi
 		istemp "unsquashfs -d . -llc $offset" "$2"
 	else
-		istemp "unsquashfs -cat $offset"  "$2" "$3"
+		istemp "unsquashfs -cat $offset" "$2" "$3"
 	fi
 }
 
