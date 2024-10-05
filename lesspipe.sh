@@ -84,13 +84,8 @@ filetype () {
 			[[ $fcat == application ]] && ftype="$fext" ;;
 	esac
 	### get file type from 'file' command for an unspecific result
-	if [[ "$fcat" == message && $ftype == plain ]]; then
-		ftype=msg
-	fi
-	if [[ "$fcat" == message && $ftype == rfc822 ]]; then
-		fcat=text
-		ftype=email
-	fi
+	[[ "$fcat" == message && $ftype == plain ]] && ftype=msg
+	[[ "$fcat" == message && $ftype == rfc822 ]] && fcat=text && ftype=email
 	if [[ "$fcat" == application && "$ftype" == octet-stream || "$fcat" == text && $ftype == plain ]]; then
 		ft=$(file -L -s -b "$1" 2> /dev/null)
 		# first check if the file command yields something
@@ -215,21 +210,16 @@ show () {
 			file1="${1%"$rest1"}"
 		fi
 	done
-	if [[ ! -e "$file1" && "$file1" != '-' ]]; then
-		exit 1
-	fi
+	[[ ! -e "$file1" && "$file1" != '-' ]] && exit 1
 	rest11="${rest1#"$sep"}"
 	file2="${rest11%%"$sep"*}"
 	rest2="${rest11#"$file2"}"
 	while [[ "$rest2" == "$sep$sep"* ]]; do
-		if [[ "$rest2" == "$sep$sep" ]]; then
-			break
-		else
-			rest2="${rest2#"$sep$sep"}"
-			file2="${rest2%%"$sep"*}"
-			rest2="${rest2#"$file2"}"
-			file2="${rest11%"$rest2"}"
-		fi
+		[[ "$rest2" == "$sep$sep" ]] && break
+		rest2="${rest2#"$sep$sep"}"
+		file2="${rest2%%"$sep"*}"
+		rest2="${rest2#"$file2"}"
+		file2="${rest11%"$rest2"}"
 	done
 	rest2="${rest11#"$file2"}"
 	rest11="$rest1"
@@ -296,9 +286,7 @@ get_unpack_cmd () {
 	fcat="${1##*:}"
 	x="${1%%:*}"
 	cmd=()
-	if [[ "$3" == $sep$sep ]]; then
-		return
-	fi
+	[[ "$3" == $sep$sep ]] && return
 	declare t
 	# uncompress / transform
 	case $x in
@@ -643,7 +631,6 @@ isfinal () {
 		if [[ "$cmd" =~ '=' ]]; then
 			cmd=(env "${cmd[@]}")
 		fi
-		#[[ -n ${colorizer[*]} ]] && "${cmd[@]}" | "${colorizer[@]}" && return
 		"${cmd[@]}"
 	else
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" && return
@@ -704,11 +691,7 @@ isarchive () {
 				separatorline
 				isoinfo -fR"$joliet" -i "$t" ;;
 			cpio)
-				if [[ "$2" == - ]]; then
-					cpio -tv --quiet
-				else
-					cpio -tv --quiet --file "$2"
-				fi ;;
+				cpio -tv --quiet  < "$2" ;;
 			7zz|7za|7zr)
 				istemp "$prog l" "$2"
 		esac
@@ -896,9 +879,8 @@ if [[ -z "$1" && "$0" == */lesspipe.sh ]]; then
 		echo "export LESSOPEN"
 	fi
 else
-	if [ -x "${HOME}/.lessfilter" ]; then
-		"${HOME}/.lessfilter" "$1" && exit 0
-	elif has_cmd lessfilter; then
+	[[ -x "${HOME}/.lessfilter" ]] && "${HOME}/.lessfilter" "$1" && exit 0
+	if has_cmd lessfilter; then
 		lessfilter "$1" && exit 0
 	fi
 	if [[ -z "$1" ]]; then

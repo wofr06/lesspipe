@@ -100,7 +100,8 @@ while (<DATA>) {
 	last if /^END\n$/;
 	print if /^###/ and ! @numtest and ! @strtest;
 	next if /^#|^\s*$/;
-	if (! /^\s*less\s|\|\s*less|^\s*LESS|\|\s*LESS.*less/) {
+	$num = $1 if s/^(\d+)\s+//;
+	if (! /^less\s|\|\s*less|^LESS|\|\s*LESS.*less/) {
 		print "### skipping invalid line $_";
 		next;
 	}
@@ -108,10 +109,10 @@ while (<DATA>) {
 	chomp $cmd;
 	$cmd =~ s/\$T/$tdir/g;
 	my $comp = <DATA>;
-	$num++;
 	my $skip;
 	$skip = 1 if @numtest and ! grep {$num == $_} @numtest;
 	$skip = 1 if @strtest and ! grep {$cmd =~ /$_/} @strtest;
+	$skip = 1 if ! $num;
 	next if $skip;
 	$comment = $cmd =~ s/\s+#(.*)// ? $1 : '';
 	$needed = $comment =~ s/[#,]? needs (.*)// ? $1 : '';
@@ -167,6 +168,7 @@ while (<DATA>) {
 	print "result for :$cmd:\n$res" if $ok and $verbose;
 	printf "%2d %6s %s %s\n", $num, $ignore ? 'ignore' : $ok ? $ok: 'NOT ok', $comment, $ignore ? "(needs $needed)" : '';
 	print "\t   failing command: $cmd\n" if ! $ok and ! $ignore;
+	$num = 0;
 }
 
 $duration = time() - $duration;
@@ -218,266 +220,268 @@ sub comp {
 }
 __END__
 ### archive tests
-less tests/archive.tgz			# contents of archive with test files
+1 less tests/archive.tgz			# contents of archive with test files
 ~ .* test_tar
-less $T/tests/test_tar			# tar contents (from unpacked file)
+2 less $T/tests/test_tar			# tar contents (from unpacked file)
 ~ .* tests/textfile
-less tests/archive.tgz:test_tar		# tar contents (from archive without unpacking)
+3 less tests/archive.tgz:test_tar		# tar contents (from archive without unpacking)
 ~ .* tests/textfile
-less $T/tests/test_tar:tests/textfile	# extract file from tar (unpacked)
+4 less $T/tests/test_tar:tests/textfile	# extract file from tar (unpacked)
 = test
-less tests/archive.tgz:test_tar:tests/textfile # (on the fly)
+5 less tests/archive.tgz:test_tar:tests/textfile # (on the fly)
 = test
 ###    plain tar file names with a : not allowed, use ./tar:name, not tar:name
-less $T/tests/test:tar			# tar file name with colon git #51
+6 less $T/tests/test:tar			# tar file name with colon git #51
 ~ .* tests/textfile
-less $T/tests/test:tar=tests/textfile	# extract file from tar file with colon
+7 less $T/tests/test:tar=tests/textfile	# extract file from tar file with colon
 = test
-less $T/tests/test_rpm			# rpm contents, needs rpm2cpio
+8 less $T/tests/test_rpm			# rpm contents, needs rpm2cpio
 ~ .* ./textfile
-less tests/archive.tgz:test_rpm		# (on the fly), needs rpm2cpio
+9 less tests/archive.tgz:test_rpm		# (on the fly), needs rpm2cpio
 ~ .* ./textfile
-less $T/tests/test_rpm:./textfile		# extract file from rpm, needs rpm2cpio
+10 less $T/tests/test_rpm:./textfile		# extract file from rpm, needs rpm2cpio
 = test
-less tests/archive.tgz:test_rpm:./textfile	# (on the fly), needs rpm2cpio
+11 less tests/archive.tgz:test_rpm:./textfile	# (on the fly), needs rpm2cpio
 = test
-less $T/tests/test.jar			# jar contents, needs unzip
+12 less $T/tests/test.jar			# jar contents, needs unzip
 ~ .*/MANIFEST.MF
-less tests/archive.tgz:test.jar		# (on the fly), needs unzip
+13 less tests/archive.tgz:test.jar		# (on the fly), needs unzip
 ~ .*/MANIFEST.MF
-less $T/tests/test.jar:META-INF/MANIFEST.MF	# # extract file from jar, needs unzip
+14 less $T/tests/test.jar:META-INF/MANIFEST.MF	# # extract file from jar, needs unzip
 ~ .*: test
-less tests/archive.tgz:test.jar:META-INF/MANIFEST.MF	# (on the fly), needs unzip
+15 less tests/archive.tgz:test.jar:META-INF/MANIFEST.MF	# (on the fly), needs unzip
 ~ .*: test
-less $T/tests/test_zip			# zip contents, needs unzip
+16 less $T/tests/test_zip			# zip contents, needs unzip
 ~ .* 10240 .*
-less tests/archive.tgz:test_zip		# (on the fly), needs unzip
+17 less tests/archive.tgz:test_zip		# (on the fly), needs unzip
 ~ .* 10240 .*
-less $T/tests/test_zip:tests/test.tar	# extract tar archive from zip, needs unzip
+18 less $T/tests/test_zip:tests/test.tar	# extract tar archive from zip, needs unzip
 ~ .* tests/textfile
-less tests/archive.tgz:test_zip:tests/test.tar	# (on the fly), needs unzip
+19 less tests/archive.tgz:test_zip:tests/test.tar	# (on the fly), needs unzip
 ~ .* tests/textfile
-less $T/tests/test_zip:tests/test.tar:tests/textfile	# extract file from chained archives git #45, needs unzip
+20 less $T/tests/test_zip:tests/test.tar:tests/textfile	# extract file from chained archives git #45, needs unzip
 = test
-less tests/archive.tgz:test_zip:tests/test.tar:tests/textfile	# (on the fly), needs unzip
+21 less tests/archive.tgz:test_zip:tests/test.tar:tests/textfile	# (on the fly), needs unzip
 = test
-less $T/tests/test_deb					# debian contents
+22 less $T/tests/test_deb					# debian contents
 ~ .* ./test.txt
-#less tests/archive.tgz:test_deb		# (on the fly)
-#~ .* ./test.txt
-less $T/tests/test_deb:./test.txt		# extract file from debian package
+23 less tests/archive.tgz:test_deb		# (on the fly)
+~ .* ./test.txt
+24 less $T/tests/test_deb:./test.txt		# extract file from debian package
 = test
-#less tests/archive.tgz:test_deb:./test.txt	# (on the fly)
-#= test
-less $T/tests/test_rar			# rar contents, needs unrar|rar|bsdtar
+25 less tests/archive.tgz:test_deb:./test.txt	# (on the fly)
+= test
+26 less $T/tests/test_rar			# rar contents, needs unrar|rar|bsdtar
 ~ .* testok/a b
-less tests/archive.tgz:test_rar		# (on the fly), needs unrar|rar|bsdtar
+27 less tests/archive.tgz:test_rar		# (on the fly), needs unrar|rar|bsdtar
 ~ .* testok/a b
-less $T/tests/test_rar:testok/a\ b		# extract file from rar, needs unrar|rar|bsdtar
+28 less $T/tests/test_rar:testok/a\ b		# extract file from rar, needs unrar|rar|bsdtar
 = test
-less tests/archive.tgz:test_rar:testok/a\ b	# (on the fly), needs unrar|rar|bsdtar
+29 less tests/archive.tgz:test_rar:testok/a\ b	# (on the fly), needs unrar|rar|bsdtar
 = test
-less $T/tests/test_cab			# ms cabinet contents, needs cabextract
+30 less $T/tests/test_cab			# ms cabinet contents, needs cabextract
 ~ .* cabinet.txt
-less tests/archive.tgz:test_cab		# (on the fly), needs cabextract
+31 less tests/archive.tgz:test_cab		# (on the fly), needs cabextract
 ~ .* cabinet.txt
-less $T/tests/test_cab:a\ text.gz		# extract gzipped file from cab, needs cabextract
+32 less $T/tests/test_cab:a\ text.gz		# extract gzipped file from cab, needs cabextract
 = test
-less tests/archive.tgz:test_cab:a\ text.gz	# (on the fly), needs cabextract
+33 less tests/archive.tgz:test_cab:a\ text.gz	# (on the fly), needs cabextract
 = test
-less $T/tests/test_7z			# 7z contents, needs 7zz|7zr|7za
+34 less $T/tests/test_7z			# 7z contents, needs 7zz|7zr|7za
 ~ .* testok/aaa.txt
-less tests/archive.tgz:test_7z		# (on the fly), needs 7zz|7zr|7za
+35 less tests/archive.tgz:test_7z		# (on the fly), needs 7zz|7zr|7za
 ~ .* testok/aaa.txt
-less $T/tests/test_7z:testok/a\|b.txt	# extract file from 7z, needs 7zz|7zr|7za
+36 less $T/tests/test_7z:testok/a\|b.txt	# extract file from 7z, needs 7zz|7zr|7za
 = test
-less tests/archive.tgz:test_7z:testok/a\|b.txt	# (on the fly), needs 7zz|7zr|7za
+37 less tests/archive.tgz:test_7z:testok/a\|b.txt	# (on the fly), needs 7zz|7zr|7za
 = test
-less $T/tests/test_iso			# iso9660 contents, needs bsdtar|isoinfo
+38 less $T/tests/test_iso			# iso9660 contents, needs bsdtar|isoinfo
 ~ .* ISO.TXT|/ISO.TXT;1
-less tests/archive.tgz:test_iso		# (on the fly), needs bsdtar|isoinfo
+39 less tests/archive.tgz:test_iso		# (on the fly), needs bsdtar|isoinfo
 ~ .* ISO.TXT|/ISO.TXT;1
-less $T/tests/test_iso:ISO.TXT		# extract file from iso9660, needs bsdtar
+40 less $T/tests/test_iso:ISO.TXT		# extract file from iso9660, needs bsdtar
 = test
-less tests/archive.tgz:test_iso:ISO.TXT	# (on the fly), needs bsdtar
+41 less tests/archive.tgz:test_iso:ISO.TXT	# (on the fly), needs bsdtar
 = test
-less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo, not bsdtar
+42 less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo, not bsdtar
 = test
-less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo, not bsdtar
+43 less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo, not bsdtar
 = test
-less $T/tests/test_ar			# ar archive contents
+44 less $T/tests/test_ar			# ar archive contents
 ~ .* a=b/?
-less tests/archive.tgz:test_ar		# (on the fly)
+45 less tests/archive.tgz:test_ar		# (on the fly)
 ~ .* a=b/?
-less $T/tests/test_ar:a=b			# extract file from ar
+46 less $T/tests/test_ar:a=b			# extract file from ar
 = test
-less tests/archive.tgz:test_ar:a=b	# (on the fly)
+47 less tests/archive.tgz:test_ar:a=b	# (on the fly)
 = test
-less tests/archive.tgz:test_cpio:textfile	# (on the fly) needs cpio
+48 less $T/tests/test_cpio:textfile	# extract from cpio needs cpio
+= test
+49 less tests/archive.tgz:test_cpio:textfile	# (on the fly) needs cpio
 = test
 ### uncompress tests not covered in archive tests
-less tests/compress.tgz:test.tar.bz2:tests/textfile	# extract from bzip2
+50 less tests/compress.tgz:test.tar.bz2:tests/textfile	# extract from bzip2
 = test
-less tests/compress.tgz:test.tar.lzip:tests/textfile	# extract from lzip, needs lzip
+51 less tests/compress.tgz:test.tar.lzip:tests/textfile	# extract from lzip, needs lzip
 = test
-less tests/compress.tgz:test.tar.lzma:tests/textfile	# extract from lzma, needs lzma
+52 less tests/compress.tgz:test.tar.lzma:tests/textfile	# extract from lzma, needs lzma
 = test
-less tests/compress.tgz:test.tar.xz:tests/textfile	# extract from xz, needs xz
+53 less tests/compress.tgz:test.tar.xz:tests/textfile	# extract from xz, needs xz
 = test
 ###    call dd also for brotli to keep the script structure clean git #19 (revert)
-less tests/compress.tgz:test.bro:tests/textfile		# extract from brotli, needs brotli
+54 less tests/compress.tgz:test.bro:tests/textfile		# extract from brotli, needs brotli
 = test
-less tests/compress.tgz:test.tar.zst:tests/textfile	# extract from zstandard git #13,20,36,44, needs zstd
+55 less tests/compress.tgz:test.tar.zst:tests/textfile	# extract from zstandard git #13,20,36,44, needs zstd
 = test
-less tests/compress.tgz:test.tar.lz4:tests/textfile	# extract from lz4 git #14, needs lz4
+56 less tests/compress.tgz:test.tar.lz4:tests/textfile	# extract from lz4 git #14, needs lz4
 = test
 ### filter tests, produce readable output
-less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv
+57 less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv
 = test
-less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file  needs iconv
+58 less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file  needs iconv
 = äöü
 ###    no output if file not modified (watch growing files) git #4,25 (revert)
-less $T/tests/test_plain			# plain text, no output from lesspipe.sh
+59 less $T/tests/test_plain			# plain text, no output from lesspipe.sh
 = test=a
-less tests/filter.tgz:test_html		# html text, needs html_converter
+60 less tests/filter.tgz:test_html		# html text, needs html_converter
 ~ \s*test
-less tests/filter.tgz:test_html::	# html unmodified text
+61 less tests/filter.tgz:test_html::	# html unmodified text
 ~ </head>
-less tests/filter.tgz:test_pdf		# pdf, needs pdftotext|pdftohtml,html_converter|pdfinfo
+62 less tests/filter.tgz:test_pdf		# pdf, needs pdftotext|pdftohtml,html_converter|pdfinfo
 = test
-less tests/filter.tgz:test_ps		# postscript, needs ps2ascii
+63 less tests/filter.tgz:test_ps		# postscript, needs ps2ascii
 ~ .* test\r?
-less tests/filter.tgz:test.class	# java class file, needs procyon
+64 less tests/filter.tgz:test.class	# java class file, needs procyon
 ~ public class test
-less tests/filter.tgz:test_docx		# docx (neu) git #24,26,27,37, needs pandoc|docx2txt|libreoffice
+65 less tests/filter.tgz:test_docx		# docx (neu) git #24,26,27,37, needs pandoc|docx2txt|libreoffice
 = test
-less tests/filter.tgz:test_pptx		# pptx (neu), needs pptx2md,mdcat|pptx2md,pandoc|libreoffice,html_converter
+66 less tests/filter.tgz:test_pptx		# pptx (neu), needs pptx2md,mdcat|pptx2md,pandoc|libreoffice,html_converter
 ~ processing slide 1...|.*test.*
-less tests/filter.tgz:test_xlsx		# xlsx (neu), needs in2csv|xlscat|excel2csv|libreoffice
+67 less tests/filter.tgz:test_xlsx		# xlsx (neu), needs in2csv|xlscat|excel2csv|libreoffice
 ~ ^test$
-less tests/filter.tgz:test_odt		# odt, needs pandoc|odt2txt|libreoffice
+68 less tests/filter.tgz:test_odt		# odt, needs pandoc|odt2txt|libreoffice
 = test
-less tests/filter.tgz:test_odp		# odp, needs libreoffice,html_converter
+69 less tests/filter.tgz:test_odp		# odp, needs libreoffice,html_converter
 ~ \s*test
-less tests/filter.tgz:test_ods		# ods, needs xlscat|libreoffice,html_converter
+70 less tests/filter.tgz:test_ods		# ods, needs xlscat|libreoffice,html_converter
 ~ test
-less tests/filter.tgz:test_doc		# doc (old), needs wvText|catdoc|libreoffice
+71 less tests/filter.tgz:test_doc		# doc (old), needs wvText|catdoc|libreoffice
 ~  *test
-less tests/filter.tgz:test_ppt:ms-powerpoint	# ppt (old), catppt not always working, needs libreoffice,html_converter
+72 less tests/filter.tgz:test_ppt:ms-powerpoint	# ppt (old), catppt not always working, needs libreoffice,html_converter
 ~ .*1. test|\s*test
-less tests/filter.tgz:test_xls		# xls (old), needs in2csv|xls2csv|libreoffice,html_converter
+73 less tests/filter.tgz:test_xls		# xls (old), needs in2csv|xls2csv|libreoffice,html_converter
 ~ ^test$|^"test"$
-less tests/filter.tgz:test_ooffice1	# openoffice1 (very old), needs sxw2txt|libreoffice
+74 less tests/filter.tgz:test_ooffice1	# openoffice1 (very old), needs sxw2txt|libreoffice
 = test
-less tests/filter.tgz:test_nroff	# man pages etc (nroff), needs groff|mandoc
+75 less tests/filter.tgz:test_nroff	# man pages etc (nroff), needs groff|mandoc
 ~ .* Commands
-less tests/filter.tgz:test_rtf		# rtf, needs unrtf|libreoffice
+76 less tests/filter.tgz:test_rtf		# rtf, needs unrtf|libreoffice
 ~ test
-less tests/filter.tgz:test_dvi		# dvi, needs dvi2tty
+77 less tests/filter.tgz:test_dvi		# dvi, needs dvi2tty
 ~ test
-less tests/filter.tgz:test_so		# shared library (.so)
+78 less tests/filter.tgz:test_so		# shared library (.so)
 ~ .* T test
-less tests/filter.tgz:test.pod		# pod text, needs pod2text|perldoc
+79 less tests/filter.tgz:test.pod		# pod text, needs pod2text|perldoc
 ~     test
-less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoc
+80 less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoc
 ~ test
-less tests/filter.tgz:test_nc4		# netcdf, needs h5dump|ncdump
+81 less tests/filter.tgz:test_nc4		# netcdf, needs h5dump|ncdump
 ~ data:|\s*DATA .
-less tests/filter.tgz:test_nc5		# hierarchical data format, needs h5dump|ncdump
+82 less tests/filter.tgz:test_nc5		# hierarchical data format, needs h5dump|ncdump
 ~ data:|\s*DATA .
-less tests/filter.tgz:test_matlab	# matlab git #18, needs matdump
+83 less tests/filter.tgz:test_matlab	# matlab git #18, needs matdump
 ~ r
-less tests/filter.tgz:matlab.mat	# matlab, not recognized by file, needs matdump
+84 less tests/filter.tgz:matlab.mat	# matlab, not recognized by file, needs matdump
 ~ r
-less tests/filter.tgz:test_djvu		# djvu, needs djvutxt
+85 less tests/filter.tgz:test_djvu		# djvu, needs djvutxt
 = test 
-less tests/filter.tgz:test.pem		# SSL related files git #15
+86 less tests/filter.tgz:test.pem		# SSL related files git #15
 ~ .* 2038 GMT
-less tests/filter.tgz:test.bplist	# Apple binary property list, needs plistutil
+87 less tests/filter.tgz:test.bplist	# Apple binary property list, needs plistutil
 ~ <dict>
 ###    no test case for decoding gpg/pgp encrypted files git #12
-less tests/filter.tgz:test_mp3		# mp3 without mp3 extension, needs exiftool, not mediainfo
+88 less tests/filter.tgz:test_mp3		# mp3 without mp3 extension, needs exiftool, not mediainfo
 ~ Title .* test
-less tests/filter.tgz:test_mp3:mp3	# mp3, needs id3v2
+89 less tests/filter.tgz:test_mp3:mp3	# mp3, needs id3v2
 ~ Title  : test .*
-less tests/filter.tgz:test_data		# binary data
+90 less tests/filter.tgz:test_data		# binary data
 = test
 ### colorizing tests (ok should be displayed colored, for MacOSX see git #48)
-less $T/tests				# directory
+91 less $T/tests				# directory
 c test.jar
-less tests/archive.tgz			# contents of tar colorized with archive_color
+92 less tests/archive.tgz			# contents of tar colorized with archive_color
 c test_cab
-less $T/tests/test.c			# C language (vimcolor)
+93 less $T/tests/test.c			# C language (vimcolor)
 c void
-LESSCOLORIZER=source-highlight less $T/tests/test.c	# C language (source-highlight) git #3, needs source-highlight
+94 LESSCOLORIZER=source-highlight less $T/tests/test.c	# C language (source-highlight) git #3, needs source-highlight
 c void
-less tests/filter.tgz:test.c		# C language from file within archive
+95 less tests/filter.tgz:test.c		# C language from file within archive
 c void
-LESSCOLORIZER='pygmentize -O style=vim' less $T/tests/test.c # allow setting pygmentize style option git #5, needs pygmentize
+96 LESSCOLORIZER='pygmentize -O style=vim' less $T/tests/test.c # allow setting pygmentize style option git #5, needs pygmentize
 c void
-cat $T/tests/test.c|less - :c		# even colorize piped files
+97 cat $T/tests/test.c|less - :c		# even colorize piped files
 c void
-less tests/filter.tgz:test_html:html	# html colorized text
+98 less tests/filter.tgz:test_html:html	# html colorized text
 c head
-less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text|perldoc
+99 less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text|perldoc
 c =head1
-less tests/filter.tgz:test_plain:sh	# plain text, force color (shellscript)
+100 less tests/filter.tgz:test_plain:sh	# plain text, force color (shellscript)
 c test
-less tests/filter.tgz:index.rst		# reStructuredText, needs mdcat
+101 less tests/filter.tgz:index.rst		# reStructuredText, needs mdcat
 c # test
-less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
+102 less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
 c false
-LESSCOLORIZER=code2color less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39
+103 LESSCOLORIZER=code2color less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39
 c test
-less tests/filter.tgz:Makefile		# bsd Makefile not (file 5.28) / is (5.39) correctly recognized git #10
+104 less tests/filter.tgz:Makefile		# bsd Makefile not (file 5.28) / is (5.39) correctly recognized git #10
 c PORTNAME
-diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped through less works git #11
+105 diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped through less works git #11
 c test=a
 ### github issues (solved and unsolved) and other test cases
-LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives
+106 LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives
 c sub
-LESSCOLORIZER=pygmentize less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
+107 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
 c test
-less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
+108 less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
 c sub
-less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154
+109 less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154
 c name
-LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
+110 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
-less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1
+111 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1
 ~ 
-LESS= less tests/dir.zip	# do not colorize listing git #140
+112 LESS= less tests/dir.zip	# do not colorize listing git #140
 ~ .* dir/
-less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
+113 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
-less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
+114 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
 = test
-less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces git #69
+115 less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces git #69
 ~ .*test\[a\]\(b\)\{c\}
-less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc.
+116 less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc.
 = test
-less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces (on the fly)
+117 less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces (on the fly)
 ~ .*test\[a\]\(b\)\{c\}
-less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc. (on the fly)
+118 less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc. (on the fly)
 = test
-less $T/tests/special.tgz=aaa::b::c::d	# file name with colon (use alternate separator)
+119 less $T/tests/special.tgz=aaa::b::c::d	# file name with colon (use alternate separator)
 = test
-less $T/tests/symlink			# symbolic link to file name with special chars
+120 less $T/tests/symlink			# symbolic link to file name with special chars
 = test=a
-cat $T/tests/test_zip|less			# can use pipes with LESSOPEN =|-... git #2
+121 cat $T/tests/test_zip|less			# can use pipes with LESSOPEN =|-... git #2
 ~ .*10240.*
-cat $T/tests/test_zip|less - :tests/test.tar	# extract files from piped file
+122 cat $T/tests/test_zip|less - :tests/test.tar	# extract files from piped file
 ~ .* tests/textfile
-cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive
+123 cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive
 ~ test
-cat $T/tests/test_plain|LESSCOLORIZER=code2color less	# display piped text files
+124 cat $T/tests/test_plain|LESSCOLORIZER=code2color less	# display piped text files
 ~ test=a
-cat $T/tests/test_plain|less - :plain	# display piped plain text files
+125 cat $T/tests/test_plain|less - :plain	# display piped plain text files
 ~ test=a
-less +F $T/tests/test_plain			# watch growing files with +F git #4
+126 less +F $T/tests/test_plain			# watch growing files with +F git #4
 ~ test=a
-less $T/tests/test_plain :			# even watch growing files without +F
+127 less $T/tests/test_plain :			# even watch growing files without +F
 ~ test=a
-less $T/tests/test.jar			# support for jar files git #8,22
+128 less $T/tests/test.jar			# support for jar files git #8,22
 ~ .* META-INF/
 ###    colorize markdown files (mdcat) on MacOSX and iTerm2 (see git #48)
