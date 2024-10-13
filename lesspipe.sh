@@ -307,7 +307,7 @@ get_unpack_cmd () {
 			{ has_cmd in2csv && cmd=(in2csv -f xls "$2"); } ||
 			{ has_cmd xls2csv && cmd=(istemp xls2csv "$2"); } ;;
 	esac
-	[[ $cmd == '' ]] || return
+	[[ ${cmd[0]} == '' ]] || return
 	# convert into utf8
 
 	if [[ -n $lclocale && $fchar != binary && $fchar != *ascii && $fchar != "$lclocale" && $fchar != unknown* ]]; then
