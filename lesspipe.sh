@@ -78,8 +78,8 @@ filetype () {
 			[[ $fcat == text ]] && ftype="$fext" ;;
 		tsx)
 			[[ $fcat == text ]] && ftype=typescript-jsx ;;
-		appimage)
-			[[ $fcat == application && -x "$1" ]] && ftype="$fext" ;;
+		appimage|AppImage)
+			[[ $fcat == application && -x "$1" ]] && ftype=appimage ;;
 		snap)
 			[[ $fcat == application ]] && ftype="$fext" ;;
 	esac
@@ -295,18 +295,19 @@ get_unpack_cmd () {
 			[[ $2 == - ]] || fileext="$2"
 			fileext=${fileext%%.gz}; fileext=${fileext%%.bz2}
 			[[ $x == compress ]] && x=gzip
-			has_cmd "$x" && cmd=("$x" -cd "$2") && return ;;
+			has_cmd "$x" && cmd=("$x" -cd "$2") ;;
 		zstd)
-			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") && return ;;
+			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") ;;
 		lz4)
-			has_cmd lz4 && cmd=(lz4 -cdq "$2") && return ;;
+			has_cmd lz4 && cmd=(lz4 -cdq "$2") ;;
 		xlsx)
-			has_cmd in2csv && cmd=(in2csv -f xlsx "$2") && return
-			has_cmd excel2csv && cmd=(istemp excel2csv "$2") && return ;;
+			{ has_cmd in2csv && cmd=(in2csv -f xls "$2"); } ||
+			{ has_cmd excel2csv && cmd=(istemp xls2csv "$2"); } ;;
 		ms-excel)
-			has_cmd in2csv && cmd=(in2csv -f xls "$2") && return
-			has_cmd xls2csv && cmd=(istemp xls2csv "$2") && return ;;
+			{ has_cmd in2csv && cmd=(in2csv -f xls "$2"); } ||
+			{ has_cmd xls2csv && cmd=(istemp xls2csv "$2"); } ;;
 	esac
+	[[ $cmd == '' ]] || return
 	# convert into utf8
 
 	if [[ -n $lclocale && $fchar != binary && $fchar != *ascii && $fchar != "$lclocale" && $fchar != unknown* ]]; then

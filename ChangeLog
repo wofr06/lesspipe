@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- improved recognition of appimage files
 Version 2.15 Oct 03 2024
 - improved parsing of bat/batcat options in LESSCOLORIZE 
 - display all certificates in pem files, not only the 1st one
