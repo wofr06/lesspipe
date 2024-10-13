@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # lesscomplete, a helper script for the _less completion script
-# synced with lesspipe 2.13
+# synced with lesspipe 2.15
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 
 has_cmd () {
@@ -11,7 +11,7 @@ fileext () {
 	fn=${1##*/}
 	case "$fn" in
 		.*.*) extension=${fn##*.} ;;
-		.*) extension= ;;
+		.*) extension=${fn#.} ;;
 		*.*) extension=${fn##*.} ;;
 	esac
 	echo "$extension"
@@ -50,6 +50,8 @@ filetype () {
 		fi
 		if [[ "$fext" == appimage || "$fext" == snap ]]; then
 			ftype="$fext"
+		elif [[ "$fext" == AppImage ]]; then
+			ftype=appimage
 		fi
 	fi
 
@@ -87,21 +89,16 @@ show () {
 			file1="${1%"$rest1"}"
 		fi
 	done
-	if [[ ! -e "$file1" && "$file1" != '-' ]]; then
-		exit 1
-	fi
+	[[ ! -e "$file1" && "$file1" != '-' ]] && exit 1
 	rest11="${rest1#"$sep"}"
 	file2="${rest11%%"$sep"*}"
 	rest2="${rest11#"$file2"}"
 	while [[ "$rest2" == "$sep$sep"* ]]; do
-		if [[ "$rest2" == "$sep$sep" ]]; then
-			break
-		else
-			rest2="${rest2#"$sep$sep"}"
-			file2="${rest2%%"$sep"*}"
-			rest2="${rest2#"$file2"}"
-			file2="${rest11%"$rest2"}"
-		fi
+		[[ "$rest2" == "$sep$sep" ]] && break
+		rest2="${rest2#"$sep$sep"}"
+		file2="${rest2%%"$sep"*}"
+		rest2="${rest2#"$file2"}"
+		file2="${rest11%"$rest2"}"
 	done
 	rest2="${rest11#"$file2"}"
 	rest11="$rest1"
@@ -109,7 +106,7 @@ show () {
 	if [[ "${cmd[*]}" == "" ]]; then
 		ft=$(filetype "$file1")
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "$cmd" != "" && -z $colorizer ]]; then
+		if [[ "${cmd[*]}" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
 			# if nothing to convert, exit without a command
@@ -120,7 +117,7 @@ show () {
 		c1=("${cmd[@]}")
 		ft=$("${c1[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "$cmd" != "" && -z $colorizer ]]; then
+		if [[ "${cmd[*]}" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
 			"${c1[@]}" | isfinal "$ft" - "$rest11"
@@ -129,7 +126,7 @@ show () {
 		c2=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "$cmd" != "" && -z $colorizer ]]; then
+		if [[ "${cmd[*]}" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
 			"${c1[@]}" | "${c2[@]}" | isfinal "$ft" - "$rest11"
@@ -138,7 +135,7 @@ show () {
 		c3=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "$cmd" != "" && -z $colorizer ]]; then
+		if [[ "${cmd[*]}" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
 			"${c1[@]}" | "${c2[@]}" | "${c3[@]}" | isfinal "$ft" - "$rest11"
@@ -147,7 +144,7 @@ show () {
 		c4=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "$cmd" != "" && -z $colorizer ]]; then
+		if [[ "${cmd[*]}" != "" && -z $colorizer ]]; then
 			show "-$rest1"
 		else
 			"${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | isfinal "$ft" - "$rest11"
@@ -156,7 +153,7 @@ show () {
 		c5=("${cmd[@]}")
 		ft=$("${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | filetype -) || exit 1
 		get_unpack_cmd "$ft" "$file1" "$rest1"
-		if [[ "$cmd" != "" && -z $colorizer ]]; then
+		if [[ "${cmd[*]}" != "" && -z $colorizer ]]; then
 			echo "$0: Too many levels of encapsulation"
 		else
 			"${c1[@]}" | "${c2[@]}" | "${c3[@]}" | "${c4[@]}" | "${c5[@]}" | isfinal "$ft" - "$rest11"
@@ -169,9 +166,7 @@ get_unpack_cmd () {
 	fcat="${1##*:}"
 	x="${1%%:*}"
 	cmd=()
-	if [[ "$3" == $sep$sep ]]; then
-		return
-	fi
+	[[ "$3" == $sep$sep ]] && return
 	declare t
 	# uncompress
 	case $x in
@@ -180,11 +175,11 @@ get_unpack_cmd () {
 			[[ $2 == - ]] || fileext="$2"
 			fileext=${fileext%%.gz}; fileext=${fileext%%.bz2}
 			[[ $x == compress ]] && x=gzip
-			has_cmd "$x" && cmd=("$x" -cd "$2") && return ;;
+			has_cmd "$x" && cmd=("$x" -cd "$2") ;;
 		zstd)
-			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") && return ;;
+			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") ;;
 		lz4)
-			has_cmd lz4 && cmd=(lz4 -cdq "$2") && return ;;
+			has_cmd lz4 && cmd=(lz4 -cdq "$2") ;;
 	esac
 	[[ "$3" == "$sep" ]] && return
 	file2=${3#"$sep"}
@@ -237,16 +232,14 @@ get_unpack_cmd () {
 		esac
 	fi
 	[[ -n $prog ]] && cmd=(isarchive "$prog" "$2" "$file2")
-	if [[ -n ${cmd[0]} ]]; then
+	if [[ -n ${cmd[*]} ]]; then
 		[[ -n "$file2" ]] && file2= && return
 		colorizer='cat'
 	fi
 }
 
 isfinal () {
-	if [[ -n $cmd && $colorizer == 'cat' ]]; then
-		"${cmd[@]}"
-	fi
+	[[ -n $cmd && $colorizer == 'cat' ]] && "${cmd[@]}"
 }
 
 isarchive () {
@@ -254,7 +247,7 @@ isarchive () {
 	if [[ -n $3 ]]; then
 		case $prog in
 			tar|bsdtar)
-				$prog Oxf "$2" "$3" 2>/dev/null;;
+				$prog Oxf "$2" -- "$3" 2>/dev/null;;
 			rar|unrar)
 				istemp "$prog p -inul" "$2" "$3" ;;
 			ar)
@@ -292,11 +285,7 @@ isarchive () {
 				istemp "isoinfo -d -i" "$t"| grep -E '^Joliet' && joliet=J
 				isoinfo -fR"$joliet" -i "$t" ;;
 			cpio)
-				if [[ "$2" == - ]]; then
-					cpio -t --quiet
-				else
-					cpio -t --quiet --file "$2"
-				fi ;;
+				cpio -t --quiet  < "$2" ;;
 			7zz|7za|7zr)
 				istemp "$prog l" "$2"|grep -E '^[0-9][0-9][0-9[0-9]'|cut -c 54-|grep -Ev ' files$'
 		esac
@@ -314,7 +303,7 @@ isimage () {
 	if [[ -z "$3" ]]; then
 		istemp "unsquashfs -d . -lc $offset" "$2"
 	else
-		istemp "unsquashfs -cat $offset"  "$2" "$3"
+		istemp "unsquashfs -cat $offset" "$2" "$3"
 	fi
 }
 
