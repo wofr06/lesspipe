@@ -310,16 +310,16 @@ get_unpack_cmd () {
 	[[ ${cmd[*]} == '' ]] || return
 	# convert into utf8
 
-	if [[ -n $lclocale && $fchar != binary && $fchar != *ascii && $fchar != "$lclocale" && $fchar != unknown* ]]; then
+	if [[ -n $charmap && $fchar != binary && $fchar != *ascii && $fchar != "$charmap" && $fchar != unknown* ]]; then
 		qm="\033[7m?\033[m" # inverted question mark
 		rep=(-c)
 		trans=()
-		echo ""|iconv --byte-subst - 2>/dev/null && rep=(--unicode-subst="$qm" --byte-subst="$qm" --widechar-subst="$qm") # MacOS
-		echo ""|iconv -f "$fchar" -t "$locale//TRANSLIT" - 2>/dev/null && trans=(-t "$locale//TRANSLIT")
+		iconv --byte-subst - </dev/null 2>/dev/null && rep=(--unicode-subst="$qm" --byte-subst="$qm" --widechar-subst="$qm") # MacOS
+		iconv -f "$fchar" -t "$charmap//TRANSLIT" - </dev/null 2>/dev/null && trans=(-t "$charmap//TRANSLIT")
 		msg "append $sep$sep to filename to view the original $fchar encoded file"
 		cmd=(iconv "${rep[@]}" -f "$fchar" "${trans[@]}" "$2")
 		# loop protection, just in case
-		lclocale=
+		charmap=
 		return
 	fi
 	[[ "$3" == "$sep" ]] && return
@@ -828,7 +828,7 @@ handle_w3m () {
 ishtml () {
 	[[ $1 == - ]] && arg1=-stdin || arg1="$1"
 	htmlopt=--unicode-snob
-	has_cmd html2text && echo ""|html2text -utf8 2>/dev/null && htmlopt=-utf8
+	has_cmd html2text && html2text -utf8 </dev/null 2>/dev/null && htmlopt=-utf8
 	# 3 lines following can easily be reshuffled according to the preferred tool
 	has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
 	has_cmd w3m && handle_w3m "$1" && return ||
@@ -843,8 +843,9 @@ set +o noclobber
 setopt sh_word_split 2>/dev/null
 PATH=$PATH:${0%%/lesspipe.sh}
 # the current locale in lowercase (or generic utf-8)
-locale=$(locale|grep LC_CTYPE|tr -d '"') || locale=utf-8
-lclocale=$(echo "${locale##*.}"|tr '[:upper:]' '[:lower:]')
+declare -l charmap
+charmap=$(locale -k  charmap) || charmap="charmap=utf-8"
+eval "$charmap"
 
 sep=:					# file name separator
 altsep='='				# alternate separator character
