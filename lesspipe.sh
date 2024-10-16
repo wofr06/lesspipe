@@ -201,14 +201,11 @@ show () {
 	file1="${1%%"$sep"*}"
 	rest1="${1#"$file1"}"
 	while [[ "$rest1" == "$sep$sep"* ]]; do
-		if [[ "$rest1" == "$sep$sep" ]]; then
-			break
-		else
-			rest1="${rest1#"$sep$sep"}"
-			file1="${rest1%%"$sep"*}"
-			rest1="${rest1#"$file1"}"
-			file1="${1%"$rest1"}"
-		fi
+		[[ "$rest1" == "$sep$sep" ]] && break
+		rest1="${rest1#"$sep$sep"}"
+		file1="${rest1%%"$sep"*}"
+		rest1="${rest1#"$file1"}"
+		file1="${1%"$rest1"}"
 	done
 	[[ ! -e "$file1" && "$file1" != '-' ]] && exit 1
 	rest11="${rest1#"$sep"}"
@@ -464,12 +461,8 @@ has_colorizer () {
 			[[ -n "$3" ]] && opt=(-l "$3" "$1") ;;
 		nvimpager)
 			opt=(-c "$1")
-			if [[ -n "$3" ]]; then
-				ft=${3##*/}
-				ft=${ft##*.}
-				opt=(-c "$1" --cmd "set filetype=$ft")
-			fi
-			;;
+			[[ -n "$3" ]] && ft=${3##*/} && ft=${ft##*.} &&
+				opt=(-c "$1" --cmd "set filetype=$ft") ;;
 		*)
 			return ;;
 	esac
@@ -629,9 +622,7 @@ isfinal () {
 	if [[ -n ${cmd[*]} ]]; then
 		# TAU: When cmd starts with environment variable settings, bash will refuse to execute it via : "${cmd[@]}"
 		# The remedy is simple : Just run it through the "env" command in that case.
-		if [[ "$cmd" =~ '=' ]]; then
-			cmd=(env "${cmd[@]}")
-		fi
+		[[ "$cmd" =~ '=' ]] && cmd=(env "${cmd[@]}")
 		"${cmd[@]}"
 	else
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" && return
@@ -713,10 +704,7 @@ isimage () {
 		offset="-o $("$2" --appimage-offset)"
 	fi
 	if [[ -z "$3" ]]; then
-		if [[ "$1" == snap ]]; then
-			has_cmd snap && snap info "$2"
-			separatorline
-		fi
+		[[ "$1" == snap ]] && has_cmd snap && snap info "$2" && separatorline
 		istemp "unsquashfs -d . -llc $offset" "$2"
 	else
 		istemp "unsquashfs -cat $offset" "$2" "$3"
