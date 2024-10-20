@@ -427,10 +427,10 @@ STDOUT and the commands executed to STDERR.
 
 ## 12. External links
 
-(last checked: Jan 29 2024):
+(last checked: Oct 20 2024):
 
 ### 12.1 URLs to some utilities (with last known release)
-- 7zz                  https://sourceforge.net/projects/sevenzip/ (2023)
+- 7zz                  https://sourceforge.net/projects/sevenzip/ (2024)
 - 7zr (outdated!)      https://sourceforge.net/projects/p7zip/ (2016)
 - cabextract           https://www.cabextract.org.uk/ (2023)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
@@ -440,21 +440,21 @@ STDOUT and the commands executed to STDERR.
 - docx2txt             https://docx2txt.sourceforge.net/ (2014)
 - dvi2tty              https://www.ctan.org/tex-archive/dviware/dvi2tty/ (2016)
 - excel2csv            https://github.com/informationsea/excel2csv (2018)
-- html2text            https://github.com/grobian/html2text (2023)
+- html2text            https://github.com/grobian/html2text (2024)
 - id3v2                https://id3v2.sourceforge.net/ (2010)
 - lzip                 https://www.nongnu.org/lzip/lzip.html (2024)
-- matdump              https://sourceforge.net/projects/matio/ (2023)
-- mediainfo            https://mediaarea.net/MediaInfo/ (2023)
+- matdump              https://sourceforge.net/projects/matio/ (2024)
+- mediainfo            https://mediaarea.net/MediaInfo/ (2024)
 - odt2txt              https://github.com/dstosberg/odt2txt (2017)
-- pandoc               https://pandoc.org/ (2023)
-- pptx2md              https://github.com/ssine/pptx2md (2023)
+- pandoc               https://pandoc.org/ (2024)
+- pptx2md              https://github.com/ssine/pptx2md (2024)
 - tarcolor             https://github.com/msabramo/tarcolor (2014)
 - archive_color        modified version of tarcolor (contained in this package)
 - unrtf                https://www.gnu.org/software/unrtf/ (2018)
 - wvText               https://github.com/AbiWord/wv/ (2014)
 - xlscat               https://metacpan.org/pod/Spreadsheet::Read (2024)
 - sxw2txt              https://vinc17.net/software/sxw2txt (2010)
-- dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2023)
+- dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2024)
 - xmq                  https://github.com/libxmq/xmq/releases/latest (2024)
 - nvimpager            https://github.com/lucc/nvimpager (2024)
 

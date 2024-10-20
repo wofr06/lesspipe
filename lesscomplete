@@ -80,14 +80,11 @@ show () {
 	file1="${1%%"$sep"*}"
 	rest1="${1#"$file1"}"
 	while [[ "$rest1" == "$sep$sep"* ]]; do
-		if [[ "$rest1" == "$sep$sep" ]]; then
-			break
-		else
-			rest1="${rest1#"$sep$sep"}"
-			file1="${rest1%%"$sep"*}"
-			rest1="${rest1#"$file1"}"
-			file1="${1%"$rest1"}"
-		fi
+		[[ "$rest1" == "$sep$sep" ]] && break
+		rest1="${rest1#"$sep$sep"}"
+		file1="${rest1%%"$sep"*}"
+		rest1="${rest1#"$file1"}"
+		file1="${1%"$rest1"}"
 	done
 	[[ ! -e "$file1" && "$file1" != '-' ]] && exit 1
 	rest11="${rest1#"$sep"}"
@@ -285,7 +282,7 @@ isarchive () {
 				istemp "isoinfo -d -i" "$t"| grep -E '^Joliet' && joliet=J
 				isoinfo -fR"$joliet" -i "$t" ;;
 			cpio)
-				cpio -t --quiet  < "$2" ;;
+				cpio -t --quiet < "$2" ;;
 			7zz|7za|7zr)
 				istemp "$prog l" "$2"|grep -E '^[0-9][0-9][0-9[0-9]'|cut -c 54-|grep -Ev ' files$'
 		esac
