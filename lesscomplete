@@ -178,6 +178,7 @@ get_unpack_cmd () {
 		lz4)
 			has_cmd lz4 && cmd=(lz4 -cdq "$2") ;;
 	esac
+	[[ ${cmd[*]} == '' ]] || return
 	[[ "$3" == "$sep" ]] && return
 	file2=${3#"$sep"}
 	file2=${file2%%"$sep"*}
