@@ -231,8 +231,8 @@ Several Linux distributions do now set **LESSOPEN** by default and if the conten
 - dvi			requires `dvi2tty`
 - djvu			requires `djvutxt`
 - ps			requires `ps2ascii` (from the gs package)
-- mp3			requires `id3v2`
-- multimedia formats	requires `mediainfo` or `exiftools`
+- mp3			requires `ffprobe` or `eyeD3` or `id3v2`
+- multimedia formats	requires `ffprobe` or `mediainfo` or `exiftools`
 - image formats		requires `mediainfo` or `exiftools` or `identify`
 - hdf, nc4		requires `h5dump` or `ncdump` (NetCDF format)
 - crt, pem, csr, crl	requires `openssl`

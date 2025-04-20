@@ -145,8 +145,7 @@ while (<DATA>) {
 		$ignore = 1;
 		$needed = 'a colorizer';
 	}
-	my $res = $ignore ? '' : ($cmd =~ /|/ ? `$cmd` : `$cmd 2>&1`);
-
+	my $res = $ignore ? '' : `$cmd 2>&1`;
 	my $ok = 0;
 	my $lines = 0;
 	# zsh|bash|ksh style|file not found
@@ -400,10 +399,10 @@ __END__
 87 less tests/filter.tgz:test.bplist	# Apple binary property list, needs plistutil
 ~ <dict>
 ###    no test case for decoding gpg/pgp encrypted files git #12
-88 less tests/filter.tgz:test_mp3		# mp3 without mp3 extension, needs exiftool, not mediainfo
-~ Title .* test
-89 less tests/filter.tgz:test_mp3:mp3	# mp3, needs id3v2
-~ Title  : test .*
+88 less tests/filter.tgz:test_mp3		# mp3 without mp3 extension, needs ffprobe|mediainfo|exiftool
+~  *[Tt]itle *: *test
+89 less tests/filter.tgz:test_mp3:mp3	# mp3, needs ffprobe|eyeD3|id3v2
+~  *[Tt]itle *: *test
 90 less tests/filter.tgz:test_data		# binary data
 = test
 ### colorizing tests (ok should be displayed colored, for MacOSX see git #48)

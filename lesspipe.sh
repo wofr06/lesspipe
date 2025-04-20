@@ -590,7 +590,9 @@ isfinal () {
 			{ has_cmd plistutil && cmd=(istemp "plistutil -i" "$1"); } ||
 			{ has_cmd plutil && cmd=(istemp "plutil -p" "$1"); } ;;
 		mp3)
-			has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1") ;;
+			{ has_cmd ffprobe && cmd=(ffprobe -hide_banner -- "$1"); } ||
+			{ has_cmd eyeD3 && cmd=(istemp "eyeD3" "$1"); } ||
+			{ has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1"); } ;;
 		log)
 			has_cmd ccze && [[ $COLOR = *always ]] && ccze -A < "$1"
 			return ;;
@@ -611,6 +613,7 @@ isfinal () {
 	if [[ -z ${cmd[*]} ]]; then
 		fext=$(fileext "$1")
 		if [[ $fcat == audio || $fcat == video || $fcat == image ]]; then
+			{ has_cmd ffprobe && [[ $fcat != image ]] && cmd=(ffprobe -hide_banner -- "$1"); } ||
 			{ [[ "$1" != '-' ]] && has_cmd mediainfo && cmd=(mediainfo --Full "$1"); } ||
 			{ has_cmd exiftool && cmd=(exiftool "$1"); } ||
 			{ has_cmd identify && [[ $fcat == image ]] && cmd=(identify -verbose "$1"); }
