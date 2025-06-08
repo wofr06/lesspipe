@@ -16,6 +16,7 @@ Execute the following commands (for a more detailed description see below):
 
 or if you prefer make:
 
+  ./configure
   make
   make test
   make install
