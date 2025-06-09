@@ -1,9 +1,15 @@
-INSTALL (requires root access)
+QUICK INSTALL (requires root access)
 ==============================
 Execute the following commands (for a more detailed description see below):
 
   ./configure
-  # required
+  make		# (check for usable shell)
+  make test # (optional)
+  make install
+
+this is equivalent to the following commands (assuming that the dirs do exist)
+  ./configure
+  ./test.pl # (optional)
   cp lesspipe.sh /usr/local/bin
 
   # optional for colorizing and old openoffice writer formats
@@ -14,23 +20,20 @@ Execute the following commands (for a more detailed description see below):
   cp _less /usr/share/zsh/site-functions   #(zsh)
   cp less_completion /etc/bashcompletion.d #(bash)
 
-or if you prefer make:
-
-  make
-  make test
-  make install
+  # optional intallation of a man page
+  cp lesspipe.1 /usr/local/share/man/man1
 
 or INSTALL locally for the logged in user
 =========================================
 # if it contains a directory writable by you (e.g. ~/bin)
-  [[ -d ~/bin ]] || mkdir ~/bin
+  mkdir -p ~/bin
   cp lesspipe.sh lesscomplete ~/bin
   # optional for colorizing and old openoffice writer formats
   cp code2color archive_color vimcolor sxw2txt lesscomplete ~/bin
 
 # check your PATH variable, if it does not contain ~/bin then add it to PATH
   echo $PATH
-  PATH=$PATH:~/bin # (put this statement in an int script .bashrc/.zshrc)
+  PATH=$PATH:~/bin # (put this line into an init script ~/.bashrc or ~/.zshrc)
 
 # when using zsh then do similar steps for fpath and _less
   [[ -d ~/.fpath ]] || mkdir ~/.fpath
