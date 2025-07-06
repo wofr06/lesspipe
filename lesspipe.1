@@ -125,6 +125,25 @@ Syntax highlighting can be switched off by
 appending a colon after the file name, if the output was colorful. If the
 wrong language was chosen for syntax highlighting, then another one can be
 forced by appending a colon and a suffix to the file name.
+The list of suffixes and supported languages can be printed using the following colorizer commands:
+.RS
+.I bat --list-languages
+.RE
+.RS
+.I batcat --list-languages
+.RE
+.RS
+.I pygmentize -L lexers
+.RE
+.RS
+.I source-highlight --lang-list
+.RE
+.RS
+.I code2color -h
+.RE
+.RS
+.I vimcolor -L (both for vimcolor and nvimpager)
+.RE
 .PP
 In a pipe that method cannot be used. As a way out a last argument can be added
 that gets inspected by \fBlesspipe.sh\fP.
@@ -215,7 +234,22 @@ was done within that script. Otherwise, a nonzero exit code means the filtering
 is left to lesspipe.sh.
 .PP
 This mechanism can be used to add filtering for new formats or e.g. inhibit
-filtering for certain file types.
+filtering for certain file types. A sample .lessfilter could look as follows:
+
+.EX
+.I #!/usr/bin/env bash
+.I
+.I if [[ "$1" = *.html ]]; then
+.I  # call your favorite html beautifier, cat -b is just a boring example
+.I   cat -b "$1"
+.I   exit 0;
+.I elif [[ "$1" = *.txt ]]; then
+.I  # for text files just count the words
+.I   wc -l "$1"
+.I   exit 0
+.I fi
+.I exit 1;
+.EE
 .SH AUTHOR
 Wolfgang Friebel
 .SH "REPORTING BUGS"
