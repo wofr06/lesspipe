@@ -180,9 +180,17 @@ istemp () {
 		shift
 		t=$(nexttmp)
 		cat > "$t"
-		$prog "$t" "$@"
+		if [[ $prog == "ccze -A" ]]; then
+			$prog < "$t" "$@"
+		else
+			$prog "$t" "$@"
+		fi
 	else
-		$prog "$@"
+		if [[ $prog == "ccze -A" ]]; then
+			$prog < "$@"
+		else
+			$prog "$@"
+		fi
 	fi
 }
 
@@ -594,8 +602,8 @@ isfinal () {
 			{ has_cmd eyeD3 && cmd=(istemp "eyeD3" "$1"); } ||
 			{ has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1"); } ;;
 		log)
-			has_cmd ccze && [[ $COLOR = *always ]] && ccze -A < "$1"
-			return ;;
+			has_cmd ccze && [[ $COLOR = *always ]] && cmd=(istemp "ccze -A" "$1") ;;
+			#return ;;
 		csv)
 			msg "type -S<ENTER> for better display of very wide tables"
 			{ has_cmd csvtable && csvtable -h >/dev/null 2>&1 && cmd=(csvtable "$1"); } ||

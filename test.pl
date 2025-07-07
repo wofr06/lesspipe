@@ -483,4 +483,6 @@ c name
 ~ test=a
 128 less $T/tests/test.jar			# support for jar files git #8,22
 ~ .* META-INF/
+129 less tests/filter.tgz:test.pod:log	# force log file in archive, needs ccze
+c =head1
 ###    colorize markdown files (mdcat) on MacOSX and iTerm2 (see git #48)
