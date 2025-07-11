@@ -14,7 +14,7 @@ use vars qw($opt_help $opt_prefix $opt_nomake $opt_shell);
 
 Getopt::Long::Configure("prefix_pattern=--");
 my $result = GetOptions('help+', 'prefix=s', 'shell=s', 'nomake+');
-if ( $ARGV[0] or ! $result or $opt_help) {
+if ( $ARGV[0] or not $result or $opt_help) {
 	print << 'EOF';
 Usage: configure [options]
 Options:
@@ -26,7 +26,7 @@ Directory and file names:
 
 configure generates by default a Makefile
 EOF
-	exit ! $opt_help ? 1 : 0;
+	$opt_help ? exit 0 : exit 1;
 }
 
 my $bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
@@ -61,22 +61,28 @@ if ( ! $opt_nomake ) {
 		print OUT;
 	}
 	close OUT;
+	if ( ! $no_bash and $bash_complete_dir) {
+		$bash_complete_dir = "$prefix/share/bash-completion";
+		print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\nOr consider installing the file less_completion in /etc/bashcompletion.d\n";
+	}
 }
-$bash_complete_dir = "$prefix/share/bash-completion";
-print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\nOr consider installing the file less_completion in /etc/bashcompletion.d\n";
 
-open F, "lesspipe.sh";
-{
-	my $line1 = <F>;
-	exit if $line1 =~ /^$shell$/;
-	local $/;
-	my $in = <F>;
-	print "generating new lesspipe.sh using '$shell' as first line\n";
-	copy "lesspipe.sh", "lesspipe.sh.old";
-	open OUT, ">lesspipe.sh";
-	print OUT "$shell\n";
-	print OUT $in;
-	close OUT;
+for my $file ("lesspipe.sh", "lesscomplete") {
+	open F, $file;
+	{
+		my $line1 = <F>;
+		exit if $line1 =~ /^$shell$/;
+		local $/;
+		my $in = <F>;
+		print "generating new $file using '$shell' as first line\n";
+		copy $file, "$file.old";
+		open OUT, ">$file";
+		print OUT "$shell\n";
+		print OUT $in;
+		close OUT;
+	}
+	close F;
+	chmod 0755, $file
 }
 exit 0;
 
