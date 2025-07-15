@@ -375,12 +375,19 @@ by:
 ```
         fpath=(~/zsh_functions $fpath)
 ```
-In bash, the function `less_completion` has to be added to the shell environment
-by sourcing the script (e.g. from .bashrc using the correct location):
+In bash, the bash-completion (usually a package with that name) has to be
+installed and the function `less_completion` has to be added to the shell
+environment by sourcing the script (e.g. from .bashrc using the correct location):
 ```
         source ~/bash_functions/less_completion
 ```
-
+In zsh, the completion system has to be loaded and the menucomplete option
+has to be set. That can be achieved with
+```
+        autoload compinit
+        compinit -Uz
+        setopt menucomplete
+```
 The completion mechanism is triggered after entering a colon or an equal sign
 as for example in
 

@@ -46,14 +46,14 @@ does activate the filter for less. Use the fully qualified path, if
 \fBlesspipe.sh\fP is not in the search path. The command to set \fBLESSOPEN\fP
 can also be displayed by calling \fBlesspipe.sh\fP without arguments.
 This can even be used to set \fBLESSOPEN\fP directly:
+.EX
 .RS
 .I eval `lesspipe.sh`
 (bash) or
-.RE
-.RS
 .I lesspipe.sh|source /dev/stdin
 (zsh)
 .RE
+.EE
 The above commands work only in the described manner if the file name is
 \fBlesspipe.sh\fP.
 If it is installed under a different name then calling it without an argument
@@ -86,7 +86,7 @@ file name. If the correct file type (\fIhtml\fP, \fIxml\fP, \fIpod\fP) follows,
 the output can get colorized (see also the section below).
 .PP
 .RS
-Example: \fIless index.html:html\fP
+Example: \fBless\fP \fIindex.html:html\fP
 .RE
 .PP
 If the binary \fIxmq\fP is installed, then \fIxml\fP is rendered differently,
@@ -108,12 +108,12 @@ Among the colorizers
 a preferred one can be forced for colorizing by setting the ENV variable
 \fBLESSCOLORIZER\fP to the name of the colorizer. For \fIpygmentize\fP and
 \fIbat\fP/\fIbatcat\fP restricted option settings are allowed as follows:
+.EX
 .RS
-.I LESSCOLORIZER='pygmentize -O style=foo' (-P allowed as well)
+.I LESSCOLORIZER='pygmentize -O style=foo' # -P allowed as well
+.I LESSCOLORIZER='bat --style=foo --theme=bar' # default: theme=ansi, style=plain
 .RE
-.RS
-.I LESSCOLORIZER='bat --style=foo --theme=bar' (default is theme ansi, style plain)
-.RE
+.EE
 Syntax highlighting is activated, if the environment variable \fBLESS\fP
 exists and contains the option \fI-R\fP
 or less is called with this option. This guarantees that escape sequences
@@ -126,24 +126,16 @@ appending a colon after the file name, if the output was colorful. If the
 wrong language was chosen for syntax highlighting, then another one can be
 forced by appending a colon and a suffix to the file name.
 The list of suffixes and supported languages can be printed using the following colorizer commands:
+.EX
 .RS
 .I bat --list-languages
-.RE
-.RS
 .I batcat --list-languages
-.RE
-.RS
 .I pygmentize -L lexers
-.RE
-.RS
 .I source-highlight --lang-list
-.RE
-.RS
 .I code2color -h
-.RE
-.RS
 .I vimcolor -L (both for vimcolor and nvimpager)
 .RE
+.EE
 .PP
 In a pipe that method cannot be used. As a way out a last argument can be added
 that gets inspected by \fBlesspipe.sh\fP.
@@ -165,19 +157,19 @@ calls a program to convert the input the ability to watch growing files
 files like syslog. To temporarily disengage \fBlesspipe.sh\fP
 a colon as the last argument for \fBless\fP needs to be added as e.g in
 .RS
-.I less /var/log/syslog :
+.I \fBless\fP /var/log/syslog :
 .RE
 or \fBless\fP
 can be called with the +F argument, which is equivalent to F within the pager:
 .RS
-.I less +F /var/log/syslog
+.I \fBless\fP +F /var/log/syslog
 .RE
 Appending a colon to the file name does not work, as then the filter has to be engaged to at least remove that colon and use cat for the original file.
 On the other hand non growing log files can be colorized using \fBccze\fP.
 Its recognition as a log file is difficult if not ending in \fI.log\fP
 but can be forced appending \fB:.log\fP to the file name as e.g in
 .RS
-.I less /var/log/syslog:.log
+.I \fBless\fP /var/log/syslog:.log
 .RE
 .SH ADVANCED USAGE
 This version of \fBlesspipe.sh\fP
@@ -216,14 +208,27 @@ file name and then pressing the tab key triggers the completion mechanism.
 This also works in chained archives. The files \fIlesscomplete\fP and
 \fIless_completion\fP have to be in one of the directories listed in
 \fB$PATH\fP and the function \fI_less\fP for \fBzsh\fP in a directory
-listed by \fI$fpath\fP. The less_completion script has to
+listed by \fI$fpath\fP. The \fIless_completion\fP (bash) has to
 be sourced within a bash initialization script, e.g. in \fI~/.bashrc\fP. New
-directories such as \fI~/scripts\fP and \fI~/.fpath\fP can be added using the
-commands
+directories such as \fI~/scripts\fP and \fI~/.fpath\fP (for zsh) can be added
+using the commands
 .RS
-\fBPATH\fP=\fI~/scripts:$PATH\fP and
-\fBfpath\fP=\fI(~/.fpath $fpath)\fP
+\fBPATH\fP=\fI~/scripts:$PATH\fP # (lesspipe.sh, less_completion) and
+\fBfpath\fP=\fI(~/.fpath $fpath)\fP # (_less, zsh only)
 .RE
+.PP
+In \fBzsh\fP, \fIcompinit\fP has to be called and the menucomplete option has to be
+set if not yet done. That can be achieved with the commands
+.EX
+.RS
+\fIautoload compinit\fP
+\fIcompinit -Uz\fP
+\fIsetopt menucomplete\fP
+.RE
+.EE
+.PP
+In \fBbash\fP, the \fIbash-completion\fP (usually a package with that name)
+has to be installed
 .SH USER DEFINED FILTERING
 The lesspipe.sh filtering can be replaced or enhanced  by a user defined
 program. Such a program has to be called either \fB.lessfilter\fP (and be
