@@ -29,8 +29,6 @@ EOF
 	$opt_help ? exit 0 : exit 1;
 }
 
-my $bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
-chomp $bash_complete_dir;
 my $prefix = $opt_prefix || $ENV{PREFIX} || '/usr/local';
 
 # remove trailing slash and trailing bin directory
@@ -46,9 +44,16 @@ if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
 # gererate Makefile
 my @bad = ();
 my $shell = check_shell_vers();
+my $no_bash = (grep {/bash/} @bad);
+my $no_zsh = (grep {/zsh/} @bad);
+my $bash_complete_dir = "$prefix/share/bash-completion";
+# override prefix and use the system defined directory if known
+if (`pkg-config --version 2>/dev/null`) {
+	$bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
+	chomp $bash_complete_dir;
+}
+
 if ( ! $opt_nomake ) {
-	my $no_bash = (grep {/bash/} @bad);
-	my $no_zsh = (grep {/zsh/} @bad);
 	open OUT, ">Makefile";
 	while (<DATA>) {
 		next if /bash_complete_dir/ and $no_bash;
@@ -61,26 +66,22 @@ if ( ! $opt_nomake ) {
 		print OUT;
 	}
 	close OUT;
-	if ( ! $no_bash and $bash_complete_dir) {
-		$bash_complete_dir = "$prefix/share/bash-completion";
-		print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\nOr consider installing the file less_completion in /etc/bashcompletion.d\n";
-	}
 }
-
+if (! $no_bash) {
+	print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\nOr consider installing the file less_completion in /etc/bashcompletion.d\n";
+}
 for my $file ("lesspipe.sh", "lesscomplete") {
 	open F, $file;
-	{
-		my $line1 = <F>;
-		exit if $line1 =~ /^$shell$/;
-		local $/;
-		my $in = <F>;
-		print "generating new $file using '$shell' as first line\n";
-		copy $file, "$file.old";
-		open OUT, ">$file";
-		print OUT "$shell\n";
-		print OUT $in;
-		close OUT;
-	}
+	my $line1 = <F>;
+	next if $line1 =~ /^$shell$/;
+	local $/;
+	my $in = <F>;
+	print "generating new $file using '$shell' as first line\n";
+	copy $file, "$file.old";
+	open OUT, ">$file";
+	print OUT "$shell\n";
+	print OUT $in;
+	close OUT;
 	close F;
 	chmod 0755, $file
 }
@@ -114,10 +115,10 @@ sub check_shell_vers {
 		# get the shell version
 		my $v = `$file -c \'echo \$$versstr\'`;
 		chomp $v;
+		$v = $1 if $v =~ /(\d+\.\d+)/;
 		### print "$file $v found in the PATH\n";
 		if ( $name eq 'bash' or $name eq 'sh' ) {
-			my $tst = `$file -c \'if [[ -n 1 && -n 2 ]];then true;fi 2>&1\'`;
-			if ( $tst ) {
+			if ( ! $v or $v < 5 ) {
 				push @bad, $shell;
 				next;
 			}
