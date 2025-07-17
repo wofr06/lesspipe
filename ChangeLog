@@ -1,6 +1,10 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.19 Jul 17 2025
+- remove dependency on bash in lesscomplete
+- improve installation procedure and documentation (zsh and tab completion)
+- prefer ffprobe and eyeD3 for audio/video file contents
 Version 2.18 Feb 16 2025
 - short article 25 years recursive lesspipe in the lesspipe.sh wiki (en and de)
 - document install in user space, do no longer mention (t)csh in documentation

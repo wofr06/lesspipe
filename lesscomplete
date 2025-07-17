@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # lesscomplete, a helper script for the _less completion script
-# synced with lesspipe 2.18
+# synced with lesspipe 2.19
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 
 has_cmd () {
+	[[ -n "$2" && "$2" > $($1 --version 2>/dev/null) ]] && return 1
 	command -v "$1" > /dev/null
 }
 
@@ -70,9 +71,17 @@ istemp () {
 		shift
 		t=$(nexttmp)
 		cat > "$t"
-		$prog "$t" "$@"
+		if [[ $prog == "ccze -A" ]]; then
+			$prog < "$t" "$@"
+		else
+			$prog "$t" "$@"
+		fi
 	else
-		$prog "$@"
+		if [[ $prog == "ccze -A" ]]; then
+			$prog < "$@"
+		else
+			$prog "$@"
+		fi
 	fi
 }
 
