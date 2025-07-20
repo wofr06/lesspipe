@@ -178,6 +178,7 @@ sub is_not_exec {
 	my $arg = shift;
 	return 0 if ! $arg;
 	for my $prog (split ' ', $arg) {
+		return 1 if $prog eq "cpio" and `cpio --version` !~ /GNU/;
 		return 1 if ! grep {-x "$_/$prog"} split /:/, $ENV{PATH};
 	}
 	return undef;
@@ -206,7 +207,11 @@ sub comp {
 			print ":$res:\ndiffers from\n:$_:\n" if $errors;
 		}
 	} elsif ($comp =~ s/^~ //) {
-		return 'ok' if $res =~ /^$comp\r?/m;
+		chomp $res;
+		return 'ok' if $res =~ /^$comp/m;
+		# special case html bold text
+		$res =~ s/\.//g;
+		return 'ok' if $res =~ /^$comp/m;
 		print ":$res:\ndoes not match\n:$comp:\n" if $errors;
 	} elsif ($comp =~ s/^c //) {
 		$ok = (grep {s/.*(\e\S+)$comp\b.*/$1ok$reset/} split /\n/, $res)[0];
@@ -407,7 +412,7 @@ __END__
 = test
 ### colorizing tests (ok should be displayed colored, for MacOSX see git #48)
 91 less $T/tests				# directory
-c test.jar
+c test_so
 92 less tests/archive.tgz			# contents of tar colorized with archive_color
 c test_cab
 93 less $T/tests/test.c			# C language (vimcolor)

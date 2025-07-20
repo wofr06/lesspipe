@@ -589,9 +589,9 @@ isfinal () {
 		djvu)
 			has_cmd djvutxt && cmd=(djvutxt "$1") ;;
 		x509|crl)
-			has_cmd openssl && cmd=(istemp "openssl storeutl -text -noout" "$1") ;;
+			has_cmd openssl && cmd=(openssl x509 -text -noout "$1") ;;
 		csr)
-			has_cmd openssl && cmd=(istemp "openssl req -text -noout -in" "$1") ;;
+			has_cmd openssl && cmd=(openssl req -text -noout -in "$1") ;;
 		pgp)
 			has_cmd gpg && cmd=(gpg --decrypt --quiet --no-tty --batch --yes "$1") ;;
 		bplist|plist)
@@ -674,10 +674,14 @@ isarchive () {
 			isoinfo)
 				istemp "isoinfo -i" "$2" "-x$3" ;;
 			cpio)
-				if [[ "$2" == - ]]; then
-					cpio -i --quiet --to-stdout "$3"
+				if [[ $(cpio --version) = *GNU* ]]; then
+					if [[ "$2" == - ]]; then
+						cpio -i --quiet --to-stdout "$3"
+					else
+						cpio -i --quiet --to-stdout --file "$2" "$3"
+					fi
 				else
-					cpio -i --quiet --to-stdout --file "$2" "$3"
+					msg "cpio: this version cannot extract files to a pipe"
 				fi ;;
 			7zz|7za|7zr)
 				istemp "$prog e -so" "$2" "$3"
@@ -702,7 +706,7 @@ isarchive () {
 				separatorline
 				isoinfo -fR"$joliet" -i "$t" ;;
 			cpio)
-				cpio -tv --quiet  < "$2" ;;
+				cpio -tv --quiet < "$2" ;;
 			7zz|7za|7zr)
 				istemp "$prog l" "$2"
 		esac
@@ -855,7 +859,7 @@ set +o noclobber
 setopt sh_word_split 2>/dev/null
 PATH=$PATH:${0%%/lesspipe.sh}
 # the current locale in lowercase (or generic utf-8)
-charmap=$(locale -k  charmap|tr '[:upper:]' '[:lower:]') || charmap="charmap=utf-8"
+charmap=$(locale -k charmap|tr '[:upper:]' '[:lower:]') || charmap="charmap=utf-8"
 eval "$charmap"
 
 sep=:					# file name separator

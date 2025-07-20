@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- improve testsuite for MacOS and compatibility with LibreSSL 
 Version 2.19 Jul 17 2025
 - remove dependency on bash in lesscomplete
 - improve installation procedure and documentation (zsh and tab completion)
