@@ -642,7 +642,7 @@ isfinal () {
 		# TAU: When cmd starts with environment variable settings, bash will refuse to execute it via : "${cmd[@]}"
 		# The remedy is simple : Just run it through the "env" command in that case.
 		[[ "$cmd" =~ '=' ]] && cmd=(env "${cmd[@]}")
-		"${cmd[@]}"
+		"${cmd[@]}" 2>&1
 	else
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" && return
 		# if fileext set, we need to filter to get rid of .fileext
