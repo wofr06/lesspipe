@@ -267,13 +267,13 @@ __END__
 = test
 21 less tests/archive.tgz:test_zip:tests/test.tar:tests/textfile	# (on the fly), needs unzip
 = test
-22 less $T/tests/test_deb					# debian contents
+22 less $T/tests/test_deb					# debian contents, needs ar|bsdtar
 ~ .* ./test.txt
-23 less tests/archive.tgz:test_deb		# (on the fly)
+23 less tests/archive.tgz:test_deb		# (on the fly), needs ar|bsdtar
 ~ .* ./test.txt
-24 less $T/tests/test_deb:./test.txt		# extract file from debian package
+24 less $T/tests/test_deb:./test.txt		# extract file from debian package, needs ar|bsdtar
 = test
-25 less tests/archive.tgz:test_deb:./test.txt	# (on the fly)
+25 less tests/archive.tgz:test_deb:./test.txt	# (on the fly), needs ar|bsdtar
 = test
 26 less $T/tests/test_rar			# rar contents, needs unrar|rar|bsdtar
 ~ .* testok/a b
@@ -311,13 +311,13 @@ __END__
 = test
 43 less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo, not bsdtar
 = test
-44 less $T/tests/test_ar			# ar archive contents
+44 less $T/tests/test_ar			# ar archive contents, needs ar
 ~ .* a=b/?
-45 less tests/archive.tgz:test_ar		# (on the fly)
+45 less tests/archive.tgz:test_ar		# (on the fly), needs ar
 ~ .* a=b/?
-46 less $T/tests/test_ar:a=b			# extract file from ar
+46 less $T/tests/test_ar:a=b			# extract file from ar, needs ar
 = test
-47 less tests/archive.tgz:test_ar:a=b	# (on the fly)
+47 less tests/archive.tgz:test_ar:a=b	# (on the fly), needs ar
 = test
 48 less $T/tests/test_cpio:textfile	# extract from cpio needs cpio
 = test
@@ -340,9 +340,9 @@ __END__
 56 less tests/compress.tgz:test.tar.lz4:tests/textfile	# extract from lz4 git #14, needs lz4
 = test
 ### filter tests, produce readable output
-57 less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv
+57 less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv,locale
 = test
-58 less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file  needs iconv
+58 less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file  needs iconv,locale
 = äöü
 ###    no output if file not modified (watch growing files) git #4,25 (revert)
 59 less $T/tests/test_plain			# plain text, no output from lesspipe.sh
@@ -383,7 +383,7 @@ __END__
 ~ test
 77 less tests/filter.tgz:test_dvi		# dvi, needs dvi2tty
 ~ test
-78 less tests/filter.tgz:test_so		# shared library (.so)
+78 less tests/filter.tgz:test_so		# shared library (.so), needs nm
 ~ .* T test
 79 less tests/filter.tgz:test.pod		# pod text, needs pod2text|perldoc
 ~     test
@@ -399,7 +399,7 @@ __END__
 ~ r
 85 less tests/filter.tgz:test_djvu		# djvu, needs djvutxt
 = test 
-86 less tests/filter.tgz:test.pem		# SSL related files git #15
+86 less tests/filter.tgz:test.pem		# SSL related files git #15, needs openssl
 ~ .* 2038 GMT
 87 less tests/filter.tgz:test.bplist	# Apple binary property list, needs plistutil
 ~ <dict>

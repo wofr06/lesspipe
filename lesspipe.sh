@@ -365,8 +365,8 @@ get_unpack_cmd () {
 			{ has_cmd cpio && prog=cpio; } ||
 			{ has_cmd bsdtar && prog=bsdtar; } ;;
 		archive)
-			prog='ar'
-			has_cmd bsdtar && prog=bsdtar ;;
+			{ has_cmd ar && prog='ar'; } ||
+			{ has_cmd bsdtar && prog=bsdtar; } ;;
 		appimage|snap)
 			has_cmd unsquashfs && cmd=(isimage "$x" "$2" "$file2") ;;
 	esac
@@ -576,7 +576,7 @@ isfinal () {
 		dvi)
 			has_cmd dvi2tty && cmd=(istemp "dvi2tty -q" "$1") ;;
 		sharedlib)
-			cmd=(istemp nm "$1") ;;
+			has_cmd nm && cmd=(istemp nm "$1") ;;
 		pod)
 			[[ -z $file2 ]] &&
 			{ { has_cmd pod2text && cmd=(pod2text "$1"); } ||
@@ -859,8 +859,9 @@ set +o noclobber
 setopt sh_word_split 2>/dev/null
 PATH=$PATH:${0%%/lesspipe.sh}
 # the current locale in lowercase (or generic utf-8)
-charmap=$(locale -k charmap|tr '[:upper:]' '[:lower:]') || charmap="charmap=utf-8"
+charmap=$(locale -k charmap 2>/dev/null|tr '[:upper:]' '[:lower:]') || charmap="charmap=utf-8"
 eval "$charmap"
+has_cmd locale || charmap=
 
 sep=:					# file name separator
 altsep='='				# alternate separator character

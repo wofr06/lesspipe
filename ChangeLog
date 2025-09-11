@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- add tests for missing binaries in termux
 - redirect STDERR output to STDOUT (required for newer ffprobe)
 - improve testsuite for MacOS and compatibility with LibreSSL
 Version 2.19 Jul 17 2025
