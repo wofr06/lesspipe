@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- call vimcolor only if vim or nvim are installed, fix colors for termux
 - add tests for missing binaries in termux
 - redirect STDERR output to STDOUT (required for newer ffprobe)
 - improve testsuite for MacOS and compatibility with LibreSSL

@@ -406,7 +406,8 @@ analyze_args () {
 	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
 	COLOR="--color=auto"
-	has_cmd tput && colors=$(tput colors) || colors=0
+	[[ $TERM == "*256*" ]] && colors=256 || colors=0
+	has_cmd tput && colors=$(tput colors)
 	if [[ $colors -ge 8 ]]; then
 		lessarg="$LESS $lessarg"
 		# shellcheck disable=SC2206
@@ -425,9 +426,10 @@ has_colorizer () {
 	[[ $2 == plain || -z $2 ]] && return
 	prog=${LESSCOLORIZER%% *}
 
-	for i in nvimpager bat batcat pygmentize source-highlight vimcolor code2color ; do
+	for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i
 	done
+	[[ $prog == "*vim" ]] && prog=vimcolor
 	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
 	# prefer an explicitly requested language
 	[[ -n $3 ]] && lang=$3 || lang=$2

@@ -33,7 +33,8 @@ $SIG{INT} = sub { if ($tdir) {
 	close $markup_fh if $markup_fh;
 	unlink $tdir; print "\n"; exit 1 }};
 
-$tdir = File::Temp->newdir('/tmp/vimcolorXXXX');
+$tdir = $ENV{TMPDIR} || '/tmp';
+$tdir = File::Temp->newdir("$tdir/vimcolorXXXX");
 my $defaults = set_defaults();
 languages(@ARGV) if $opt_L;
 

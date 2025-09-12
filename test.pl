@@ -165,7 +165,7 @@ while (<DATA>) {
 		}
 	}
 	print "result for :$cmd:\n$res" if $ok and $verbose;
-	printf "%2d %6s %s %s\n", $num, $ignore ? 'ignore' : $ok ? $ok: 'NOT ok', $comment, $ignore ? "(needs $needed)" : '';
+	printf "%3d %-6s %s %s\n", $num, $ignore ? 'ignore' : $ok ? $ok: 'NOT ok', $comment, $ignore ? "(needs $needed)" : '';
 	print "\t   failing command: $cmd\n" if ! $ok and ! $ignore;
 	$num = 0;
 }
