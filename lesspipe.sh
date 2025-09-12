@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # lesspipe.sh, a preprocessor for less
-lesspipe_version=2.19
+lesspipe_version=2.20
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 
 has_cmd () {
@@ -406,7 +406,7 @@ analyze_args () {
 	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
 	COLOR="--color=auto"
-	[[ $TERM == "*256*" ]] && colors=256 || colors=0
+	[[ $TERM == *256* ]] && colors=256 || colors=0
 	has_cmd tput && colors=$(tput colors)
 	if [[ $colors -ge 8 ]]; then
 		lessarg="$LESS $lessarg"
@@ -425,6 +425,7 @@ has_colorizer () {
 	[[ $COLOR == *always ]] || return
 	[[ $2 == plain || -z $2 ]] && return
 	prog=${LESSCOLORIZER%% *}
+	[[ $prog == vimcolor ]] && ! has_cmd vim && ! has_cmd nvim && prog=
 
 	for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i

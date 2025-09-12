@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # lesscomplete, a helper script for the _less completion script
-# synced with lesspipe 2.19
+# synced with lesspipe 2.20
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 
 has_cmd () {
@@ -223,8 +223,8 @@ get_unpack_cmd () {
 			{ has_cmd cpio && prog=cpio; } ||
 			{ has_cmd bsdtar && prog=bsdtar; } ;;
 		archive)
-			prog='ar'
-			has_cmd bsdtar && prog=bsdtar ;;
+			{ has_cmd ar && prog='ar'; } ||
+			{ has_cmd bsdtar && prog=bsdtar; } ;;
 		appimage|snap)
 			has_cmd unsquashfs && cmd=(isimage "$x" "$2" "$file2") ;;
 	esac
