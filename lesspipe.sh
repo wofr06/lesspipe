@@ -884,7 +884,7 @@ trap - PIPE
 t=$(nexttmp)
 analyze_args
 # make LESSOPEN="|- ... " work
-[[ $LESSOPEN == *\|\|* ]] && retval=1
+[[ $LESSOPEN == *\|\|* ]] && retval=1 || retval=0
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
 	cat > "$t"
 	[[ -n "$fext" ]] && t="$t$sep$fext"
@@ -901,9 +901,9 @@ if [[ -z "$1" && "$0" == */lesspipe.sh ]]; then
 		echo "export LESSOPEN"
 	fi
 else
-	[[ -x "${HOME}/.lessfilter" ]] && "${HOME}/.lessfilter" "$1" && exit $retval
+	[[ -x "${HOME}/.lessfilter" ]] && "${HOME}/.lessfilter" "$1" && exit "$retval"
 	if has_cmd lessfilter; then
-		lessfilter "$1" && exit $retval
+		lessfilter "$1" && exit "$retval"
 	fi
 	if [[ -z "$1" ]]; then
 		LESSQUIET=1
@@ -911,5 +911,5 @@ else
 	else
 		show "$@"
 	fi
-	exit $retval
+	exit "$retval"
 fi
