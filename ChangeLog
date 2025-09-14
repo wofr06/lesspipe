@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- show original file if LESSOPEN starts with || and the filtered output is empty
 Version 2.20 Sep 12 2025
 - call vimcolor only if vim or nvim are installed, fix colors for termux
 - add tests for missing binaries in termux
