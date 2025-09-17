@@ -69,9 +69,8 @@ The filter is normally not called if input is piped to less as in
 As described in the man page of less, the filtering in a pipe can however
 be forced by starting \fBLESSOPEN\fP with the characters \fI|-\fP.
 .PP
-\fBLESSOPEN\fP starting with the two characters \fI||\fP to handle empty files
-and command errors is implemented only partly, usually on failures of
-commands within \fBlesspipe.sh\fP the error messages get displayed.
+If commands within \fBlesspipe.sh\fP do fail, in some cases the error messages
+get displayed, this is a regarded buggy behavior and should be reported.
 .PP
 To suppress informal messages in the first line of the filter output the
 ENV variable \fBLESSQUIET\fP can be set to a nonempty value.

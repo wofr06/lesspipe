@@ -178,7 +178,7 @@ sub is_not_exec {
 	my $arg = shift;
 	return 0 if ! $arg;
 	for my $prog (split ' ', $arg) {
-		return 1 if $prog eq "cpio" and `cpio --version` !~ /GNU/;
+		return 1 if $prog eq "cpio" and `cpio --version 2>/dev/null` !~ /GNU/;
 		return 1 if ! grep {-x "$_/$prog"} split /:/, $ENV{PATH};
 	}
 	return undef;
@@ -486,7 +486,7 @@ c name
 ~ test=a
 127 less $T/tests/test_plain :			# even watch growing files without +F
 ~ test=a
-128 less $T/tests/test.jar			# support for jar files git #8,22
+128 less $T/tests/test.jar			# support for jar files git #8,22, needs unzip
 ~ .* META-INF/
 129 less tests/filter.tgz:test.pod:log	# force log file in archive, needs ccze
 c =head1

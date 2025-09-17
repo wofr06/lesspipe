@@ -325,7 +325,7 @@ get_unpack_cmd () {
 		iconv --byte-subst - </dev/null 2>/dev/null && rep=(--unicode-subst="$qm" --byte-subst="$qm" --widechar-subst="$qm") # MacOS
 		iconv -f "$fchar" -t "$charmap//TRANSLIT" - </dev/null 2>/dev/null && trans=(-t "$charmap//TRANSLIT")
 		msg "append $sep$sep to filename to view the original $fchar encoded file"
-		cmd=(iconv "${rep[@]}" -f "$fchar" "${trans[@]}" "$2")
+		cmd=(nodash iconv "${rep[@]}" -f "$fchar" "${trans[@]}" "$2")
 		# loop protection, just in case
 		charmap=
 		return
@@ -397,7 +397,7 @@ get_unpack_cmd () {
 
 analyze_args () {
 	# determine how we are called
-	cmdtree=$(ps -T -oargs= 2>/dev/null)
+	cmdtree=$(ps -oargs= 2>/dev/null)
 	while read -r line; do
 		arg1=${line%% *}; arg1=${arg1##*/}
 		[[ $arg1 == less ]] && lessarg=$line
