@@ -324,7 +324,7 @@ __END__
 49 less tests/archive.tgz:test_cpio:textfile	# (on the fly) needs cpio
 = test
 ### uncompress tests not covered in archive tests
-50 less tests/compress.tgz:test.tar.bz2:tests/textfile	# extract from bzip2
+50 less tests/compress.tgz:test.tar.bz2:tests/textfile	# extract from bzip2, needs bzip2
 = test
 51 less tests/compress.tgz:test.tar.lzip:tests/textfile	# extract from lzip, needs lzip
 = test
@@ -452,31 +452,31 @@ c sub
 c name
 110 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
-111 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1
+111 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1, needs unzip
 ~ 
-112 LESS= less tests/dir.zip	# do not colorize listing git #140
+112 LESS= less tests/dir.zip	# do not colorize listing git #140, needs unzip
 ~ .* dir/
 113 less $T/tests/test\ \;\'\"\[\(\{ok		# file name with chars such as ", ' ...
 = test
 114 less tests/special.tgz:test\ \;\'\"\[\(\{ok	# archive having a file with chars from [ ;"'] etc. in the name
 = test
-115 less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces git #69
+115 less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces git #69, needs unzip
 ~ .*test\[a\]\(b\)\{c\}
-116 less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc.
+116 less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc., needs unzip
 = test
-117 less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces (on the fly)
+117 less $T/tests/test\[a\]\(b\)\{c\}.zip	# file name with parens, brackets, braces (on the fly), needs unzip
 ~ .*test\[a\]\(b\)\{c\}
-118 less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc. (on the fly)
+118 less $T/tests/test\[a\]\(b\)\{c\}.zip:'test\[a\]\(b\)\{c\}'	# contained file with parens etc. (on the fly), needs unzip
 = test
 119 less $T/tests/special.tgz=aaa::b::c::d	# file name with colon (use alternate separator)
 = test
 120 less $T/tests/symlink			# symbolic link to file name with special chars
 = test=a
-121 cat $T/tests/test_zip|less			# can use pipes with LESSOPEN =|-... git #2
+121 cat $T/tests/test_zip|less			# can use pipes with LESSOPEN =|-... git #2, needs unzip
 ~ .*10240.*
-122 cat $T/tests/test_zip|less - :tests/test.tar	# extract files from piped file
+122 cat $T/tests/test_zip|less - :tests/test.tar	# extract files from piped file, needs unzip
 ~ .* tests/textfile
-123 cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive
+123 cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive, needs unzip
 ~ test
 124 cat $T/tests/test_plain|LESSCOLORIZER=code2color less	# display piped text files
 ~ test=a

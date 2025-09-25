@@ -114,8 +114,8 @@ the author by email.
 ```
  If `lesspipe.sh` is not in the UNIX search path or if the wrong `lesspipe.sh` is
  found in the search path, then the full path to `lesspipe.sh` should be given
- in the above commands. The above commands work only in the described manner
- if the file name is lesspipe.sh.
+ in the above commands and the invocations below. The commands work only
+ in the described manner if the file name is lesspipe.sh.
 
  If it is installed under a different name then calling it without an argument
  will work as a filter with LESSQUIET set and expecting input from STDIN.
@@ -126,7 +126,12 @@ the author by email.
         eval "$(lesspipe.sh)"             # (bash) or
         lesspipe.sh | source /dev/stdin   # (zsh)
 ```
-Several Linux distributions do now set **LESSOPEN** by default and if the contents of the variable is not referring to this lesspipe.sh version, it has to be redefined to get the functionality described here.
+ or add the settings to .bashrc and .zshrc:
+```
+        lesspipe.sh >> ~/.bashrc        # (bash) and
+        lesspipe.sh >> ~/.zshrc         # (zsh) and
+```
+ Several Linux distributions do now set **LESSOPEN** by default and if the contents of the variable is not referring to this lesspipe.sh version, it has to be redefined to get the functionality described here.
 
  As `lesspipe.sh` is accepting only a single argument, a hierarchical list of file
  names has to be separated by a non-blank character. A colon is rarely found
