@@ -491,3 +491,5 @@ c name
 129 less tests/filter.tgz:test.pod:log	# force log file in archive, needs ccze
 c =head1
 ###    colorize markdown files (mdcat) on MacOSX and iTerm2 (see git #48)
+130 less tests/compress.tgz:test_zlib		# zlib, needs pigz|zlib-flate
+= test

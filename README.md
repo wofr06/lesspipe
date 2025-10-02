@@ -199,6 +199,8 @@ the author by email.
 - zstd			requires `zstd`
 - brotli		requires `bro`
 - lz4			requires `lz4`
+- zlib			requires `pigz` or `zlib-flate` (plain compressed files)
+- dmg			requires `7z` (zlib compressed archives)
 - tar			requires optionally `archive_color` for colorizing
 - ar library		requires `bsdtar` or `ar`
 - zip archive		requires `bsdtar` or `unzip`
@@ -211,8 +213,8 @@ the author by email.
 - Debian		requires `bsdtar` or `ar`
 - cab			requires `cabextract` or `7z`
 - cpio			requires `cpio` or `bsdtar` or `7z`
-- appimage      requires `unsquashfs`
-- snap          requires `snap` and `unsquashfs`
+- appimage		requires `unsquashfs`
+- snap			requires `snap` and `unsquashfs`
 
 ### 4.2 List of preprocessed file types
 - directory		displayed using `ls -lA`
@@ -403,7 +405,7 @@ as for example in
 ```
 ## 9. User defined filtering
 
-The lesspipe.sh filtering can be replaced or enhanced  by a user defined
+The lesspipe.sh filtering can be replaced or enhanced by a user defined
 program. Such a program has to be called either `.lessfilter` (and be placed in
 the user's home directory), or `lessfilter` (and be accessible from a directory
 mentioned in the environment variable `PATH`).
@@ -448,8 +450,8 @@ STDOUT and the commands executed to STDERR.
 (last checked: Jul 6 2025):
 
 ### 12.1 URLs to some utilities (with last known release)
+- 7z, 7zr              https://github.com/ip7z/7zip
 - 7zz                  https://sourceforge.net/projects/sevenzip/ (2025)
-- 7zr (outdated!)      https://sourceforge.net/projects/p7zip/ (2016)
 - cabextract           https://www.cabextract.org.uk/ (2023)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
 - ccze                 https://github.com/software-revive/ccze-rv (2020)
@@ -461,6 +463,8 @@ STDOUT and the commands executed to STDERR.
 - html2text            https://github.com/grobian/html2text (2025)
 - id3v2                https://id3v2.sourceforge.net/ (2010)
 - lzip                 https://www.nongnu.org/lzip/lzip.html (2025)
+- pigz                 https://github.com/madler/pigz(2023)
+- zlib-flate           https://github.com/qpdf/qpdf(2025)
 - matdump              https://sourceforge.net/projects/matio/ (2024)
 - mediainfo            https://mediaarea.net/MediaInfo/ (2025)
 - odt2txt              https://github.com/dstosberg/odt2txt (2017)
@@ -471,7 +475,7 @@ STDOUT and the commands executed to STDERR.
 - unrtf                https://www.gnu.org/software/unrtf/ (2018)
 - wvText               https://github.com/AbiWord/wv/ (2014)
 - xlscat               https://metacpan.org/dist/Spreadsheet-Read (2025)
-- xlsx2csv (>=0.8.3)   https://github.com/dilshod/xlsx2csv (2025) 
+- xlsx2csv (>=0.8.3)   https://github.com/dilshod/xlsx2csv (2025)
 - sxw2txt              https://vinc17.net/software/sxw2txt (2010)
 - dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2025)
 - xmq                  https://github.com/libxmq/xmq/releases/latest (2025)

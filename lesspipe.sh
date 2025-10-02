@@ -83,6 +83,9 @@ filetype () {
 			[[ $fcat == application && -x "$1" ]] && ftype=appimage ;;
 		snap)
 			[[ $fcat == application ]] && ftype="$fext" ;;
+		# do not process dmg files as plain zlib files, if 7z not installed
+		dmg)
+			[[ $ftype == zlib ]] && ftype=dmg ;;
 	esac
 	### get file type from 'file' command for an unspecific result
 	[[ "$fcat" == message && $ftype == plain ]] && ftype=msg
@@ -373,6 +376,8 @@ get_unpack_cmd () {
 	# 7z formats and fall back to 7z supported formats
 	if [[ -z $prog ]]; then
 		case "$x" in
+			dmg)
+				has_cmd 7z && eval '7z l "$2" >/dev/null 2>&1' && prog=7z ;;
 			7z-compressed|lzma|xz|cab|arj|bzip2|cpio|iso)
 				{ has_cmd 7zz && prog=7zz; } ||
 				{ has_cmd 7zr && prog=7zr; } ||
@@ -617,7 +622,9 @@ isfinal () {
 			[[ $COLOR = *always ]] && opt=(-C .) || opt=(.)
 			has_cmd jq && cmd=(jq "${opt[@]}" "$1") ;;
 		zlib)
-			has_cmd zlib-flate && zlib-flate -uncompress < "$1" && return ;;
+			# shellcheck disable=SC2002
+			{ has_cmd pigz && cat "$1" | pigz -d -z && return ; } ||
+			{ has_cmd zlib-flate && cat "$1" | zlib-flate -uncompress && return ; } ;;
 	esac
 	fi
 	# not a specific file format
@@ -686,7 +693,7 @@ isarchive () {
 				else
 					msg "cpio: this version cannot extract files to a pipe"
 				fi ;;
-			7zz|7za|7zr)
+			7z|7zz|7za|7zr)
 				istemp "$prog e -so" "$2" "$3"
 		esac
 	else
@@ -710,8 +717,8 @@ isarchive () {
 				isoinfo -fR"$joliet" -i "$t" ;;
 			cpio)
 				cpio -tv --quiet < "$2" ;;
-			7zz|7za|7zr)
-				istemp "$prog l" "$2"
+			7z|7zz|7za|7zr)
+				istemp "$prog l" "$2" ;;
 		esac
 	fi
 	[[ $? != 0 && -n $3 ]] && msg ":$!: could not retrieve $3 from $2"
