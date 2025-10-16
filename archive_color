@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 
-# archive_color (by Wolfgang Friebel), a slightly enhanced tarcolor
-# changed date recognition (allow for localized dates), works also for
+# archive_color (by Wolfgang Friebel), a modified tarcolor, works also for
 # other archive listings, such as rpm, debian, ar, isoinfo archives
 #
 # originally by Marc Abramowitz <marc at marc-abramowitz dot com>
@@ -16,19 +15,20 @@
 # TAR_COLORS='di=01;34:ln=01;36:ex=01;32:so=01;40:pi=01;40:bd=40;33:cd=40;33:su=0;41:sg=0;46'
 #
 # The format for TAR_COLORS is similar to the format used by LS_COLORS
-# Check out the online LSCOLORS generator at http://geoff.greer.fm/lscolors/
+# Check out the online LSCOLORS generator at https://geoff.greer.fm/lscolors/
 
 use warnings;
 use strict;
 
-my $RESET = "\033[0m";
-
-
 sub get_file_type {
-	return if (length($_) < 10);
+	return if (length($_) < 20);
 
 	if (substr($_, 0, 1) eq 'l') {
 		return 'ln';
+	} elsif (substr($_, 0, 10) eq 'drwxrwxrwx') {
+		return 'ow';
+	} elsif (substr($_, 0, 10) eq 'drwxrwxrwt') {
+		return 'tw';
 	} elsif (substr($_, 0, 1) eq 'd') {
 		return 'di';
 	} elsif (substr($_, 0, 1) eq 's') {
@@ -55,87 +55,22 @@ sub get_file_type {
 }
 
 sub get_filename {
-	my $suntar_date = m{
-		(?: [A-Z]\w\w)	# Month
-		\s+
-		\d{1,2}		# Day
-		\s+
-		\d{2}:\d{2}	# Time
-		\s+
-		\d{4}		# Year
-		[\s,]+
-		(.+?)		# Capture group 1: filename
-		(?=\s->|$)
-	}gx;
-
-	if ($suntar_date) {
-		return $1, pos();
-	}
-
-	my $bsdtar_date = m{
-		(?: [A-Z]\w\w)	# Month
-		\s+
-		\d{1,2}		# Day
-		\s+
-		(?: (?: \d{4}) | (?: \d{2}:\d{2}))	# Year or time
-		\s
-		(.+?)		# Capture group 1: filename
-		(?=\s->|$)
-	}gx;
-
-	if ($bsdtar_date) {
-		return $1, pos();
-	}
-
-	my $bsdtar_date_dmy = m{
-		\d{1,2}		# Day
-		\s+
-		(?: [A-Z]\w\w)	# Month
-		\s+
-		(?: (?: \d{4}) | (?: \d{2}:\d{2}))	# Year or time
-		\s+
-		(.+?)		# Capture group 1: filename
-		(?=\s->|$)
-	}gx;
-
-	if ($bsdtar_date_dmy) {
-		return $1, pos();
-	}
-
-	my $gnutar_date = m{
-		\d{4}-\d{2}-\d{2}	# Date (%Y-%m-%d)
-		\s
-		\d{2}:\d{2}		# Time (%H:%M)
-		(?: :\d{2})?		# [Optional] seconds in time
-		\s+
-		(.+?)			# Capture group 1: filename
-		(?=\s->|$)
-	}gx;
-
-	if ($gnutar_date) {
-		return $1, pos();
-	}
+	my @items = split;
+	return "@items[8..$#items]";
 }
 
 sub color_filename {
 	my ($color) = @_;
-
-	my ($filename, $pos) = get_filename();
-
-	if ($filename && $pos) {
-		substr($_, $pos - length($filename), length($filename)) = $color . $filename . $RESET;
+	my $filename = get_filename();
+	if ($filename) {
+		s/$filename$/$color$filename\033[0m/;
 	}
-}
-
-sub default_ls_colors {
-	return '';
 }
 
 if ( -t STDIN ) {
 	print "Example: tar tvzf some_tarball.tar.gz | archive_color\n";
 	exit(0);
 }
-
 
 my %FILE_TYPE_TO_COLOR = (
 	"di" => "\033[01;34m",
@@ -147,9 +82,12 @@ my %FILE_TYPE_TO_COLOR = (
 	"cd" => "\033[40;33;01m",
 	"su" => "\033[37;41m",
 	"sg" => "\033[30;43m",
+	"do" => "\033[01;35m",
+	"tw" => "\033[30;42m",
+	"ow" => "\033[34;42m",
 );
 
-my $tar_colors = $ENV{'TAR_COLORS'} || $ENV{'LS_COLORS'} || default_ls_colors();
+my $tar_colors = $ENV{'TAR_COLORS'} || $ENV{'LS_COLORS'} || '';
 
 foreach (split(':', $tar_colors)) {
 	my ($type, $codes) = split('=');
@@ -162,10 +100,8 @@ while (<>) {
 	if ($type && $FILE_TYPE_TO_COLOR{$type}) {
 		color_filename($FILE_TYPE_TO_COLOR{$type});
 	}
-
 	print;
 }
-
 
 # ABSTRACT: colors output of `tar tvf`
 # PODNAME: archive_color
