@@ -4,15 +4,16 @@
 
 Name:          %{packagename}
 Version:       %{packageversion}
-Release:       %{packagerelease}
+Release:       %{packagerelease}%{?dist}
 Group:         Languages
-Source0:       lesspipe-%{packageversion}.tar.gz
+Source0:       https://github.com/ahaupt/lesspipe/archive/refs/tags/v%{packageversion}.tar.gz
 BuildArch:     noarch
 AutoReqProv:   on
 Packager:      Wolfgang Friebel <wp.friebel@gmail.com>
-URL:           https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip
+URL:           https://github.com/wofr06/lesspipe/
 License:       GPL
 BuildRoot:     /var/tmp/%{packagename}-%{packageversion}
+BuildRequires: make perl bash zsh
 Summary:       Input filter for less to better display files
 
 %description
@@ -31,8 +32,11 @@ for archive contents are provided.
 
 %build
 
-%define prefix /usr/local
-./configure --prefix=$RPM_BUILD_ROOT%{prefix}
+%define prefix /usr
+%define bindir %{prefix}/libexec/%{name}
+%define bash_completion %{_datarootdir}/bash-completion/completions
+%define zsh_completion %{_datarootdir}/zsh/site-functions
+./configure --prefix=%{prefix} --bindir=%{bindir} --bash-completion-dir=%{bash_completion} --zsh-completion-dir=%{zsh_completion}
 
 %install
 #
@@ -43,12 +47,17 @@ for archive contents are provided.
 
 #run install script first so we can pick up all of the files
 
-make install
+make install DESTDIR=$RPM_BUILD_ROOT
 
 # create profile.d scripts to set LESSOPEN
 mkdir -p $RPM_BUILD_ROOT/etc/profile.d
 cat << EOF > $RPM_BUILD_ROOT/etc/profile.d/zzless.sh
-[ -x %{prefix}/bin/lesspipe.sh ] && export LESSOPEN="|%{prefix}/bin/lesspipe.sh %s"
+[ -x %{bindir}/lesspipe.sh ] && export LESSOPEN="|%{bindir}/lesspipe.sh %s"
+EOF
+cat << EOF > $RPM_BUILD_ROOT/etc/profile.d/zzless.csh
+if ( -x %{bindir}/lesspipe.sh ) then
+  setenv LESSOPEN "|%{bindir}/lesspipe.sh %s"
+endif
 EOF
 
 %clean
@@ -70,18 +79,20 @@ cd $RPM_BUILD_DIR
 %files
 
 %defattr(-,root,root)
-%{prefix}/bin/lesspipe.sh
-%{prefix}/bin/archive_color
-%{prefix}/bin/code2color
-%{prefix}/bin/vimcolor
-%{prefix}/bin/sxw2txt
-%{prefix}/bin/lesscomplete
-%{prefix}/share/man/man1/*
-%{prefix}/share/zsh/site-functions
-%{prefix}/share/bash-completion
+%doc ChangeLog COPYING INSTALL README.md german.txt
+%dir %{bindir}
+%{bindir}/lesspipe.sh
+%{bindir}/archive_color
+%{bindir}/code2color
+%{bindir}/vimcolor
+%{bindir}/sxw2txt
+%{bindir}/lesscomplete
+%{_mandir}/man*/*
+%{bash_completion}
+%{zsh_completion}
 /etc/profile.d/*
 
-%docdir %{prefix}/share/man/man1
+#%docdir %{prefix}/share/man/man1
 
 %changelog
 * Fri Sep 12 2025 2.20-1 - wp.friebel@gmail.com
@@ -104,7 +115,7 @@ cd $RPM_BUILD_DIR
 - improved completion mechanism
 * Wed Dec 13 2023 2.11-1 - wp.friebel@gmail.com
 - changed output for csv files
-* Tue Oct 05 2023 2.10-1 - wp.friebel@gmail.com
+* Thu Oct 05 2023 2.10-1 - wp.friebel@gmail.com
 - added zlib support, recognize jsx and tsx, view csv files using column
 * Mon Jun 26 2023 2.08-1 - wp.friebel@gmail.com
 - improved coloring output, support for device tree blob files, bug fixes
