@@ -10,11 +10,11 @@ use Getopt::Long;
 # find sxw2txt and other scripts in current dir, if scripts not installed yet
 $ENV{PATH} .= ':.';
 
-use vars qw($opt_help $opt_prefix $opt_nomake $opt_shell);
+use vars qw($opt_help $opt_prefix $opt_bindir $opt_mandir $opt_zsh_completion_dir $opt_bash_completion_dir $opt_nomake $opt_shell);
 
 Getopt::Long::Configure("prefix_pattern=--");
-my $result = GetOptions('help+', 'prefix=s', 'shell=s', 'nomake+');
-if ( $ARGV[0] or not $result or $opt_help) {
+my $result = GetOptions('help+', 'prefix=s', 'bindir=s', 'mandir=s', 'bash-completion-dir=s', 'zsh-completion-dir=s', 'shell=s', 'nomake+');
+if ( $ARGV[0] or ! $result or $opt_help) {
 	print << 'EOF';
 Usage: configure [options]
 Options:
@@ -22,7 +22,11 @@ Options:
  --shell=<filename>	specify an alternative shell path (zsh/bash) to use
  --nomake		do not generate a Makefile
 Directory and file names:
- --prefix=PREFIX	install lesspipe.sh in PREFIX/bin (/usr/local)
+ --prefix=PREFIX	install lesspipe stuff in PREFIX (/usr/local)
+ --bindir=BINDIR	install lesspipe.sh in BINDIR (PREFIX/bin)
+ --mandir=MANDIR	install man pages in in MANDIR (PREFIX/share/man/man1)
+ --bash-completion-dir=DIR	install bash auto-completion file in in DIR (pkg-config --variable=completionsdir bash-completion)
+ --zsh-completion-dir=DIR	install zsh auto-completion file in in DIR (PREFIX/share/zsh/site-functions)
 
 configure generates by default a Makefile
 EOF
@@ -30,10 +34,19 @@ EOF
 }
 
 my $prefix = $opt_prefix || $ENV{PREFIX} || '/usr/local';
+my $bindir = $opt_bindir || $ENV{BINDIR} || "$prefix/bin";
+my $mandir = $opt_mandir || $ENV{MANDIR} || "$prefix/share/man/man1";
+my $bash_complete_dir = $opt_bash_completion_dir || "$prefix/share/bash-completion";
+# override prefix and use the system defined directory if known
+if ( ! $opt_bash_completion_dir && `pkg-config --version 2>/dev/null`) {
+	$bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
+	chomp $bash_complete_dir;
+}
+my $zsh_complete_dir = $opt_zsh_completion_dir || "$prefix/share/zsh/site-functions";
 
 # remove trailing slash and trailing bin directory
 print "removed trailing /bin dir from prefix\n" if $prefix =~ m|/bin/?$|;
-$prefix =~ s|(/bin)?/?$||;
+$prefix =~ s|(/.+)?/?$||;
 if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
 	# do nothing
 } elsif ( $opt_shell) {
@@ -46,30 +59,26 @@ my @bad = ();
 my $shell = check_shell_vers();
 my $no_bash = (grep {/bash/} @bad);
 my $no_zsh = (grep {/zsh/} @bad);
-my $bash_complete_dir = "$prefix/share/bash-completion";
-# override prefix and use the system defined directory if known
-if (`pkg-config --version 2>/dev/null`) {
-	$bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
-	chomp $bash_complete_dir;
-}
 
 if ( ! $opt_nomake ) {
 	open OUT, ">Makefile";
 	while (<DATA>) {
-		next if /bash_complete_dir/ and $no_bash;
-		next if /zsh\/site-functions/ and $no_zsh;
-		s/opt_prefix/$prefix/;
-		if ($bash_complete_dir and ! $opt_prefix) {
-			s/mkdir.*bash-completion.*/mkdir -p $bash_complete_dir/;
-			s/cp.*bash-completion.*/cp .\/less_completion $bash_complete_dir/;
-		}
+		next if /BASH_COMPLETION/ and $no_bash;
+		next if /ZSH_COMPLETION/ and $no_zsh;
+		s/opt_prefix/$opt_prefix/;
+		s/opt_bindir/$bindir/;
+		s/opt_mandir/$mandir/;
+		s/bash_complete_dir/$bash_complete_dir/;
+		s/zsh_complete_dir/$zsh_complete_dir/;
 		print OUT;
 	}
 	close OUT;
 }
+
 if (! $no_bash) {
 	print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\nOr consider installing the file less_completion in /etc/bashcompletion.d\n";
 }
+
 for my $file ("lesspipe.sh", "lesscomplete") {
 	open F, $file;
 	my $line1 = <F>;
@@ -136,27 +145,31 @@ sub check_shell_vers {
 __END__
 # This is a generated file, do not edit it. Use configure to modify it
 PREFIX = opt_prefix
+BINDIR = opt_bindir
+MANDIR = opt_mandir
+BASH_COMPLETION = bash_complete_dir
+ZSH_COMPLETION = zsh_complete_dir
 
 .PHONY: install
 
 all:
-	./configure --prefix=$(PREFIX)
+	./configure --prefix=$(PREFIX) --bindir=$(BINDIR)
 test:
 	./test.pl
 install:
-	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
-	mkdir -p $(DESTDIR)$(PREFIX)/share/zsh/site-functions
-	mkdir -p $(DESTDIR)$(PREFIX)/share/bash-completion/
-	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(PREFIX)/bin
-	cp ./lesspipe.1 $(DESTDIR)$(PREFIX)/share/man/man1
-	cp ./less_completion $(DESTDIR)$(PREFIX)/share/bash-completion/
-	cp ./_less $(DESTDIR)$(PREFIX)/share/zsh/site-functions
-	chmod 0755 $(DESTDIR)$(PREFIX)/bin/lesspipe.sh
-	chmod 0755 $(DESTDIR)$(PREFIX)/bin/sxw2txt
-	chmod 0755 $(DESTDIR)$(PREFIX)/bin/code2color
-	chmod 0755 $(DESTDIR)$(PREFIX)/bin/archive_color
-	chmod 0755 $(DESTDIR)$(PREFIX)/bin/vimcolor
-	chmod 0755 $(DESTDIR)$(PREFIX)/bin/lesscomplete
+	mkdir -p $(DESTDIR)$(BINDIR)
+	mkdir -p $(DESTDIR)$(MANDIR)
+	mkdir -p $(DESTDIR)$(ZSH_COMPLETION)
+	mkdir -p $(DESTDIR)$(BASH_COMPLETION)
+	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(BINDIR)
+	cp ./lesspipe.1 $(DESTDIR)$(MANDIR)
+	sed -e "s@__BINDIR__@$(BINDIR)@" ./less_completion > $(DESTDIR)$(BASH_COMPLETION)/less
+	sed -e "s@__BINDIR__@$(BINDIR)@" ./_less > $(DESTDIR)$(ZSH_COMPLETION)/_less
+	chmod 0755 $(DESTDIR)$(BINDIR)/lesspipe.sh
+	chmod 0755 $(DESTDIR)$(BINDIR)/sxw2txt
+	chmod 0755 $(DESTDIR)$(BINDIR)/code2color
+	chmod 0755 $(DESTDIR)$(BINDIR)/archive_color
+	chmod 0755 $(DESTDIR)$(BINDIR)/vimcolor
+	chmod 0755 $(DESTDIR)$(BINDIR)/lesscomplete
 clean:
 	mv Makefile Makefile.old
