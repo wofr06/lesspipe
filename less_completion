@@ -24,7 +24,7 @@ _list_archive()
 		cur=${cur#:}
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -o filenames -W "$(
-			lesscomplete "$fn"|
+			__BINDIR__/lesscomplete "$fn"|
 				while read line; do
 					printf "%q\n" "$(printf %q"\n" "$line")"
 				done
