@@ -6,7 +6,7 @@ Name:          %{packagename}
 Version:       %{packageversion}
 Release:       %{packagerelease}%{?dist}
 Group:         Languages
-Source0:       https://github.com/ahaupt/lesspipe/archive/refs/tags/v%{packageversion}.tar.gz
+Source0:       https://github.com/wofr06/lesspipe/archive/refs/tags/v%{packageversion}.tar.gz
 BuildArch:     noarch
 AutoReqProv:   on
 Packager:      Wolfgang Friebel <wp.friebel@gmail.com>
