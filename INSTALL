@@ -116,7 +116,9 @@ This can be achieved also with make:
 For zsh and bash a tab completion for archive contents is provided.
 To activate it the script lesscomplete has to be copied into a directory
 listed in $PATH, the _less function for zsh into a directory listed in $fpath
-and less_completion into a directory used by its completion mechanism.
+and less_completion into a directory used by its completion mechanism,
+usually /etc/bash_completion.d/. For bash it may be necessary to install
+a separate package bash-completion.
 
 Step 4: activate lesspipe.sh
 ----------------------------

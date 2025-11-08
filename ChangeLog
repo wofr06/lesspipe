@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- update license information
+- more robust parsing in archive_color
 - better support for zlib file formats using 7z (dmg files), pigz or zlib-flate
 - fix: get command line parameters of less when input to less is from a pipe
 - show original file if LESSOPEN starts with || and the filtered output is empty
