@@ -245,7 +245,7 @@ the author by email.
 - crt, pem, csr, crl	requires `openssl`
 - matlab		requires `matdump`
 - Jupyter notebook	requires `pandoc`
-- markdown		requires `mdcat` or `pandoc`
+- markdown		requires `pandoc` or a suitable colorizer (e.g. `pygmentize`)
 - log			requires `ccze`
 - java.class		requires `procyon`
 - MacOS X plist		requires `plistutil`

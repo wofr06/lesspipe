@@ -359,7 +359,7 @@ __END__
 ~ public class test
 65 less tests/filter.tgz:test_docx		# docx (neu) git #24,26,27,37, needs pandoc|docx2txt|libreoffice
 = test
-66 less tests/filter.tgz:test_pptx		# pptx (neu), needs pptx2md,mdcat|pptx2md,pandoc|libreoffice,html_converter
+66 less tests/filter.tgz:test_pptx		# pptx (neu), needs pptx2md,pandoc|libreoffice,html_converter
 ~ processing slide 1...|.*test.*
 67 less tests/filter.tgz:test_xlsx		# xlsx (neu), needs in2csv|xlscat|excel2csv|libreoffice
 ~ ^test$
@@ -431,7 +431,7 @@ c head
 c =head1
 100 less tests/filter.tgz:test_plain:sh	# plain text, force color (shellscript)
 c test
-101 less tests/filter.tgz:index.rst		# reStructuredText, needs mdcat
+101 less tests/filter.tgz:index.rst		# reStructuredText, needs pandoc
 c .*# test
 102 less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
 c false
@@ -490,6 +490,6 @@ c name
 ~ .* META-INF/
 129 less tests/filter.tgz:test.pod:log	# force log file in archive, needs ccze
 c =head1
-###    colorize markdown files (mdcat) on MacOSX and iTerm2 (see git #48)
+###    colorize markdown files on MacOSX and iTerm2 (see git #48)
 130 less tests/compress.tgz:test_zlib		# zlib, needs pigz|zlib-flate
 = test

@@ -90,7 +90,7 @@ filetype () {
 	### get file type from 'file' command for an unspecific result
 	[[ "$fcat" == message && $ftype == plain ]] && ftype=msg
 	[[ "$fcat" == message && $ftype == rfc822 ]] && fcat=text && ftype=email
-	if [[ "$fcat" == application && "$ftype" == octet-stream || "$fcat" == text && $ftype == plain ]]; then
+	if [[ "$fcat" == application && "$ftype" == octet-stream || "$ftype" == pem-file  || "$fcat" == text && $ftype == plain ]]; then
 		ft=$(file -L -s -b "$1" 2> /dev/null)
 		# first check if the file command yields something
 		case $ft in
@@ -537,11 +537,9 @@ isfinal () {
 			{ has_cmd docx2txt && cmd=(docx2txt "$1" -); } ||
 			{ has_cmd libreoffice && cmd=(isoffice2 "$1"); } ;;
 		pptx)
-			{ has_cmd pptx2md && t2=$(nexttmp) &&
-				{ { has_cmd mdcat && istemp "pptx2md --disable-image --disable-wmf \
-					-o $t2" "$1" && cmd=(mdcat "$t2"); } ||
-				{ has_cmd pandoc && istemp "pptx2md --disable-image --disable-wmf \
-					-o $t2" "$1" && cmd=(pandoc -f markdown -t plain "$t2"); } }; } ||
+			{ has_cmd pptx2md && has_cmd pandoc && t2=$(nexttmp) &&
+				istemp "pptx2md --disable-image --disable-wmf -o $t2" "$1" && \
+					cmd=(pandoc -f markdown -t plain "$t2"); } ||
 			{ can_do_office && cmd=(isoffice "$1" ppt); } ;;
 		xlsx|ods)
 			{ has_cmd xlscat && cmd=(istemp "xlscat -L -R all" "$1"); } ||
@@ -593,9 +591,8 @@ isfinal () {
 		djvu)
 			has_cmd djvutxt && cmd=(djvutxt "$1") ;;
 		x509|crl|pem-file|csr)
-			[[ "$1" = - ]] && in= || in="-in"
-			[[ "$x" = csr ]] && x509=req || x509=x509
-			has_cmd openssl && cmd=(nodash openssl "$x509" -text -noout "$in" "$1") ;;
+			[[ "$x" = csr ]] && x509=req || x509="$x"
+			has_cmd openssl && cmd=(istemp "openssl $x509 -text -noout -in" "$1") ;;
 		pgp)
 			has_cmd gpg && cmd=(gpg --decrypt --quiet --no-tty --batch --yes "$1") ;;
 		bplist|plist)
