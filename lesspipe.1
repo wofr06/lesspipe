@@ -243,16 +243,17 @@ filtering for certain file types. A sample .lessfilter could look as follows:
 .EX
 .I #!/usr/bin/env bash
 .I
-.I if [[ "$1" = *.html ]]; then
-.I  # call your favorite html beautifier, cat -b is just a boring example
-.I   cat -b "$1"
-.I   exit 0;
-.I elif [[ "$1" = *.txt ]]; then
-.I  # for text files just count the words
-.I   wc -l "$1"
-.I   exit 0
-.I fi
-.I exit 1;
+.I case "$1" in
+.I   *.md|*.MD|*.mkd|*.markdown|*.rst)
+.I   # if module not found, the exit code is not null and lesspipe.sh is called
+.I     python3 -m rich.markdown -c "$1";;
+.I   *.html|*.htm)
+.I     # call your favorite html beautifier, cat -b is just a boring example
+.I     cat -b "$1";;
+.I   *)
+.I     exit 1;;
+.I esac
+
 .EE
 .SH AUTHOR
 Wolfgang Friebel

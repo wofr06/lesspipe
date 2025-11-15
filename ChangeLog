@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- update pem recoginition with newer magic file
+- remove mdcat for markdown, .lessfilter example in man page changed
 - update license information
 - more robust parsing in archive_color
 - better support for zlib file formats using 7z (dmg files), pigz or zlib-flate

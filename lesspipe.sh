@@ -532,10 +532,6 @@ isfinal () {
 		java-applet)
 			# filename needs to end in .class
 			has_cmd procyon && t=$t.class && cat "$1" > "$t" && cmd=(procyon "$t") ;;
-		markdown)
-			[[ $COLOR = *always ]] && mdopt=(--ansi ) || mdopt=(-c)
-			{ has_cmd mdcat && cmd=(mdcat "${mdopt[@]}" "$1"); } ||
-			{ has_cmd pandoc && cmd=(pandoc -t plain "$1"); } ;;
 		docx)
 			{ has_cmd pandoc && cmd=(pandoc -f docx -t plain "$1"); } ||
 			{ has_cmd docx2txt && cmd=(docx2txt "$1" -); } ||
@@ -596,10 +592,10 @@ isfinal () {
 			has_cmd matdump && cmd=(istemp "matdump -d" "$1") ;;
 		djvu)
 			has_cmd djvutxt && cmd=(djvutxt "$1") ;;
-		x509|crl)
-			has_cmd openssl && cmd=(openssl x509 -text -noout "$1") ;;
-		csr)
-			has_cmd openssl && cmd=(openssl req -text -noout -in "$1") ;;
+		x509|crl|pem-file|csr)
+			[[ "$1" = - ]] && in= || in="-in"
+			[[ "$x" = csr ]] && x509=req || x509=x509
+			has_cmd openssl && cmd=(nodash openssl "$x509" -text -noout "$in" "$1") ;;
 		pgp)
 			has_cmd gpg && cmd=(gpg --decrypt --quiet --no-tty --batch --yes "$1") ;;
 		bplist|plist)
@@ -859,7 +855,7 @@ ishtml () {
 	has_cmd elinks && nodash "elinks -dump -force-html" "$1" && return ||
 	has_cmd w3m && handle_w3m "$1" && return ||
 	has_cmd lynx && lynx -force_html -dump "$arg1" && return ||
-	# different versions of html2text existingi, force unicode
+	# different versions of html2text existing, force unicode
 	[[ "$1" == https://* ]] && return ||
 	has_cmd html2text && nodash html2text "$htmlopt" "$1"
 }

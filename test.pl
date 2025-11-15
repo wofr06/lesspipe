@@ -432,7 +432,7 @@ c =head1
 100 less tests/filter.tgz:test_plain:sh	# plain text, force color (shellscript)
 c test
 101 less tests/filter.tgz:index.rst		# reStructuredText, needs mdcat
-c # test
+c .*# test
 102 less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
 c false
 103 LESSCOLORIZER=code2color less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39
