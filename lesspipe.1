@@ -60,7 +60,7 @@ If it is installed under a different name then calling it without an argument
 will work as a filter with \fBLESSQUIET\fP set and expecting input from STDIN.
 .PP
 Having set the environment variable as described above, \fBless\fP
-:will then display textual information for a wide range of file formats.
+will then display textual information for a wide range of file formats.
 .PP
 The filter is normally not called if input is piped to less as in
 .RS
@@ -147,7 +147,7 @@ When the conditions for syntax highlighting are met directory listings and
 listings of tar file contents get colorized as well.
 .PP
 As \fBless\fP is used as a default browser in other programs (e.g. \fIman\fP,
-\fIgit\fP, and \fIperldoc\fP)) \fBlesspipe.sh\fP may be engaged and alter 
+\fIgit\fP, and \fIperldoc\fP) \fBlesspipe.sh\fP may be engaged and alter 
 the output of those programs.
 .SH WATCHING GROWING FILES
 As soon as \fBlesspipe.sh\fP
@@ -164,12 +164,6 @@ can be called with the +F argument, which is equivalent to F within the pager:
 .I \fBless\fP +F /var/log/syslog
 .RE
 Appending a colon to the file name does not work, as then the filter has to be engaged to at least remove that colon and use cat for the original file.
-On the other hand non growing log files can be colorized using \fBccze\fP.
-Its recognition as a log file is difficult if not ending in \fI.log\fP
-but can be forced appending \fB:.log\fP to the file name as e.g in
-.RS
-.I \fBless\fP /var/log/syslog:.log
-.RE
 .SH ADVANCED USAGE
 This version of \fBlesspipe.sh\fP
 allows you to view individual files contained in a file archive, which itself
@@ -199,20 +193,23 @@ be written as
 .RE
 .PP
 .SH COMPLETING MECHANISM FOR ARCHIVE CONTENTS
-With the provided \fIlesscomplete\fP (for \fBzsh\fP and \fBbash\fP),
-\fI_less\fP (for \fBzsh\fP) and \fIless_completion\fP (for \fBbash\fP) files
-a tab completion for files in archives can be accomplished.
+With the provided \fIlesscomplete\fP file (for \fBzsh\fP and \fBbash\fP) and the
+\fI_less\fP (for \fBzsh\fP) and \fIless\fP (for \fBbash\fP) files generated
+during installation a tab completion for files in archives can be accomplished.
 Entering a colon (:) or an equal sign (=) after an archive
 file name and then pressing the tab key triggers the completion mechanism.
-This also works in chained archives. The files \fIlesscomplete\fP and
-\fIless_completion\fP have to be in one of the directories listed in
-\fB$PATH\fP and the function \fI_less\fP for \fBzsh\fP in a directory
-listed by \fI$fpath\fP. The \fIless_completion\fP (bash) has to
-be sourced within a bash initialization script, e.g. in \fI~/.bashrc\fP. New
-directories such as \fI~/scripts\fP and \fI~/.fpath\fP (for zsh) can be added
+This also works in chained archives. 
+The files required for the completion algorithm get installed in directories
+according the choices made during the installation (configure script).
+
+The file \fIlesscomplete\fP
+has to be in one of the directories listed in \fB$PATH\fP and the function \fI_less\fP for \fBzsh\fP in a directory listed by \fI$fpath\fP. The file \fIless\fP
+with completion instructions for bash has to be sourced within a bash
+initialization script, e.g. in \fI~/.bashrc\fP. New directories such as
+\fI~/scripts\fP and \fI~/.fpath\fP (for zsh) can be added
 using the commands
 .RS
-\fBPATH\fP=\fI~/scripts:$PATH\fP # (lesspipe.sh, less_completion) and
+\fBPATH\fP=\fI~/scripts:$PATH\fP # (lesspipe.sh, less) and
 \fBfpath\fP=\fI(~/.fpath $fpath)\fP # (_less, zsh only)
 .RE
 .PP
@@ -245,7 +242,8 @@ filtering for certain file types. A sample .lessfilter could look as follows:
 .I
 .I case "$1" in
 .I   *.md|*.MD|*.mkd|*.markdown|*.rst)
-.I   # if module not found, the exit code is not null and lesspipe.sh is called
+.I   # if the python module rich.markdown is not found then
+.I   # the exit code is not null and lesspipe.sh is called
 .I     python3 -m rich.markdown -c "$1";;
 .I   *.html|*.htm)
 .I     # call your favorite html beautifier, cat -b is just a boring example

@@ -96,7 +96,7 @@ the author by email.
  it is determined on the output of the `file --mime` command [2], that
  returns the mime type. In some cases the mime type is too unspecific and then
  the `file` command yielding a textual description or the file suffix is used
- to determine what to display.
+ to determine what to display. As a last resort the file extension is consulted.
 
  By default less wraps long lines unless called with the option -S or
  --chop-long-lines. That can be changed interactively by typing -S followed by
@@ -139,7 +139,7 @@ the author by email.
  file name does however contain at least one isolated colon, the equal sign =
  can be used as an alternate separator character. At each stage in
  extracting files from such a hierarchy, the file type is determined. This
- guarantees a correct processing and display at each stage of the filtering.
+ guarantees a correct processing and display of the last file in the list.
 
  To view files in archives, the following command can be used:
 ```
@@ -376,18 +376,9 @@ tar.gz files.
 
 To make it work, the script `lesscomplete` has to be executable and must be
 found in one of the directories listed in the `$PATH` environment variable.
-For zsh the file `_less` has to be stored in one of the directories listed in
-`$fpath` or the directory containing `_less` has to be added to `$fpath`, e.g.
-by:
-```
-        fpath=(~/zsh_functions $fpath)
-```
+
 In bash, the bash-completion (usually a package with that name) has to be
-installed and the function `less_completion` has to be added to the shell
-environment by sourcing the script (e.g. from .bashrc using the correct location):
-```
-        source ~/bash_functions/less_completion
-```
+installed.
 In zsh, the completion system has to be loaded and the menucomplete option
 has to be set. That can be achieved with
 ```
@@ -411,7 +402,7 @@ the user's home directory), or `lessfilter` (and be accessible from a directory
 mentioned in the environment variable `PATH`).
 That program has to be executable and has to end with an exit code 0, if the
 filtering was done within that script. Otherwise, a nonzero exit code means
-the filtering is left to lesspipe.sh.
+the filtering is left to lesspipe.sh. For an example see the man page.
 
 This mechanism can be used to add filtering for new formats or e.g. inhibit
 filtering for certain file types.
@@ -452,34 +443,34 @@ STDOUT and the commands executed to STDERR.
 ### 12.1 URLs to some utilities (with last known release)
 - 7z, 7zr              https://github.com/ip7z/7zip
 - 7zz                  https://sourceforge.net/projects/sevenzip/ (2025)
+- archive_color        modified version of tarcolor (contained in this package)
 - cabextract           https://www.cabextract.org.uk/ (2023)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
 - ccze                 https://github.com/software-revive/ccze-rv (2020)
 - csvtable             https://github.com/wofr06/csvtable (2024)
 - djvutxt              https://djvu.sourceforge.net/ (2025)
 - docx2txt             https://docx2txt.sourceforge.net/ (2014)
+- dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2025)
 - dvi2tty              https://www.ctan.org/tex-archive/dviware/dvi2tty/ (2016)
 - excel2csv            https://github.com/informationsea/excel2csv (2018)
 - html2text            https://github.com/grobian/html2text (2025)
 - id3v2                https://id3v2.sourceforge.net/ (2010)
 - lzip                 https://www.nongnu.org/lzip/lzip.html (2025)
-- pigz                 https://github.com/madler/pigz(2023)
-- zlib-flate           https://github.com/qpdf/qpdf(2025)
 - matdump              https://sourceforge.net/projects/matio/ (2024)
 - mediainfo            https://mediaarea.net/MediaInfo/ (2025)
+- nvimpager            https://github.com/lucc/nvimpager (2024)
 - odt2txt              https://github.com/dstosberg/odt2txt (2017)
 - pandoc               https://pandoc.org/ (2025)
+- pigz                 https://github.com/madler/pigz(2023)
 - pptx2md              https://github.com/ssine/pptx2md (2024)
+- sxw2txt              https://vinc17.net/software/sxw2txt (2010)
 - tarcolor             https://github.com/msabramo/tarcolor (2014)
-- archive_color        modified version of tarcolor (contained in this package)
 - unrtf                https://www.gnu.org/software/unrtf/ (2018)
 - wvText               https://github.com/AbiWord/wv/ (2014)
 - xlscat               https://metacpan.org/dist/Spreadsheet-Read (2025)
 - xlsx2csv (>=0.8.3)   https://github.com/dilshod/xlsx2csv (2025)
-- sxw2txt              https://vinc17.net/software/sxw2txt (2010)
-- dtc                  https://git.kernel.org/cgit/utils/dtc/dtc.git (2025)
-- xmq                  https://github.com/libxmq/xmq/releases/latest (2025)
-- nvimpager            https://github.com/lucc/nvimpager (2024)
+- xmq                  https://github.com/libxmq/xmq/releases/latest (`2025)
+- zlib-flate           https://github.com/qpdf/qpdf(2025)
 
 ### 12.2 References
 - [1] http://www.greenwoodsoftware.com/less/	(less)

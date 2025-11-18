@@ -2,8 +2,8 @@ QUICK INSTALL (requires root access)
 ==============================
 Execute the following commands (for a more detailed description see below):
 
-  ./configure
-  make		# (check for usable shell)
+  ./configure	# (check for usable shell and configure directory locations)
+  make			# does show the chosen prefix and bindir
   make test # (optional)
   make install
 
@@ -13,12 +13,12 @@ this is equivalent to the following commands (assuming that the dirs do exist)
   cp lesspipe.sh /usr/local/bin
 
   # optional for colorizing and old openoffice writer formats
-  cp code2color archive_color vimcolor sxw2txt lesscomplete /usr/local/bin
+  cp code2color archive_color vimcolor sxw2txt /usr/local/bin
 
   # optional for zsh and bash completion (archive contents)
   cp lesscomplete /usr/local/bin           # (zsh and bash)
-  cp _less /usr/share/zsh/site-functions   #(zsh)
-  cp less_completion /etc/bashcompletion.d #(bash)
+  sed -e "s@__BINDIR__/@@" ./zsh_completion > /usr/share/zsh/site-functions/_less
+  sed -e "s@__BINDIR__/@@" ./bash_completion > /etc/bashcompletion.d/less
 
   # optional intallation of a man page
   cp lesspipe.1 /usr/local/share/man/man1
@@ -29,21 +29,21 @@ or INSTALL locally for the logged in user
   mkdir -p ~/bin
   cp lesspipe.sh lesscomplete ~/bin
   # optional for colorizing and old openoffice writer formats
-  cp code2color archive_color vimcolor sxw2txt lesscomplete ~/bin
+  cp code2color archive_color vimcolor sxw2txt ~/bin
 
 # check your PATH variable, if it does not contain ~/bin then add it to PATH
   echo $PATH
-  PATH=$PATH:~/bin # (put this line into an init script ~/.bashrc or ~/.zshrc)
+  PATH=$PATH:~/bin # (put this line into an init script ~/.bashrc and ~/.zshrc)
 
-# when using zsh then do similar steps for fpath and _less
+# the file zsh_completion needs to be edited and put into ~/.fpath
   [[ -d ~/.fpath ]] || mkdir ~/.fpath
-  cp _less ~/.fpath
+  sed -e "s@__BINDIR__/@@" ./zsh_completion > ~/.fpath/_less
   echo $fpath
-  fpath=$fpath:~/.fpath # (put this statement in an int script .bashrc/.zshrc)
+  fpath=$fpath:~/.fpath # (put this statement into a script .zshrc)
 
-# for bash the file less_completion can be put into ~/.bash_completion
+# the file bash_completion needs to be edited and put into ~/.bash_completion
   [[ -d ~/.bash_completion ]] || mkdir ~/.bash_completion
-  cp less_completion ~/.bash_completion
+  sed -e "s@__BINDIR__@@" ./bash_completion ~/.bash_completion/less #(bash)
 
 Then do set the environment variable LESSOPEN:
 
@@ -62,17 +62,23 @@ For a detailed discussion consult the file README starting with the section
 'Required programs'. For best results up to date versions of 'file'
 tar, gzip, bzip2 and some helper programs are highly recommended.
 
-Step 1: create Makefile and lesspipe.sh using a different shell (optional)
+Step 1: create Makefile (and modify lesspipe.sh, if bash not usable)
 --------------------------------------------------------------------------
 
- ./configure [--help] [--nomake] [--prefix=<path>] [--shell=<file>]
+ ./configure [--help] [--nomake] [--shell=<file>]
+             [--prefix=<path>] [--bindir=<path>] [--mandir=<path>]
+             [--bash-completion-dir=<path>] [--zsh-completion-dir=<path>]
 
 Options:
-  --help                  print this message
-  --shell=<filename>      specify full path to an alternative shell to use
-  --nomake                do not generate a Makefile
+  --help             print this message
+  --shell=<location> specify full path to an alternative shell to use
+  --nomake           do not generate a Makefile
 Directory and file names:
-  --prefix=PREFIX         install lesspipe.sh in PREFIX/bin (/usr/local)
+  --prefix=PREFIX   install lesspipe.sh in PREFIX/bin (/usr/local)
+  --bindir=BINDIR   install lesspipe.sh in BINDIR (PREFIX/bin)
+  --mandir=MANDIR   install man pages in in MANDIR (PREFIX/share/man/man1)
+  --bash-completion-dir=DIR	install bash auto-completion file in in DIR (pkg-config --variable=completionsdir bash-completion)
+  --zsh-completion-dir=DIR	install zsh auto-completion file in in DIR (PREFIX/share/zsh/site-functions
 
 configure generates by default a Makefile and if an alternate shell is
 given, then also a changed lesspipe.sh.
@@ -91,39 +97,31 @@ or
 
 can be used. The options -e and -v are for debugging.
 
-To get support for newer file types an additional magic file (e.g. ~/.magic,
-for use in the file command) might have to be created. In that case the
-environment variable MAGIC has to be set and has to contain both the system
-magic file and your personal one. Example:
-
-  MAGIC='/usr/share/file/magic:/Users/myaccount/.magic'
-  export MAGIC
-
 Step 3: install lesspipe.sh and helper programs
 -----------------------------------------------------------------------
-You can copy lesspipe.sh to any appropriate place.
-Suggested location: /usr/local/bin/lesspipe.sh
-The helper programs can be copied to the same directory as lesspipe.sh or any
-directory listed in the PATH environment variable.
-The archive_color script allows to colorize tar and other archive listings.
 
-  cp lesspipe.sh code2color vimcolor sxw2txt archive_color /usr/local/bin
+  make install  # installing to directories specified in the ./configure call
 
-This can be achieved also with make:
-
-  make install [PREFIX=<path>]  # that copies the scripts to <path>/bin
+This copies the files lesspipe.sh lesscomplete code2color vimcolor sxw2txt and
+archive_color into the directory PREFIX/bin or BINDIR, depending on the options
+given to the configure call. By default /usr/local/bin is chosen.
 
 For zsh and bash a tab completion for archive contents is provided.
-To activate it the script lesscomplete has to be copied into a directory
-listed in $PATH, the _less function for zsh into a directory listed in $fpath
-and less_completion into a directory used by its completion mechanism,
-usually /etc/bash_completion.d/. For bash it may be necessary to install
-a separate package bash-completion.
+The make install step installs the additional files _less (zsh) and less (bash)
+respectively to the directories determined in the configure step as follows:
+
+The zsh_completion and bash_completion files get edited
+(by replacing __BINDIR__ with a suitable directory contained in $PATH) and
+then copied under the name _less into a directory listed in $fpath (zsh)
+and for bash install it under the name less into a directory used by the
+bash completion mechanism, usually /etc/bash_completion.d/.
+For bash it may be necessary to install a separate package bash-completion.
 
 Step 4: activate lesspipe.sh
 ----------------------------
-To make use of the installed lesspipe.sh set the environment variable LESSOPEN:
-The use of the fully qualified path is recommended to avoid problems with other
-scripts of the same name or with a changed search PATH:
+To make use of the installed lesspipe.sh the environment variable LESSOPEN has
+to mention the location, where lesspipe.sh can be found. The use of the fully
+qualified path is recommended to avoid problems with other scripts of the same
+name or with a changed search PATH:
 
   LESSOPEN="|/usr/local/bin/lesspipe.sh %s"; export LESSOPEN  #(sh like shells)

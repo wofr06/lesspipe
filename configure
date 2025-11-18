@@ -45,12 +45,14 @@ if ( ! $opt_bash_completion_dir && `pkg-config --version 2>/dev/null`) {
 my $zsh_complete_dir = $opt_zsh_completion_dir || "$prefix/share/zsh/site-functions";
 
 # remove trailing slash and trailing bin directory
-print "removed trailing /bin dir from prefix\n" if $prefix =~ m|/bin/?$|;
-$prefix =~ s|(/.+)?/?$||;
+if ($prefix =~ m|/bin/?$|) {
+	print "removed trailing /bin dir from prefix\n";
+	$prefix =~ s|(/.+)?/?$||;
+}
 if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
 	# do nothing
 } elsif ( $opt_shell) {
-	print "unuseable shell $opt_shell: not executable or no absolute path\n";
+	print "unusable shell $opt_shell: not executable or no absolute path\n";
 	exit 1;
 }
 
@@ -65,7 +67,7 @@ if ( ! $opt_nomake ) {
 	while (<DATA>) {
 		next if /BASH_COMPLETION/ and $no_bash;
 		next if /ZSH_COMPLETION/ and $no_zsh;
-		s/opt_prefix/$opt_prefix/;
+		s/opt_prefix/$prefix/;
 		s/opt_bindir/$bindir/;
 		s/opt_mandir/$mandir/;
 		s/bash_complete_dir/$bash_complete_dir/;
@@ -73,10 +75,9 @@ if ( ! $opt_nomake ) {
 		print OUT;
 	}
 	close OUT;
-}
-
-if (! $no_bash) {
-	print "installing bash completion in $bash_complete_dir\nIn bash, please preload the completion, dynamic invocation does not work\n. $bash_complete_dir/less_completion\nOr consider installing the file less_completion in /etc/bashcompletion.d\n";
+	print "A Makefile has been generated\n\tprefix $prefix\n\tbindir $bindir\n",
+		"\tmandir $mandir\n\tbash_complete_dir $bash_complete_dir\n",
+		"\tzsh_complete_dir  $zsh_complete_dir)\n";
 }
 
 for my $file ("lesspipe.sh", "lesscomplete") {
@@ -97,7 +98,7 @@ for my $file ("lesspipe.sh", "lesscomplete") {
 exit 0;
 
 sub check_shell_vers {
-	# define useable shells, the order is important !
+	# define usable shells, the order is important !
 	my @shells = qw( /bin/bash /bin/zsh /bin/sh);
 	@shells = ( $opt_shell ) if $opt_shell;
 	my $selected_shell = '';
@@ -136,7 +137,7 @@ sub check_shell_vers {
 		$shellcmd = "$file$opt" if ! $shellcmd;
 	}
 	if ( !$selected_shell ) {
-		print "Sorry, no useable shell found, the following were tried:\n@bad\n";
+		print "Sorry, no usable shell found, the following were tried:\n@bad\n";
 		print "You could run configure --shell=<abs_filename> to retry\n";
 		exit 1;
 	}
@@ -163,8 +164,8 @@ install:
 	mkdir -p $(DESTDIR)$(BASH_COMPLETION)
 	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(BINDIR)
 	cp ./lesspipe.1 $(DESTDIR)$(MANDIR)
-	sed -e "s@__BINDIR__@$(BINDIR)@" ./less_completion > $(DESTDIR)$(BASH_COMPLETION)/less
-	sed -e "s@__BINDIR__@$(BINDIR)@" ./_less > $(DESTDIR)$(ZSH_COMPLETION)/_less
+	sed -e "s@__BINDIR__@$(BINDIR)@" ./bash_completion > $(DESTDIR)$(BASH_COMPLETION)/less
+	sed -e "s@__BINDIR__@$(BINDIR)@" ./zsh_completion > $(DESTDIR)$(ZSH_COMPLETION)/_less
 	chmod 0755 $(DESTDIR)$(BINDIR)/lesspipe.sh
 	chmod 0755 $(DESTDIR)$(BINDIR)/sxw2txt
 	chmod 0755 $(DESTDIR)$(BINDIR)/code2color
