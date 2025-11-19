@@ -246,7 +246,6 @@ the author by email.
 - matlab		requires `matdump`
 - Jupyter notebook	requires `pandoc`
 - markdown		requires `pandoc` or a suitable colorizer (e.g. `pygmentize`)
-- log			requires `ccze`
 - java.class		requires `procyon`
 - MacOS X plist		requires `plistutil`
 - binary data		requires `strings`
@@ -332,9 +331,6 @@ produce colored output.
 ### 5.3 Colored listing of tar file contents
 If the executable `archive_color` is installed, then the listing of tar file
 contents is colored in a similar fashion as directory contents.
-
-### 5.4 Colored listing of log file contents
-The contents of log files gets colored, if the helper program `ccze` is installed. If the file name does not have the .log suffix, recognition as a log file can be forced by appending :.log to the file name.
 
 ## 6. Calling less from standard input
 
@@ -446,7 +442,6 @@ STDOUT and the commands executed to STDERR.
 - archive_color        modified version of tarcolor (contained in this package)
 - cabextract           https://www.cabextract.org.uk/ (2023)
 - catdoc,catppt,xls2csv https://www.wagner.pp.ru/~vitus/software/catdoc/ (2016)
-- ccze                 https://github.com/software-revive/ccze-rv (2020)
 - csvtable             https://github.com/wofr06/csvtable (2024)
 - djvutxt              https://djvu.sourceforge.net/ (2025)
 - docx2txt             https://docx2txt.sourceforge.net/ (2014)

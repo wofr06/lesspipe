@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- remove support for colorizing log files (slow, +F not working)
 - update documentation for changed configure options and file names
 - update pem recoginition with newer magic file
 - remove mdcat for markdown, .lessfilter example in man page changed

@@ -77,7 +77,7 @@ if ( ! $opt_nomake ) {
 	close OUT;
 	print "A Makefile has been generated\n\tprefix $prefix\n\tbindir $bindir\n",
 		"\tmandir $mandir\n\tbash_complete_dir $bash_complete_dir\n",
-		"\tzsh_complete_dir  $zsh_complete_dir)\n";
+		"\tzsh_complete_dir  $zsh_complete_dir\n";
 }
 
 for my $file ("lesspipe.sh", "lesscomplete") {
@@ -154,7 +154,7 @@ ZSH_COMPLETION = zsh_complete_dir
 .PHONY: install
 
 all:
-	./configure --prefix=$(PREFIX) --bindir=$(BINDIR)
+	$(info "make install" will install lesspipe.sh in $(PREFIX))
 test:
 	./test.pl
 install:

@@ -72,17 +72,9 @@ istemp () {
 		shift
 		t=$(nexttmp)
 		cat > "$t"
-		if [[ $prog == "ccze -A" ]]; then
-			$prog < "$t" "$@"
-		else
-			$prog "$t" "$@"
-		fi
+		$prog "$t" "$@"
 	else
-		if [[ $prog == "ccze -A" ]]; then
-			$prog < "$@"
-		else
-			$prog "$@"
-		fi
+		$prog "$@"
 	fi
 }
 
