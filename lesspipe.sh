@@ -610,14 +610,14 @@ isfinal () {
 	esac
 	fi
 	# not a specific file format
-	if [[ -z ${cmd[*]} ]]; then
-		fext=$(fileext "$1")
+	fext=$(fileext "$1")
+	if [[ -z ${cmd[*]} && "$fchar" == binary ]]; then
 		if [[ $fcat == audio || $fcat == video || $fcat == image ]]; then
 			{ has_cmd ffprobe && [[ $fcat != image ]] && cmd=(ffprobe -hide_banner -- "$1"); } ||
 			{ [[ "$1" != '-' ]] && has_cmd mediainfo && cmd=(mediainfo --Full "$1"); } ||
 			{ has_cmd exiftool && cmd=(exiftool "$1"); } ||
 			{ has_cmd identify && [[ $fcat == image ]] && cmd=(identify -verbose "$1"); }
-		elif [[ "$fchar" == binary ]]; then
+		else
 			cmd=(nodash strings "$1")
 		fi
 	fi

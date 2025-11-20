@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- fix display of text format audio or video files (e.g. m3u)
 - remove support for colorizing log files (slow, +F not working)
 - update documentation for changed configure options and file names
 - update pem recoginition with newer magic file
