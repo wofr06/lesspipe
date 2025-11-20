@@ -629,6 +629,7 @@ isfinal () {
 	[[ $fcat == text && $x != plain ]] && fext=$x
 	[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 	fext=${fext##*/}
+	[[ -z $fext ]] && fext=$x
 	[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$fileext"
 	if [[ -n ${cmd[*]} ]]; then
 		# TAU: When cmd starts with environment variable settings, bash will refuse to execute it via : "${cmd[@]}"

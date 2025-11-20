@@ -488,6 +488,5 @@ c name
 ~ test=a
 128 less $T/tests/test.jar			# support for jar files git #8,22, needs unzip
 ~ .* META-INF/
-###    colorize markdown files on MacOSX and iTerm2 (see git #48)
 129 less tests/compress.tgz:test_zlib		# zlib, needs pigz|zlib-flate
 = test
