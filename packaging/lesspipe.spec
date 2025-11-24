@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.20
+%define packageversion 2.21
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -95,6 +95,8 @@ cd $RPM_BUILD_DIR
 #%docdir %{prefix}/share/man/man1
 
 %changelog
+* Mon Nov 24 2025 2.21-1 - wp.friebel@gmail.com
+- documentation changes, markdown support changed, correctly report empty files
 * Fri Sep 12 2025 2.20-1 - wp.friebel@gmail.com
 - make lesspipe compatible with termux
 * Thu Jul 17 2025 2.19-1 - wp.friebel@gmail.com

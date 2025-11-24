@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.21 Nov 24 2025
 - fix display of text format audio or video files (e.g. m3u)
 - remove support for colorizing log files (slow, +F not working)
 - update documentation for changed configure options and file names
