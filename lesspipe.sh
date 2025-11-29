@@ -411,6 +411,7 @@ analyze_args () {
 		r_string=($lessarg)
 		for i in "${r_string[@]}"
 		do
+			[[ $i = --use-color ]] && COLOR="--color=auto" && break
 			[[ $i =~ ^-[A-Za-z~]*[rR] || $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
 		done
 	fi
