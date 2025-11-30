@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- correctly detect the presence of option -R given to less 
 Version 2.21 Nov 24 2025
 - fix display of text format audio or video files (e.g. m3u)
 - remove support for colorizing log files (slow, +F not working)
