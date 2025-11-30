@@ -476,7 +476,7 @@ has_colorizer () {
 			[[ -n $lang ]] && opt+=(-s "$lang")
 			style=esc
 			[[ $colors -ge 256 ]] && style=esc256
-			opt+=(--failsafe -f "$style") ;;
+			opt+=(--failsafe -f "$style" --style-file "$style".style) ;;
 		code2color|vimcolor)
 			opt=("$1")
 			[[ -n "$3" ]] && opt=(-l "$3" "$1") ;;
