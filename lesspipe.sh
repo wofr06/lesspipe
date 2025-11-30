@@ -555,7 +555,7 @@ isfinal () {
 		ms-excel)
 			{ can_do_office && cmd=(isoffice "$1" xls); } ;;
 		ooffice1)
-			{ has_cmd sxw2txt && cmd=(istemp sxw2txt "$1"); } ||
+			{ has_cmd odt2txt && cmd=(istemp odt2txt "$1"); } ||
 			{ can_do_office && cmd=(isoffice "$1" odt); } ;;
 		ipynb|epub)
 			has_cmd pandoc && cmd=(pandoc -f "$x" -t plain "$1") ;;

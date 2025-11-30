@@ -458,7 +458,6 @@ STDOUT and the commands executed to STDERR.
 - pandoc               https://pandoc.org/ (2025)
 - pigz                 https://github.com/madler/pigz(2023)
 - pptx2md              https://github.com/ssine/pptx2md (2024)
-- sxw2txt              https://vinc17.net/software/sxw2txt (2010)
 - tarcolor             https://github.com/msabramo/tarcolor (2014)
 - unrtf                https://www.gnu.org/software/unrtf/ (2018)
 - wvText               https://github.com/AbiWord/wv/ (2014)

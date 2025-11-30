@@ -375,7 +375,7 @@ __END__
 ~ .*1. test|\s*test
 73 less tests/filter.tgz:test_xls		# xls (old), needs in2csv|xls2csv|libreoffice,html_converter
 ~ ^test$|^"test"$
-74 less tests/filter.tgz:test_ooffice1	# openoffice1 (very old), needs sxw2txt|libreoffice
+74 less tests/filter.tgz:test_ooffice1	# openoffice1 (very old), needs odt2txt|libreoffice
 = test
 75 less tests/filter.tgz:test_nroff	# man pages etc (nroff), needs groff|mandoc
 ~ .* Commands

@@ -7,7 +7,7 @@ use warnings;
 use File::Copy;
 use Getopt::Long;
 
-# find sxw2txt and other scripts in current dir, if scripts not installed yet
+# find lesscomplete and other scripts in current dir, if scripts not installed yet
 $ENV{PATH} .= ':.';
 
 use vars qw($opt_help $opt_prefix $opt_bindir $opt_mandir $opt_zsh_completion_dir $opt_bash_completion_dir $opt_nomake $opt_shell);
@@ -162,12 +162,11 @@ install:
 	mkdir -p $(DESTDIR)$(MANDIR)
 	mkdir -p $(DESTDIR)$(ZSH_COMPLETION)
 	mkdir -p $(DESTDIR)$(BASH_COMPLETION)
-	cp ./code2color ./sxw2txt ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(BINDIR)
+	cp ./code2color ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(BINDIR)
 	cp ./lesspipe.1 $(DESTDIR)$(MANDIR)
 	sed -e "s@__BINDIR__@$(BINDIR)@" ./bash_completion > $(DESTDIR)$(BASH_COMPLETION)/less
 	sed -e "s@__BINDIR__@$(BINDIR)@" ./zsh_completion > $(DESTDIR)$(ZSH_COMPLETION)/_less
 	chmod 0755 $(DESTDIR)$(BINDIR)/lesspipe.sh
-	chmod 0755 $(DESTDIR)$(BINDIR)/sxw2txt
 	chmod 0755 $(DESTDIR)$(BINDIR)/code2color
 	chmod 0755 $(DESTDIR)$(BINDIR)/archive_color
 	chmod 0755 $(DESTDIR)$(BINDIR)/vimcolor

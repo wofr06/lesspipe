@@ -85,7 +85,6 @@ cd $RPM_BUILD_DIR
 %{bindir}/archive_color
 %{bindir}/code2color
 %{bindir}/vimcolor
-%{bindir}/sxw2txt
 %{bindir}/lesscomplete
 %{_mandir}/man*/*
 %{bash_completion}
