@@ -69,6 +69,8 @@ filetype () {
 	esac
 	# correct for a more specific file type
 	case "$fext" in
+		sxi)
+			[[ $ftype == zip ]] && ftype=ooffice1 ;;
 		epub)
 			[[ $ftype == zip ]] && ftype=epub ;;
 		ipynb)
