@@ -43,7 +43,7 @@ my $filetype = $opt_l;
 my $report_colors = $opt_c;
 
 if (! $file or $file eq '-') {
-	$file = "$tdir/inputfile";
+	$file = File::Temp->new(TEMPLATE => 'inputXXXX', DIR => $tdir);
 	File::Copy::syscopy(\*STDIN, $file);
 }
 
@@ -62,8 +62,8 @@ my %ANSI_COLORS = (
 );
 
 # get colors from the active color scheme
-my $cmds = "$tdir/commands";
-my $colorfile = "$tdir/colors";
+my $cmds = File::Temp->new(TEMPLATE => 'cmdsXXXX', DIR => $tdir);
+my $colorfile = File::Temp->new(TEMPLATE => 'colorsXXXX', DIR => $tdir);
 open F, ">$cmds" or die "$!";
 print F "redir! >$colorfile|colorscheme|";
 print F "hi $_|" for keys %ANSI_COLORS;
@@ -157,12 +157,12 @@ sub do_markup {
 	(my $filename = $file) =~s/"/\\"/g;
 
 	# Create a temp file to put the output in.
-	my $out_file = File::Temp->new(TEMPLATE => 'vimcXXXX', DIR => '/tmp');
+	my $out_file = File::Temp->new(TEMPLATE => 'vimcXXXX', DIR => $tdir);
 	# Create a temp file for the 'script', which is given to vim
 	# with the -s option.
-	my $script_file = "$tdir/scriptfile";
+	my $script_file = File::Temp->new(TEMPLATE => 'scriptXXXX', DIR => $tdir);
 	open $script_fh, ">$script_file" or die "$!\n";
-	my $markup_file = "$tdir/markupfile";
+	my $markup_file = File::Temp->new(TEMPLATE => 'markupXXXX', DIR => $tdir);
 	open $markup_fh, ">$markup_file" or die "$!\n";
 	my $filetype_set = defined $filetype ? ":set filetype=$filetype" : '';
 	my $vim_let = $defaults->{vim_let};
@@ -296,8 +296,8 @@ sub run {
 sub languages {
 	my ($pat) = @_;
 	$pat ||= '';
-	my $cmds = "$tdir/commands";
-	my $typefile = "$tdir/types";
+	my $cmds = File::Temp->new(TEMPLATE => 'cmdsXXXX', DIR => $tdir);
+	my $typefile = File::Temp->new(TEMPLATE => 'typesXXXX', DIR => $tdir);
 	open F, ">$cmds" or die "$!";
 	print F "redir! >$typefile|echo getcompletion(\'$pat\', 'filetype')|q!";
 	close F;

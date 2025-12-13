@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- improved tempdir handling in vimcolor
 - recognize very old staroffice/openoffice files (extension sxi)
 - remove sxw2txt in favor of odt2txt (already used in lesspipe.sh)
 - correctly detect the presence of option -R given to less 
