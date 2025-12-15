@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# synced with lesspipe 2.21
+# synced with lesspipe 2.22
 # lesscomplete, a helper script for the _less (zsh) and less (bash) completion
 # mechanisms.
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
@@ -224,6 +224,8 @@ get_unpack_cmd () {
 	# 7z formats and fall back to 7z supported formats
 	if [[ -z $prog ]]; then
 		case "$x" in
+			dmg)
+				has_cmd 7z && eval '7z l "$2" >/dev/null 2>&1' && prog=7z ;;
 			7z-compressed|lzma|xz|cab|arj|bzip2|cpio|iso)
 				{ has_cmd 7zz && prog=7zz; } ||
 				{ has_cmd 7zr && prog=7zr; } ||

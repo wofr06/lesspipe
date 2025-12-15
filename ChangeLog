@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.22 Dec 15 2025
+- new link to deepwiki generated documentation
 - improved tempdir handling in vimcolor
 - recognize very old staroffice/openoffice files (extension sxi)
 - remove sxw2txt in favor of odt2txt (already used in lesspipe.sh)

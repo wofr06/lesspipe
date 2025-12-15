@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.21
+%define packageversion 2.22
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -94,6 +94,8 @@ cd $RPM_BUILD_DIR
 #%docdir %{prefix}/share/man/man1
 
 %changelog
+* Mon Dec 15 2025 2.22-1 - wp.friebel@gmail.com
+- bug fixes, documentation changes, sxw2txt removed
 * Mon Nov 24 2025 2.21-1 - wp.friebel@gmail.com
 - documentation changes, markdown support changed, correctly report empty files
 * Fri Sep 12 2025 2.20-1 - wp.friebel@gmail.com

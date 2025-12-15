@@ -1,6 +1,6 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.21
+Version: 2.22
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto://wp.friebel@gmail.com)
 License: GPL
 
@@ -98,7 +98,7 @@ the author by email.
 
  The filter does different things depending on the file format. In most cases
  it is determined on the output of the `file --mime` command [2], that
- returns the mime type. In some cases the mime type is too unspecific and then
+ returns the mime type. In some cases the mime type is to unspecific and then
  the `file` command yielding a textual description or the file suffix is used
  to determine what to display. As a last resort the file extension is consulted.
 
@@ -106,6 +106,9 @@ the author by email.
  --chop-long-lines. That can be changed interactively by typing -S followed by
  ENTER when viewing files with long lines. It is e.g. quite useful for tabular
  display of csv files with many columns.
+
+ Auxiliary programs are provided to enhance the TAB completion mechanism in
+ bash and zsh shells and to help colorizing the filtered output.
 
 ## 2. Usage
 
@@ -116,9 +119,9 @@ the author by email.
 ```
         LESSOPEN="|lesspipe.sh %s"; export LESSOPEN  # (sh like shells)
 ```
- If `lesspipe.sh` is not in the UNIX search path or if the wrong `lesspipe.sh` is
- found in the search path, then the full path to `lesspipe.sh` should be given
- in the above commands and the invocations below. The commands work only
+ If `lesspipe.sh` is not in the UNIX search path or if the wrong `lesspipe.sh`
+ is found in the search path, then the full path to `lesspipe.sh` should be
+ given in the above commands and the invocations below. The commands work only
  in the described manner if the file name is lesspipe.sh.
 
  If it is installed under a different name then calling it without an argument
@@ -135,13 +138,15 @@ the author by email.
         lesspipe.sh >> ~/.bashrc        # (bash) and
         lesspipe.sh >> ~/.zshrc         # (zsh) and
 ```
- Several Linux distributions do now set **LESSOPEN** by default and if the contents of the variable is not referring to this lesspipe.sh version, it has to be redefined to get the functionality described here.
+ Several Linux distributions do now set **LESSOPEN** by default and if the
+ contents of the variable is not referring to this lesspipe.sh version, it
+ has to be redefined to get the functionality described here.
 
- As `lesspipe.sh` is accepting only a single argument, a hierarchical list of file
- names has to be separated by a non-blank character. A colon is rarely found
- in file names, therefore it has been chosen as the separator character. If a
- file name does however contain at least one isolated colon, the equal sign =
- can be used as an alternate separator character. At each stage in
+ As `lesspipe.sh` is accepting only a single argument, a hierarchical list of
+ file names has to be separated by a non-blank character. A colon is rarely
+ found in file names, therefore it has been chosen as the separator character.
+ If a file name does however contain at least one isolated colon, the equal
+ sign (=) can be used as an alternate separator character. At each stage in
  extracting files from such a hierarchy, the file type is determined. This
  guarantees a correct processing and display of the last file in the list.
 
@@ -178,7 +183,8 @@ the author by email.
 
  **LESSCOLORIZER** can be set to prefer a highlighting program from the following
  choices (`nvimpager` `bat` `batcat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
- Otherwise the first program in that list that is installed will be used, with the caveat that `bat` will use [ansi theme](https://github.com/wofr06/lesspipe/issues/155#issuecomment-2312972276) instead of its default colors.
+ Otherwise the first program in that list that is installed will be used, with
+ the caveat that `bat` will use the [ansi theme](https://github.com/wofr06/lesspipe/issues/155#issuecomment-2312972276) instead of its default colors.
 
 ## 3. Required programs
 
@@ -256,16 +262,16 @@ the author by email.
 - json			requires `jq`
 - device tree blobs	requires `dtc` (extension dtb or dts)
 
-Files in the html, xml and perl pod format are always rendered. Sometimes
-however the original contents of the file should be viewed instead.
-That can be achieved by appending a colon to the file name. If the correct
-file type (html, xml, pod) follows, the output can get colorized (see also
-the section below).
+ Files in the html, xml and perl pod format are always rendered. Sometimes
+ however the original contents of the file should be viewed instead.
+ That can be achieved by appending a colon to the file name. If the correct
+ file type (html, xml, pod) follows, the output can get colorized (see also
+ the section below).
 
-If the binary xmq is installed, then xml is rendered differently, so that
-the xml structure is better recognized. A similar display for html contents
-using xmq is achieved by appending a colon to the file name. To get the
-original html file contents, two colons are required in this case.
+ If the binary xmq is installed, then xml is rendered differently, so that
+ the xml structure is better recognized. A similar display for html contents
+ using xmq is achieved by appending a colon to the file name. To get the
+ original html file contents, two colons are required in this case.
 
 ### 4.3 Conversion of files with alternate character encoding
  If the file utility reports text with an encoding different from the one
@@ -329,26 +335,26 @@ vimcolor -L (both for vimcolor and nvimpager)
 ```
 
 ### 5.2 Colored Directory listing
-Depending on the operating system ls is called with appropriate options to
-produce colored output.
+ Depending on the operating system ls is called with appropriate options to
+ produce colored output.
 
 ### 5.3 Colored listing of tar file contents
-If the executable `archive_color` is installed, then the listing of tar file
-contents is colored in a similar fashion as directory contents.
+ If the executable `archive_color` is installed, then the listing of tar file
+ contents is colored in a similar fashion as directory contents.
 
 ## 6. Calling less from standard input
 
-Normally `lesspipe.sh` is not called when less is used within a pipe, such as
+ Normally `lesspipe.sh` is not called when less is used within a pipe, such as
 ```
         cat somefile | less
 ```
-This restriction is removed when the **LESSOPEN** variable starts with the
-characters |- or ||-.
-Then the colon notation for extracting and displaying files in archives
-does not work. As a way out `lesspipe.sh` analyses the command line and looks
-for the last argument given to less. If it starts with a colon, it is
-interpreted from `lesspipe.sh` as a continuation of the first parameter.
-Examples:
+ This restriction is removed when the **LESSOPEN** variable starts with the
+ characters |- or ||-.
+ Then the colon notation for extracting and displaying files in archives
+ does not work. As a way out `lesspipe.sh` analyses the command line and looks
+ for the last argument given to less. If it starts with a colon, it is
+ interpreted from `lesspipe.sh` as a continuation of the first parameter.
+ Examples:
 ```
         cat some_c_file | less - :c          # equivalent to less some_c_file:c
         cat archive | less - :contained_file # extracts a file from the archive
@@ -365,29 +371,29 @@ Examples:
 
 ## 8. Tab completion for zsh and bash
 
-An existing `zsh` completion script has been enhanced to provide tab completion
-within archives, similar to what is possible with the `tar` command completion.
-A `bash` completion script has been modeled loosely after the `zsh` completion.
+ An existing `zsh` completion script has been enhanced to provide tab completion
+ within archives, similar to what is possible with the `tar` command completion.
+ A `bash` completion script has been modeled loosely after the `zsh` completion.
 
-In both shells it is now possible to complete contents of archive format files
-such as tar, zip, rpm, deb files etc. This works as well in compressed files
-(e.g. tar.gz) and in chained archives, e.g.in source rpm files containing
-tar.gz files.
+ In both shells it is now possible to complete contents of archive format files
+ such as tar, zip, rpm, deb files etc. This works as well in compressed files
+ (e.g. tar.gz) and in chained archives, e.g.in source rpm files containing
+ tar.gz files.
 
-To make it work, the script `lesscomplete` has to be executable and must be
-found in one of the directories listed in the `$PATH` environment variable.
+ To make it work, the script `lesscomplete` has to be executable and must be
+ found in one of the directories listed in the `$PATH` environment variable.
 
-In bash, the bash-completion (usually a package with that name) has to be
-installed.
-In zsh, the completion system has to be loaded and the menucomplete option
-has to be set. That can be achieved with
+ In bash, the bash-completion (usually a package with that name) has to be
+ installed.
+ In zsh, the completion system has to be loaded and the menucomplete option
+ has to be set. That can be achieved with
 ```
         autoload compinit
         compinit -Uz
         setopt menucomplete
 ```
-The completion mechanism is triggered after entering a colon or an equal sign
-as for example in
+ The completion mechanism is triggered after entering a colon or an equal sign
+ as for example in
 
 ```
         less archive_file:<TAB>                   # and then
@@ -396,41 +402,41 @@ as for example in
 ```
 ## 9. User defined filtering
 
-The lesspipe.sh filtering can be replaced or enhanced by a user defined
-program. Such a program has to be called either `.lessfilter` (and be placed in
-the user's home directory), or `lessfilter` (and be accessible from a directory
-mentioned in the environment variable `PATH`).
-That program has to be executable and has to end with an exit code 0, if the
-filtering was done within that script. Otherwise, a nonzero exit code means
-the filtering is left to lesspipe.sh. For an example see the man page.
+ The lesspipe.sh filtering can be replaced or enhanced by a user defined
+ program. Such a program has to be called either `.lessfilter` (and be placed in
+ the user's home directory), or `lessfilter` (and be accessible from a directory
+ mentioned in the environment variable `PATH`).
+ That program has to be executable and has to end with an exit code 0, if the
+ filtering was done within that script. Otherwise, a nonzero exit code means
+ the filtering is left to lesspipe.sh. For an example see the man page.
 
-This mechanism can be used to add filtering for new formats or e.g. inhibit
-filtering for certain file types.
+ This mechanism can be used to add filtering for new formats or e.g. inhibit
+ filtering for certain file types.
 
 ## 10. Debugging
 
-If the script does not work as expected for a given file contents, one could
-try to output the commands executed by lesspipe.sh. That is achieved by
+ If the script does not work as expected for a given file contents, one could
+ try to output the commands executed by lesspipe.sh. That is achieved by
 
 ```
         bash -x lesspipe.sh file_name > /dev/null # or zsh -x
 ```
-It is also possible setting temporarily the **LESSOPEN** variable to e.g.
+ It is also possible setting temporarily the **LESSOPEN** variable to e.g.
 ```
         LESSOPEN='|bash -x /usr/local/bin/lesspipe.sh %s'
 ```
-and then use `less` with the file to be displayed. The normal output goes to
-STDOUT and the commands executed to STDERR.
+ and then use `less` with the file to be displayed. The normal output goes to
+ STDOUT and the commands executed to STDERR.
 
 ## 11. (Old) documentation about lesspipe
 
-In English
+ In English
 
 - [CERN Computer Newsletter 2002/1](https://ref.web.cern.ch/CERN/CNL/2002/001/unix-less/)
 - [mentioned in Bash Cookbook, O'Reilly 2007](https://www.oreilly.com/library/view/bash-cookbook/0596526784/ch08s15.html)
 - [Article on Github, 2025](https://github.com/wofr06/lesspipe/wiki/article_en)
 
-In German:
+ In German:
 
 - german.txt (distributed with lesspipe, not updated)
 - [Bessere Sicht (Linux Magazin 01/2001)](https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/)
