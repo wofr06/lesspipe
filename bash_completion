@@ -17,11 +17,11 @@ _list_archive()
 		local i=${#words[*]}
 		fn="${words[$i]}"
 		while ((i-- > 2)); do
-		[[ "${words[$i]}" == : ]] && fn="${words[$i-1]}:$fn"
+		[[ "${words[$i]}" == [:=] ]] && fn="${words[$i-1]}:$fn"
 		done
 		fn="${fn%[:=]*}"
 		cur=${cur#$fn[:=]}
-		cur=${cur#:}
+		cur=${cur#[:=]}
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -o filenames -W "$(
 			__BINDIR__/lesscomplete "$fn"|

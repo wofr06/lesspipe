@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- enable again dynamic loading of the bash tab completion script
 Version 2.22 Dec 15 2025
 - new link to deepwiki generated documentation
 - improved tempdir handling in vimcolor

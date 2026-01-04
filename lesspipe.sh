@@ -473,7 +473,7 @@ has_colorizer () {
 			[[ "$1" == - ]] || opt+=("$1") ;;
 		source-highlight)
 			[[ -n $1 && "$1" != - ]] && opt=(-i "$1") || opt=()
-			[[ -n $lang ]] && opt+=(-s "$lang")
+			[[ -n $lang ]] && opt+=(-s "${lang##*.}")
 			style=esc
 			[[ $colors -ge 256 ]] && style=esc256
 			opt+=(--failsafe -f "$style" --style-file "$style".style) ;;
@@ -528,6 +528,7 @@ isfinal () {
 			has_cmd ps2ascii && nodash ps2ascii "$1" 2>/dev/null ;;
 		java-applet)
 			# filename needs to end in .class
+			fileext='java'
 			has_cmd procyon && t=$t.class && cat "$1" > "$t" && cmd=(procyon "$t") ;;
 		docx)
 			{ has_cmd pandoc && cmd=(pandoc -f docx -t plain "$1"); } ||

@@ -36,10 +36,10 @@ EOF
 my $prefix = $opt_prefix || $ENV{PREFIX} || '/usr/local';
 my $bindir = $opt_bindir || $ENV{BINDIR} || "$prefix/bin";
 my $mandir = $opt_mandir || $ENV{MANDIR} || "$prefix/share/man/man1";
-my $bash_complete_dir = $opt_bash_completion_dir || "$prefix/share/bash-completion";
+my $bash_complete_dir = $opt_bash_completion_dir || "$prefix/etc/bash_completion.d";
 # override prefix and use the system defined directory if known
 if ( ! $opt_bash_completion_dir && `pkg-config --version 2>/dev/null`) {
-	$bash_complete_dir = `pkg-config --variable=completionsdir bash-completion`;
+	$bash_complete_dir = `pkg-config --variable=compatdir bash-completion`;
 	chomp $bash_complete_dir;
 }
 my $zsh_complete_dir = $opt_zsh_completion_dir || "$prefix/share/zsh/site-functions";

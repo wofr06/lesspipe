@@ -400,6 +400,11 @@ vimcolor -L (both for vimcolor and nvimpager)
         less archive_file:partial_result<TAB>
         less archive_file:contained_archive:<TAB> # etc.
 ```
+
+ In bash, the completion mechanism has to be initialized as well. This is done
+ sourcing the bash-completion script usually found in /usr/share/bash-completion
+ or /etc. On many system this is already done in the system initialisation
+ scripts.
 ## 9. User defined filtering
 
  The lesspipe.sh filtering can be replaced or enhanced by a user defined
