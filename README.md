@@ -98,7 +98,7 @@ the author by email.
 
  The filter does different things depending on the file format. In most cases
  it is determined on the output of the `file --mime` command [2], that
- returns the mime type. In some cases the mime type is to unspecific and then
+ returns the mime type. In some cases the mime type is too vague and then
  the `file` command yielding a textual description or the file suffix is used
  to determine what to display. As a last resort the file extension is consulted.
 
