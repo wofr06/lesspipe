@@ -1,7 +1,7 @@
 # lesspipe.sh, a preprocessor for less
 
 Version: 2.22
-Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto://wp.friebel@gmail.com)
+Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto:wp.friebel@gmail.com)
 License: GPL
 
 Latest version available as:
@@ -288,7 +288,7 @@ the author by email.
 
  The display of wrapped long lines and moving backward in a file using the
  option -r can give weird output and is not recommended. For an explanation see
- [the FAQ on www.greenwoodsoftware.com](http://www.greenwoodsoftware.com/less/faq.html#dashr)
+ [the FAQ on www.greenwoodsoftware.com](https://www.greenwoodsoftware.com/less/faq.html#dashr)
 
 ### 5.1 Syntax highlighting
  Syntax highlighting is not always wanted, it can be switched off by
