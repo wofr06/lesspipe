@@ -43,7 +43,7 @@ or INSTALL locally for the logged in user
 
 # the file bash_completion needs to be edited and put into ~/.bash_completion
   [[ -d ~/.bash_completion ]] || mkdir ~/.bash_completion
-  sed -e "s@__BINDIR__@@" ./bash_completion ~/.bash_completion/less #(bash)
+  sed -e "s@__BINDIR__@@" ./bash_completion > ~/.bash_completion/less #(bash)
 
 Then do set the environment variable LESSOPEN:
 
