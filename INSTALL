@@ -3,16 +3,17 @@ QUICK INSTALL (requires root access)
 Execute the following commands (for a more detailed description see below):
 
   ./configure	# (check for usable shell and configure directory locations)
+                # (or if only zsh is installed: zsh ./configure)
   make			# does show the chosen prefix and bindir
   make test # (optional)
   make install
 
-this is equivalent to the following commands (assuming that the dirs do exist)
-  ./configure
-  ./test.pl # (optional)
+The optional make test command does call ./test.pl
+
+The installation could also be done by the following steps:
   cp lesspipe.sh /usr/local/bin
 
-  # optional for colorizing and old openoffice writer formats
+  # optional for colorizing
   cp code2color archive_color vimcolor /usr/local/bin
 
   # optional for zsh and bash completion (archive contents)
@@ -28,7 +29,7 @@ or INSTALL locally for the logged in user
 # if it contains a directory writable by you (e.g. ~/bin)
   mkdir -p ~/bin
   cp lesspipe.sh lesscomplete ~/bin
-  # optional for colorizing and old openoffice writer formats
+  # optional for colorizing
   cp code2color archive_color vimcolor ~/bin
 
 # check your PATH variable, if it does not contain ~/bin then add it to PATH
@@ -65,23 +66,28 @@ tar, gzip, bzip2 and some helper programs are highly recommended.
 Step 1: create Makefile (and modify lesspipe.sh, if bash not usable)
 --------------------------------------------------------------------------
 
- ./configure [--help] [--nomake] [--shell=<file>]
+ ./configure [--help] [--nomake] [--shell=<location|shell_name>]
              [--prefix=<path>] [--bindir=<path>] [--mandir=<path>]
              [--bash-completion-dir=<path>] [--zsh-completion-dir=<path>]
 
 Options:
-  --help             print this message
-  --shell=<location> specify full path to an alternative shell to use
-  --nomake           do not generate a Makefile
+  --help               print this message
+  --shell=<location>   specify full path to an alternative shell to use or
+  --shell=<shell name> shell name to use for scripts (zsh or bash)
+  --nomake             do not generate a Makefile
 Directory and file names:
-  --prefix=PREFIX   install lesspipe.sh in PREFIX/bin (/usr/local)
-  --bindir=BINDIR   install lesspipe.sh in BINDIR (PREFIX/bin)
-  --mandir=MANDIR   install man pages in in MANDIR (PREFIX/share/man/man1)
-  --bash-completion-dir=DIR	install bash auto-completion file in in DIR (pkg-config --variable=completionsdir bash-completion)
-  --zsh-completion-dir=DIR	install zsh auto-completion file in in DIR (PREFIX/share/zsh/site-functions
+  --prefix=PREFIX      install lesspipe.sh in PREFIX/bin (/usr/local)
+  --bindir=BINDIR      install lesspipe.sh in BINDIR (PREFIX/bin)
+  --mandir=MANDIR      install man pages in in MANDIR (PREFIX/share/man/man1)
+  --bash-completion-dir=DIR	install bash auto-completion file in in DIR
+                       (pkg-config --variable=completionsdir bash-completion)
+  --zsh-completion-dir=DIR	install zsh auto-completion file in in DIR
+                            (default is PREFIX/share/zsh/site-functions)
 
 configure generates by default a Makefile and if an alternate shell is
-given, then also a changed lesspipe.sh.
+given, then also a changed lesspipe.sh. If no --shell option is used or
+only the shell name (zsh or bash is) given, the shebang line uses /usr/bin/env
+otherwise the full path given by the --shell option.
 
 Step 2: verify that lesspipe.sh is working correctly (optional)
 ---------------------------------------------------------------

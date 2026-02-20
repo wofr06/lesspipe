@@ -1,14 +1,7 @@
-#!/usr/bin/env perl
+#!/usr/bin/env bash
 
 # archive_color (by Wolfgang Friebel), a modified tarcolor, works also for
-# other archive listings, such as rpm, debian, ar, isoinfo archives
-#
-# originally by Marc Abramowitz <marc at marc-abramowitz dot com>
-#
-# https://github.com/msabramo/tarcolor
-#
-# Colors output of `tar tvf` similarly to the way GNU ls (in GNU
-# coreutils) would color a directory listing.
+# other (archive) listings, such as rpm, debian, ar, isoinfo archives and ls -l
 #
 # Colors can be customized using an environment variable:
 #
@@ -17,121 +10,65 @@
 # The format for TAR_COLORS is similar to the format used by LS_COLORS
 # Check out the online LSCOLORS generator at https://geoff.greer.fm/lscolors/
 
-use warnings;
-use strict;
+get_file_code() {
+	local line=$1
+	local len=${#line}
+	(( len < 20 )) && return 1
+	local c0=${line:0:1}
+	local perm10=${line:0:10}
+	local c3=${line:3:1}
+	local c6=${line:6:1}
+	local last3=${line: -3}
+	local l2=${last3:0:2}
 
-sub get_file_type {
-	return if (length($_) < 20);
-
-	if (substr($_, 0, 1) eq 'l') {
-		return 'ln';
-	} elsif (substr($_, 0, 10) eq 'drwxrwxrwx') {
-		return 'ow';
-	} elsif (substr($_, 0, 10) eq 'drwxrwxrwt') {
-		return 'tw';
-	} elsif (substr($_, 0, 1) eq 'd') {
-		return 'di';
-	} elsif (substr($_, 0, 1) eq 's') {
-		return 'so';
-	} elsif (substr($_, 3, 1) eq 'S') {
-		return 'su';
-	} elsif (substr($_, 6, 1) eq 'S') {
-		return 'sg';
-	} elsif (substr($_, 0, 1) eq 'p') {
-		return 'pi';
-	} elsif (substr($_, 0, 1) eq 'c') {
-		return 'cd';
-	} elsif (substr($_, 0, 1) eq 'b') {
-		return 'bd';
-	} elsif (substr($_, 0, 1) eq 'D') {
-		return 'do';
-	} elsif (substr($_, 3, 1) eq 'x') {
-		return 'ex';
-	} elsif (substr($_, -3, 2) =~ /.\//) {
-		return 'di';
-	} elsif (/\.\w{1,3}$/) {
-		return '*' . $&;
-	}
+	[[ $c0 == "l" ]] && echo "ln" && return
+	[[ $perm10 == "drwxrwxrwx" ]] && echo "ow"
+	[[ $perm10 == "drwxrwxrwt" ]] && echo "tw"
+	[[ $c0 == "d" ]] && echo "di" && return
+	[[ $c0 == "s" ]] && echo "so" && return
+	[[ $c3 == "S" ]] && echo "su" && return
+	[[ $c6 == "S" ]] && echo "sg" && return
+	[[ $c0 == "p" ]] && echo "pi" && return
+	[[ $c0 == "c" ]] && echo "cd" && return
+	[[ $c0 == "b" ]] && echo "bd" && return
+	[[ $c0 == "D" ]] && echo "do" && return
+	[[ $c3 == "x" ]] && echo "ex" && return
+	[[ $l2 == ./* ]] && echo "di" && return
+	[[ $line != *.* ]] && return 1
+	echo "*.${line##*.}"
 }
 
-sub get_filename {
-	my @items = split;
-	return "@items[8..$#items]";
-}
+if [[ -t 0 ]]; then
+	echo "Example: tar tvzf some_tarball.tar.gz | archive_color"
+	exit 0
+fi
 
-sub color_filename {
-	my ($color) = @_;
-	my $filename = get_filename();
-	if ($filename) {
-		s/$filename$/$color$filename\033[0m/;
-	}
-}
+declare -A FILE_TYPE_TO_COLOR
+default_colors='di=01;34:ln=01;36:ex=01;32:so=01;35:pi=40;33:bd=40;33;01:cd=40;33;01:su=37;41:sg=30;43:do=01;35:tw=30;42:ow=34;42'
+tar_colors=${TAR_COLORS:-${LS_COLORS:-}}
+# shellcheck disable=SC2207
+color_specs=($(echo "$default_colors:$tar_colors"| tr ":" "\n"))
 
-if ( -t STDIN ) {
-	print "Example: tar tvzf some_tarball.tar.gz | archive_color\n";
-	exit(0);
-}
+for spec in "${color_specs[@]}"; do
+	[[ -z $spec ]] && continue
+	type=${spec%=*}
+	codes=${spec#*=}
+	[[ -z $type || -z $codes ]] && continue
+	FILE_TYPE_TO_COLOR[$type]="\033[${codes}m"
+done
 
-my %FILE_TYPE_TO_COLOR = (
-	"di" => "\033[01;34m",
-	"ln" => "\033[01;36m",
-	"ex" => "\033[01;32m",
-	"so" => "\033[01;35m",
-	"pi" => "\033[40;33m",
-	"bd" => "\033[40;33;01m",
-	"cd" => "\033[40;33;01m",
-	"su" => "\033[37;41m",
-	"sg" => "\033[30;43m",
-	"do" => "\033[01;35m",
-	"tw" => "\033[30;42m",
-	"ow" => "\033[34;42m",
-);
-
-my $tar_colors = $ENV{'TAR_COLORS'} || $ENV{'LS_COLORS'} || '';
-
-foreach (split(':', $tar_colors)) {
-	my ($type, $codes) = split('=');
-	$FILE_TYPE_TO_COLOR{$type} = "\033[" . $codes . "m";
-}
-
-while (<>) {
-	my $type = get_file_type();
-
-	if ($type && $FILE_TYPE_TO_COLOR{$type}) {
-		color_filename($FILE_TYPE_TO_COLOR{$type});
-	}
-	print;
-}
-
-# ABSTRACT: colors output of `tar tvf`
-# PODNAME: archive_color
-
-=pod
-
-=head1 SYNOPSIS
-
-tar tvzf <tarball.tar.gz> | archive_color
-
-=head1 DESCRIPTION
-
-Tarcolor colors the output of `tar tvf` similarly to how ls does it.
-
-Colors output of `tar tvf` similarly to the way GNU ls (in GNU coreutils) would
-color a directory listing.
-
-Colors can be customized using an environment variable:
-
-TAR_COLORS='di=01;34:ln=01;36:ex=01;32:so=01;40:pi=01;40:bd=40;33:cd=40;33:su=0;41:sg=0;46'
-
-The format for TAR_COLORS is similar to the format used by LS_COLORS Check out
-the online LSCOLORS generator at http://geoff.greer.fm/lscolors/
-
-=head1 SEE ALSO
-
-tarcolorauto(1)
-
-=head1 SOURCE CODE
-
-https://github.com/msabramo/tarcolor
-
-=cut
+while IFS= read -r line; do
+	type=$(get_file_code "$line") || true
+	if [[ -n $type && -n ${FILE_TYPE_TO_COLOR[$type]+set} ]]; then
+		[[ $(echo "$line"|awk '{print $4}') == *-*-* ]] && fld=6 || fld=9
+		filename=$(echo "$line"|awk '{print $'"$fld"'}')
+		filename="$filename${line##*"$filename"}"
+		if [[ -n $filename ]]; then
+			printf '%s%b%s%b\n' "${line%"$filename"}" "${FILE_TYPE_TO_COLOR[$type]}" "$filename" "\033[0m"
+		else
+			printf '%s\n' "$line"
+		fi
+	else
+		printf '%s\n' "$line"
+	fi
+done

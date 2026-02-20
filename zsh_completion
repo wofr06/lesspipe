@@ -15,12 +15,12 @@ case $service in
     (( CURRENT++ ))
   ;;
   *)
-    if compset -P '*:' || compset -P '*='; then
+    if compset -P '*[:=]'; then
       fn="${words[2]%[:=]*}"
       res=$(__BINDIR__/lesscomplete "$fn")
       while read -r line; do
         [[ $line == /* ]] && slash=1
-        _list+=("$line" "$line")
+        _list+=("$line")
       done <<< "$res"
       [[ -n $slash ]]  && compadd -x '%Bplease type / to complete top directory'
       _wanted files expl 'files from archive' _multi_parts  / _list
@@ -139,16 +139,16 @@ if [[ -n "$state" ]]; then
     ;;
     prompts)
       if compset -p 1; then
-	_message -e prompt
+        _message -e prompt
       else
-	_describe 'prompt' '(
-	  s:short\ prompt
-	  m:medium\ prompt
-	  M:long\ prompt
-	  h:help\ screen\ prompt
-	  \=:\=\ command\ prompt
-	  w:waiting\ prompt
-	)' && ret=0
+        _describe 'prompt' '(
+          s:short\ prompt
+          m:medium\ prompt
+          M:long\ prompt
+          h:help\ screen\ prompt
+          \=:\=\ command\ prompt
+          w:waiting\ prompt
+        )' && ret=0
       fi
     ;;
     tags)

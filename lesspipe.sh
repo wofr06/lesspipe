@@ -92,7 +92,7 @@ filetype () {
 	### get file type from 'file' command for an unspecific result
 	[[ "$fcat" == message && $ftype == plain ]] && ftype=msg
 	[[ "$fcat" == message && $ftype == rfc822 ]] && fcat=text && ftype=email
-	if [[ "$fcat" == application && "$ftype" == octet-stream || "$ftype" == pem-file  || "$fcat" == text && $ftype == plain ]]; then
+	if [[ "$fcat" == application && "$ftype" == octet-stream || "$ftype" == pem-file || "$fcat" == text && $ftype == plain ]]; then
 		ft=$(file -L -s -b "$1" 2> /dev/null)
 		# first check if the file command yields something
 		case $ft in

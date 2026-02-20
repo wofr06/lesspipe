@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- improve logic in configure and fix bug in archive color
+- replace perl scripts configure and archive_color by shell scripts
 - enable again dynamic loading of the bash tab completion script
 Version 2.22 Dec 15 2025
 - new link to deepwiki generated documentation

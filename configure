@@ -1,149 +1,177 @@
-#!/usr/bin/env perl
-# the above line will use any perl that is in your PATH. You might want to
-# replace it by #!/usr/bin/perl or similar if this does not work for you.
+#!/usr/bin/env bash
 
-use strict;
-use warnings;
-use File::Copy;
-use Getopt::Long;
+set -euo pipefail
 
-# find lesscomplete and other scripts in current dir, if scripts not installed yet
-$ENV{PATH} .= ':.';
+# find lesscomplete etc. in current dir, if scripts not installed yet
+export PATH="$PATH:."
 
-use vars qw($opt_help $opt_prefix $opt_bindir $opt_mandir $opt_zsh_completion_dir $opt_bash_completion_dir $opt_nomake $opt_shell);
-
-Getopt::Long::Configure("prefix_pattern=--");
-my $result = GetOptions('help+', 'prefix=s', 'bindir=s', 'mandir=s', 'bash-completion-dir=s', 'zsh-completion-dir=s', 'shell=s', 'nomake+');
-if ( $ARGV[0] or ! $result or $opt_help) {
-	print << 'EOF';
+usage() {
+	cat << 'EOF'
 Usage: configure [options]
 Options:
- --help			print this message
- --shell=<filename>	specify an alternative shell path (zsh/bash) to use
- --nomake		do not generate a Makefile
+ --help                  print this message
+ --shell=<filename>      specify an alternative shell path (zsh/bash) to use
+ --nomake                do not generate a Makefile
 Directory and file names:
- --prefix=PREFIX	install lesspipe stuff in PREFIX (/usr/local)
- --bindir=BINDIR	install lesspipe.sh in BINDIR (PREFIX/bin)
- --mandir=MANDIR	install man pages in in MANDIR (PREFIX/share/man/man1)
- --bash-completion-dir=DIR	install bash auto-completion file in in DIR (pkg-config --variable=completionsdir bash-completion)
- --zsh-completion-dir=DIR	install zsh auto-completion file in in DIR (PREFIX/share/zsh/site-functions)
+ --prefix=PREFIX         install lesspipe stuff in PREFIX (/usr/local)
+ --bindir=BINDIR         install lesspipe.sh in BINDIR (PREFIX/bin)
+ --mandir=MANDIR         install man pages in in MANDIR (PREFIX/share/man/man1)
+ --bash-completion-dir=DIR  install bash auto-completion file in in DIR (pkg-config --variable=completionsdir bash-completion)
+ --zsh-completion-dir=DIR   install zsh auto-completion file in in DIR (PREFIX/share/zsh/site-functions)
 
 configure generates by default a Makefile
 EOF
-	$opt_help ? exit 0 : exit 1;
 }
 
-my $prefix = $opt_prefix || $ENV{PREFIX} || '/usr/local';
-my $bindir = $opt_bindir || $ENV{BINDIR} || "$prefix/bin";
-my $mandir = $opt_mandir || $ENV{MANDIR} || "$prefix/share/man/man1";
-my $bash_complete_dir = $opt_bash_completion_dir || "$prefix/etc/bash_completion.d";
+opt_help=0
+opt_prefix=""
+opt_bindir=""
+opt_mandir=""
+opt_bash_completion_dir=""
+opt_zsh_completion_dir=""
+opt_nomake=0
+opt_shell=""
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--help)
+			opt_help=1
+			shift
+			;;
+		--prefix=*)
+			opt_prefix="${1#--prefix=}"
+			shift
+			;;
+		--bindir=*)
+			opt_bindir="${1#--bindir=}"
+			shift
+			;;
+		--mandir=*)
+			opt_mandir="${1#--mandir=}"
+			shift
+			;;
+		--bash-completion-dir=*)
+			opt_bash_completion_dir="${1#--bash-completion-dir=}"
+			shift
+			;;
+		--zsh-completion-dir=*)
+			opt_zsh_completion_dir="${1#--zsh-completion-dir=}"
+			shift
+			;;
+		--shell=*)
+			opt_shell="${1#--shell=}"
+			shift
+			;;
+		--nomake)
+			opt_nomake=$((opt_nomake + 1))
+			shift
+			;;
+		*)
+			usage
+			exit 1
+			;;
+	esac
+done
+
+if [[ $opt_help -ne 0 ]]; then
+	usage
+	exit 0
+fi
+
+# Defaults
+prefix="${opt_prefix:-${PREFIX:-/usr/local}}"
+bindir="${opt_bindir:-${BINDIR:-$prefix/bin}}"
+mandir="${opt_mandir:-${MANDIR:-$prefix/share/man/man1}}"
+bash_complete_dir="${opt_bash_completion_dir:-$prefix/etc/bash_completion.d}"
+
 # override prefix and use the system defined directory if known
-if ( ! $opt_bash_completion_dir && `pkg-config --version 2>/dev/null`) {
-	$bash_complete_dir = `pkg-config --variable=compatdir bash-completion`;
-	chomp $bash_complete_dir;
-}
-my $zsh_complete_dir = $opt_zsh_completion_dir || "$prefix/share/zsh/site-functions";
+if [[ -z "$opt_bash_completion_dir" ]] && pkg-config --version >/dev/null 2>&1; then
+	if compatdir=$(pkg-config --variable=compatdir bash-completion 2>/dev/null); then
+		bash_complete_dir="$compatdir"
+	fi
+fi
 
-# remove trailing slash and trailing bin directory
-if ($prefix =~ m|/bin/?$|) {
-	print "removed trailing /bin dir from prefix\n";
-	$prefix =~ s|(/.+)?/?$||;
-}
-if ( $opt_shell and -f $opt_shell and $opt_shell =~ /^\// ) {
-	# do nothing
-} elsif ( $opt_shell) {
-	print "unusable shell $opt_shell: not executable or no absolute path\n";
-	exit 1;
+zsh_complete_dir="${opt_zsh_completion_dir:-$prefix/share/zsh/site-functions}"
+
+if [[ "$prefix" =~ /bin/?$ ]]; then
+	echo "removed trailing /bin dir from prefix"
+	prefix="${prefix%/bin}"
+	prefix="${prefix%/}"
+fi
+
+if [[ -n "$opt_shell" && ! $(command -v "$opt_shell") ]]; then
+	echo "unusable shell $opt_shell: not executable or no absolute path"
+	exit 1
+fi
+
+bad_shells=()
+
+check_shell_vers() {
+	local shells=("bash" "zsh")
+	if [[ -n "$opt_shell" ]]; then
+		shells=("$opt_shell")
+	fi
+
+	local selected_shell=""
+	local shellcmd=""
+	local shell path name opt versstr v file
+
+	for shell in "${shells[@]}"; do
+		path=$(command -v "$shell")
+		if [[ -z "$path" ]]; then
+			bad_shells+=("$shell")
+			continue
+		fi
+		rest=${shell#"$path"/}
+		name=${rest% *}
+		[[ $name == \ * ]] && opt=${rest#* } || opt=
+
+		versstr=$("$path" --version)
+		if [[ -z "$versstr" ]]; then
+			bad_shells+=("$shell")
+			continue
+		fi
+		# check for bash version at least 5.0 (needed e.g. in archive_color)
+		if [[ "$versstr" == *bash* ]]; then
+			v="$("$path" -c "echo \$BASH_VERSION" 2>/dev/null || true)"
+			v="${v%%.*}"
+			if [[ -z "$v" || "$v" -lt 5 ]]; then
+				echo "not using $path in scripts, version '$v' to small, you need at least 5"
+				bad_shells+=("$shell")
+				continue
+			fi
+		fi
+
+		[[ -z "$selected_shell" ]] && selected_shell="$name"
+		[[ -z "$shellcmd" ]] && shellcmd="$path$opt"
+	done
+
+	if [[ -z "$selected_shell" ]]; then
+		echo "Sorry, no usable shell found, the following were tried:"
+		printf '%s\n' "${bad_shells[@]}"
+		echo "You could run configure --shell=<abs_filename> to retry"
+		exit 1
+	fi
+
+	if [[ -n "$opt_shell" && "$opt_shell" == /* ]]; then
+		shell_line="#!$opt_shell"
+	else
+		shell_line="#!/usr/bin/env $selected_shell"
+	fi
 }
 
-# gererate Makefile
-my @bad = ();
-my $shell = check_shell_vers();
-my $no_bash = (grep {/bash/} @bad);
-my $no_zsh = (grep {/zsh/} @bad);
+check_shell_vers
 
-if ( ! $opt_nomake ) {
-	open OUT, ">Makefile";
-	while (<DATA>) {
-		next if /BASH_COMPLETION/ and $no_bash;
-		next if /ZSH_COMPLETION/ and $no_zsh;
-		s/opt_prefix/$prefix/;
-		s/opt_bindir/$bindir/;
-		s/opt_mandir/$mandir/;
-		s/bash_complete_dir/$bash_complete_dir/;
-		s/zsh_complete_dir/$zsh_complete_dir/;
-		print OUT;
-	}
-	close OUT;
-	print "A Makefile has been generated\n\tprefix $prefix\n\tbindir $bindir\n",
-		"\tmandir $mandir\n\tbash_complete_dir $bash_complete_dir\n",
-		"\tzsh_complete_dir  $zsh_complete_dir\n";
-}
+no_bash=0
+no_zsh=0
+for s in "${bad_shells[@]}"; do
+	[[ "$s" == *bash* ]] && no_bash=1
+	[[ "$s" == *zsh* ]] && no_zsh=1
+done
 
-for my $file ("lesspipe.sh", "lesscomplete") {
-	open F, $file;
-	my $line1 = <F>;
-	next if $line1 =~ /^$shell$/;
-	local $/;
-	my $in = <F>;
-	print "generating new $file using '$shell' as first line\n";
-	copy $file, "$file.old";
-	open OUT, ">$file";
-	print OUT "$shell\n";
-	print OUT $in;
-	close OUT;
-	close F;
-	chmod 0755, $file
-}
-exit 0;
-
-sub check_shell_vers {
-	# define usable shells, the order is important !
-	my @shells = qw( /bin/bash /bin/zsh /bin/sh);
-	@shells = ( $opt_shell ) if $opt_shell;
-	my $selected_shell = '';
-	my $shellcmd = '';
-	for my $shell ( @shells ) {
-		# get the basename of the shell and shell options
-		my ($path, $name, $opt);
-		if ( $shell =~ /(.*)\/([^\/]+)(\s.*)$/ ) {
-			($path, $name, $opt) = ($1, $2, $3);
-		} else {
-			($path, $name, $opt) = ($1, $2, "") if $shell =~ /(.*)\/([^\/]+)\s*$/;
-		}
-		# do we have the shell in the PATH
-		my $versstr = uc $name.'_VERSION';
-		$versstr = 'BASH_VERSION' if $name eq 'sh';
-		my @where = grep { -x $_."/$name" } split ':', $ENV{PATH};
-		$where[0] = $path if -x $path.'/'.$name;
-		my $file = $where[0].'/'.$name if $where[0];
-		if ( ! $where[0] or ! -x $file ) {
-			print "$name not found in the PATH, continuing\n";
-			push	@bad, $shell;
-			next;
-		}
-		# get the shell version
-		my $v = `$file -c \'echo \$$versstr\'`;
-		chomp $v;
-		$v = $1 if $v =~ /(\d+\.\d+)/;
-		### print "$file $v found in the PATH\n";
-		if ( $name eq 'bash' or $name eq 'sh' ) {
-			if ( ! $v or $v < 5 ) {
-				push @bad, $shell;
-				next;
-			}
-		}
-		$selected_shell = $name if ! $selected_shell;
-		$shellcmd = "$file$opt" if ! $shellcmd;
-	}
-	if ( !$selected_shell ) {
-		print "Sorry, no usable shell found, the following were tried:\n@bad\n";
-		print "You could run configure --shell=<abs_filename> to retry\n";
-		exit 1;
-	}
-	return "#!/usr/bin/env $selected_shell";
-}
-__END__
+# Makefile erzeugen, falls nicht --nomake
+if [[ "$opt_nomake" -eq 0 ]]; then
+	cat > Makefile << 'EOF'
 # This is a generated file, do not edit it. Use configure to modify it
 PREFIX = opt_prefix
 BINDIR = opt_bindir
@@ -173,3 +201,51 @@ install:
 	chmod 0755 $(DESTDIR)$(BINDIR)/lesscomplete
 clean:
 	mv Makefile Makefile.old
+EOF
+
+	sed -i -e " \
+		s@opt_prefix@$prefix@g; \
+		s@opt_bindir@$bindir@g; \
+		s@opt_mandir@$mandir@g; \
+		s@bash_complete_dir@$bash_complete_dir@g; \
+		s@zsh_complete_dir@$zsh_complete_dir@g"  Makefile
+
+	# remove BASH/ZSH_COMPLETION if shell not useable
+	[[ -n  $no_bash	]] && sed -i -e '/BASH_COMPLETION/d' Makefile
+	[[ -n  $no_zsh ]] && sed -i -e '/ZSH_COMPLETION/d' Makefile
+
+	echo "A Makefile has been generated"
+	echo "    prefix $prefix"
+	echo "    bindir $bindir"
+	echo "    mandir $mandir"
+	echo "    bash_complete_dir $bash_complete_dir"
+	echo "    zsh_complete_dir  $zsh_complete_dir"
+fi
+# remove generated backup if not GNU sed
+rm -f Makefile-e
+
+# Shebang von lesspipe.sh und lesscomplete ggf. anpassen
+for file in "lesspipe.sh" "lesscomplete" "archive_color"; do
+	if [[ -f "$file" ]]; then
+		{
+			IFS= read -r first_line || true
+			rest=$(cat)
+		} < "$file"
+
+		if [[ "$first_line" == "$shell_line" ]]; then
+			[[ "$file" == lesspipe.sh ]] && echo "first line in scripts is $first_line"
+			continue
+		fi
+
+		echo "generating new $file using '$shell_line' as first line"
+		cp "$file" "$file.old"
+		{
+			echo "$shell_line"
+			printf '%s\n' "$rest"
+		} > "$file"
+		chmod 0755 "$file"
+	fi
+done
+
+exit 0
+
