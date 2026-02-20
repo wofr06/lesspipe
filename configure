@@ -211,8 +211,8 @@ EOF
 		s@zsh_complete_dir@$zsh_complete_dir@g"  Makefile
 
 	# remove BASH/ZSH_COMPLETION if shell not useable
-	[[ -n  $no_bash	]] && sed -i -e '/BASH_COMPLETION/d' Makefile
-	[[ -n  $no_zsh ]] && sed -i -e '/ZSH_COMPLETION/d' Makefile
+	[[ "$no_bash" -ne 0 ]] && sed -i -e '/BASH_COMPLETION/d' Makefile
+	[[ "$no_zsh" -ne 0 ]] && sed -i -e '/ZSH_COMPLETION/d' Makefile
 
 	echo "A Makefile has been generated"
 	echo "    prefix $prefix"
