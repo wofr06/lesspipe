@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- put code2color into a separate repository
 - improve logic in configure and fix bug in archive color
 - replace perl scripts configure and archive_color by shell scripts
 - enable again dynamic loading of the bash tab completion script

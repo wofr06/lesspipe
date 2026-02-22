@@ -435,14 +435,14 @@ c test
 c .*# test
 102 less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
 c false
-103 LESSCOLORIZER=code2color less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39
+103 LESSCOLORIZER=code2color less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39, needs code2color
 c test
 104 less tests/filter.tgz:Makefile		# bsd Makefile not (file 5.28) / is (5.39) correctly recognized git #10
 c PORTNAME
 105 diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped through less works git #11
 c test=a
 ### github issues (solved and unsolved) and other test cases
-106 LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives
+106 LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives, needs code2color
 c sub
 107 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
 c test
@@ -478,7 +478,7 @@ c name
 ~ .* tests/textfile
 123 cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive, needs unzip
 ~ test
-124 cat $T/tests/test_plain|LESSCOLORIZER=code2color less	# display piped text files
+124 cat $T/tests/test_plain|LESSCOLORIZER=code2color less	# display piped text files, needs code2color
 ~ test=a
 125 cat $T/tests/test_plain|less - :plain	# display piped plain text files
 ~ test=a

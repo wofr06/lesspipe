@@ -190,12 +190,11 @@ install:
 	mkdir -p $(DESTDIR)$(MANDIR)
 	mkdir -p $(DESTDIR)$(ZSH_COMPLETION)
 	mkdir -p $(DESTDIR)$(BASH_COMPLETION)
-	cp ./code2color ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(BINDIR)
+	cp ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(BINDIR)
 	cp ./lesspipe.1 $(DESTDIR)$(MANDIR)
 	sed -e "s@__BINDIR__@$(BINDIR)@" ./bash_completion > $(DESTDIR)$(BASH_COMPLETION)/less
 	sed -e "s@__BINDIR__@$(BINDIR)@" ./zsh_completion > $(DESTDIR)$(ZSH_COMPLETION)/_less
 	chmod 0755 $(DESTDIR)$(BINDIR)/lesspipe.sh
-	chmod 0755 $(DESTDIR)$(BINDIR)/code2color
 	chmod 0755 $(DESTDIR)$(BINDIR)/archive_color
 	chmod 0755 $(DESTDIR)$(BINDIR)/vimcolor
 	chmod 0755 $(DESTDIR)$(BINDIR)/lesscomplete

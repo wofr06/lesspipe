@@ -14,7 +14,7 @@ The installation could also be done by the following steps:
   cp lesspipe.sh /usr/local/bin
 
   # optional for colorizing
-  cp code2color archive_color vimcolor /usr/local/bin
+  cp archive_color vimcolor /usr/local/bin
 
   # optional for zsh and bash completion (archive contents)
   cp lesscomplete /usr/local/bin           # (zsh and bash)
@@ -30,7 +30,7 @@ or INSTALL locally for the logged in user
   mkdir -p ~/bin
   cp lesspipe.sh lesscomplete ~/bin
   # optional for colorizing
-  cp code2color archive_color vimcolor ~/bin
+  cp archive_color vimcolor ~/bin
 
 # check your PATH variable, if it does not contain ~/bin then add it to PATH
   echo $PATH
@@ -108,7 +108,7 @@ Step 3: install lesspipe.sh and helper programs
 
   make install  # installing to directories specified in the ./configure call
 
-This copies the files lesspipe.sh lesscomplete code2color vimcolor and
+This copies the files lesspipe.sh lesscomplete vimcolor and
 archive_color into the directory PREFIX/bin or BINDIR, depending on the options
 given to the configure call. By default /usr/local/bin is chosen.
 
