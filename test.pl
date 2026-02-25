@@ -141,7 +141,7 @@ while (<DATA>) {
 	}
 	if ($comp =~ /^c/ and $comment !~ /directory/ and $ENV{LESSCOLORIZER}
 		and ! grep {$ENV{LESSCOLORIZER} =~ /^$_\b/}
-		qw(bat batcat pygmentize source-highlight code2color vimcolor)){
+		qw(bat batcat pygmentize source-highlight e2ansi-cat code2color vimcolor)){
 		$ignore = 1;
 		$needed = 'a colorizer';
 	}
@@ -490,3 +490,7 @@ c name
 ~ .* META-INF/
 129 less tests/compress.tgz:test_zlib		# zlib, needs pigz|zlib-flate
 = test
+130 LESSCOLORIZER=e2ansi-cat less $T/tests/test.c	# C language (e2ansi-cat), needs e2ansi-cat
+c void
+131 LESSCOLORIZER='e2ansi-cat --theme=modus-vivendi' less $T/tests/test.c # allow setting e2ansi-cat theme option, needs e2ansi-cat
+c void

@@ -97,7 +97,8 @@ required in this case.
 The filter is able to do syntax highlighting for a wide variety of
 file types. If installed, \fInvimpager\fP is used for
 colorizing the output. If not, \fIbat\fP/\fIbatcat\fP, \fIpygmentize\fP,
-\fIsource-highlight\fP, \fIvimcolor\fP and \fIcode2color\fP are tried in turn.
+\fIsource-highlight\fP, \fIvimcolor\fP, \fIe2ansi-cat\fP and
+\fIcode2color\fP are tried in turn.
 For bat/batcat the theme is set to \fIansi\fP and the style is set to
 \fIplain\fP which comes closer to the unfiltered output of \fBless\fP.
 These settings can be changed in \fI~/.config/bat/config\fP or by the
@@ -105,12 +106,14 @@ environment variables \fBBAT_STYLE\fP and \fBBAT_THEME\fP.
 .PP
 Among the colorizers
 a preferred one can be forced for colorizing by setting the ENV variable
-\fBLESSCOLORIZER\fP to the name of the colorizer. For \fIpygmentize\fP and
-\fIbat\fP/\fIbatcat\fP restricted option settings are allowed as follows:
+\fBLESSCOLORIZER\fP to the name of the colorizer. For
+\fIbat\fP/\fIbatcat\fP, \fIpygmentize\fP and \fIe2ansi-cat\fP,
+restricted option settings are allowed as follows:
 .EX
 .RS
 .I LESSCOLORIZER='pygmentize -O style=foo' # -P allowed as well
 .I LESSCOLORIZER='bat --style=foo --theme=bar' # default: theme=ansi, style=plain
+.I LESSCOLORIZER='e2ansi-cat --theme=bar'
 .RE
 .EE
 Syntax highlighting is activated, if the environment variable \fBLESS\fP

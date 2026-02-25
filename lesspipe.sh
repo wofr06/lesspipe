@@ -429,7 +429,7 @@ has_colorizer () {
 	prog=${LESSCOLORIZER%% *}
 	[[ $prog == vimcolor ]] && ! has_cmd vim && ! has_cmd nvim && prog=
 
-	for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
+	for i in nvimpager bat batcat pygmentize source-highlight vim nvim e2ansi-cat code2color ; do
 		[[ -z $prog || $prog == "$i" ]] && has_cmd "$i" && prog=$i
 	done
 	[[ $prog == "*vim" ]] && prog=vimcolor
@@ -484,6 +484,11 @@ has_colorizer () {
 			opt=(-c "$1")
 			[[ -n "$3" ]] && ft=${3##*/} && ft=${ft##*.} &&
 				opt=(-c "$1" --cmd "set filetype=$ft") ;;
+    e2ansi-cat)
+			opt2=${LESSCOLORIZER##*--}
+			[[ $opt2 == theme=* ]] && theme=${opt2##*=}
+			opt=(${theme:+--theme "$theme"} ${3:+--mode "$3"})
+			opt+=("$1") ;;
 		*)
 			return ;;
 	esac
