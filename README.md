@@ -182,7 +182,7 @@ the author by email.
  **LESS** can be used to switch on colored less output (should contain -R).
 
  **LESSCOLORIZER** can be set to prefer a highlighting program from the following
- choices (`nvimpager` `bat` `batcat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
+ choices (`nvimpager` `bat` `batcat` `pygmentize` `source-highlight` `vimcolor` `e2ansi-cat` `code2color`).
  Otherwise the first program in that list that is installed will be used, with
  the caveat that `bat` will use the [ansi theme](https://github.com/wofr06/lesspipe/issues/155#issuecomment-2312972276) instead of its default colors.
 
@@ -302,14 +302,16 @@ the author by email.
 #### 5.1.1 Syntax highlighting choices
  The filter is able to do syntax highlighting for a wide variety of file
  types. If installed, `nvimpager` is used for colorizing the output. If
- not, `bat`/`batcat`, `pygmentize`, `source-highlight`, `code2color`
- and `vimcolor` are
+ not, `bat`/`batcat`, `pygmentize`, `source-highlight`, `vimcolor`,
+ `e2ansi-cat` and `code2color` are
  tried. Among these colorizers a preferred one can be forced for colorizing
  by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
- For `pygmentize` and `bat/batcat` a restricted set of options can be added:
+ For `bat/batcat`, `pygmentize` and `e2ansi-cat`, a restricted set of
+ options can be added:
 ```
         LESSCOLORIZER='pygmentize -O style=foo'
         LESSCOLORIZER='bat --style=foo --theme=bar' # --theme=default for default theme
+        LESSCOLORIZER='e2ansi-cat --theme=bar'
 ```
  Much better syntax highlighting is obtained using the `less` emulation of `vim`:
  The editor `vim` comes with a file `less.sh`, e.g. on Ubuntu located in
@@ -333,6 +335,8 @@ source-highlight --lang-list
 code2color -h
 vimcolor -L (both for vimcolor and nvimpager)
 ```
+
+The languages supported by `e2ansi-cat` will depend on your Emacs configuration.
 
 ### 5.2 Colored Directory listing
  Depending on the operating system ls is called with appropriate options to

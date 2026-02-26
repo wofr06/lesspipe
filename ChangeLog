@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- new colorizer, e2ansi-cat
 - put code2color into a separate repository
 - improve logic in configure and fix bug in archive color
 - replace perl scripts configure and archive_color by shell scripts
