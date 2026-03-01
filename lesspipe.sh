@@ -405,7 +405,8 @@ analyze_args () {
 	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
 	COLOR="--color=auto"
-	[[ $TERM == *256* ]] && colors=256 || colors=0
+	colors=0
+	[[ $TERM == *256* ]] && colors=256
 	has_cmd tput && colors=$(tput colors)
 	if [[ $colors -ge 8 ]]; then
 		lessarg="$LESS $lessarg"
@@ -435,11 +436,16 @@ has_colorizer () {
 	[[ $prog == "*vim" ]] && prog=vimcolor
 	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
 	# prefer an explicitly requested language
-	[[ -n $3 ]] && lang=$3 || lang=$2
+	[[ -n $3 ]] && reql=$3
 	case $prog in
 		bat|batcat)
 			batconfig=$($prog --config-file)
-			[[ -n $lang ]] && $prog --list-languages|sed 's/.*:/,/;s/$/,/'|grep -i ",$lang," > /dev/null && opt=(-l "$lang")
+			languages=$($prog --list-languages|sed "s/.*:/,/;s/$/,/;s/\n/,/")
+			if [[ -n "$reql" ]]; then
+				echo "$languages"|grep -q ",$reql," && opt=(-l "$reql")
+			elif [[ -n "$lang" ]]; then
+				echo "$languages"|grep -q ",$lang," && opt=(-l "$lang")
+			fi
 			opt2=${LESSCOLORIZER##*--}
 			[[ $opt2 == style=* ]] && style=${opt2##*=}
 			[[ $opt2 == theme=* ]] && theme=${opt2##*=}
@@ -466,7 +472,12 @@ has_colorizer () {
 			opt+=(${style:+--style="$style"} ${theme:+--theme="$theme"})
 			opt+=("$COLOR" --paging=never "$1") ;;
 		pygmentize)
-			pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang") || opt=(-g)
+			if [[ -n "$reql" ]]; then
+				pygmentize -l "$reql" /dev/null &>/dev/null && opt=(-l "$lang")
+			elif [[ -n "$lang" ]]; then
+				pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang")
+			fi
+			[[ -z "${opt[*]}" ]] && opt=(-g)
 			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-[OP]\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
 			[[ -n $style ]] && opt+=(-O style="${style%% *}")
 			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
@@ -477,13 +488,48 @@ has_colorizer () {
 			style=esc
 			[[ $colors -ge 256 ]] && style=esc256
 			opt+=(--failsafe -f "$style" --style-file "$style".style) ;;
-		code2color|vimcolor)
+		code2color)
 			opt=("$1")
 			[[ -n "$3" ]] && opt=(-l "$3" "$1") ;;
+		vimcolor)
+			# lowercase file extension and remove dot
+			if [[ -n "$reql" ]]; then
+				reql=${reql##*/} reql=${reql##*.}
+				reql=$(echo "$reql"|tr '[:upper:]' '[:lower:]')
+				list=$(vimcolor -L "$reql")
+				echo ",$list,"|sed 's/ /,/g'|grep -q ",$reql," &&
+					opt=(-l "$reql" "$1")
+			fi
+			if [[ -z ${opt[*]} && -n "$lang" ]]; then
+				list=$(vimcolor -L "$lang")
+				echo ",$list,"|sed 's/ /,/g'|grep -q ",$lang," &&
+					opt=(-l "$lang" "$1")
+			fi
+			[[ -z ${opt[*]} ]] && opt=("$1")
+			;;
+
 		nvimpager)
-			opt=(-c "$1")
-			[[ -n "$3" ]] && ft=${3##*/} && ft=${ft##*.} &&
-				opt=(-c "$1" --cmd "set filetype=$ft") ;;
+			if [[ -n "$reql" ]]; then
+				reql=${reql##*/} reql=${reql##*.}
+				reql=$(echo "$reql"|tr '[:upper:]' '[:lower:]')
+				has_cmd vimcolor && list=$(vimcolor -L "$reql")
+				echo ",$list,"|sed 's/ /,/g'|grep -q ",$reql," &&
+					opt=(-c -- -c "set filetype=$reql" "$1")
+			fi
+			if [[ -z ${opt[*]} && -n "$lang" ]]; then
+				has_cmd vimcolor && list=$(vimcolor -L "$lang")
+				echo ",$list,"|sed 's/ /,/g'|grep -q ",$lang," &&
+					opt=(-c -- -c "set filetype=$lang" "$1")
+			fi
+			if [[ -z "$lang" ]]; then
+				[[ -n "$3" ]] &&
+					reql=${3##*/} reql=${reql##*.}
+					opt=(-c -- -c "set filetype=$reql" "$1")
+				[[ -z "$3" &&  -n "$2" ]] &&
+					opt=(-c -- -c "set filetype=$2" "$1")
+			fi
+			[[ -z ${opt[*]} ]] && opt=(-c "$1")
+			;;
 		*)
 			return ;;
 	esac

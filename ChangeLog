@@ -1,6 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- replace test.pl by test.sh (both for bash and zsh)
+- fix several bugs in colorizing
 - put code2color into a separate repository
 - improve logic in configure and fix bug in archive color
 - replace perl scripts configure and archive_color by shell scripts

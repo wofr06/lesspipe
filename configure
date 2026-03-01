@@ -142,8 +142,9 @@ check_shell_vers() {
 			fi
 		fi
 
-		[[ -z "$selected_shell" ]] && selected_shell="$name"
 		[[ -z "$shellcmd" ]] && shellcmd="$path$opt"
+		[[ -z "$selected_shell" ]] && selected_shell="$name"
+		[[ -n "$selected_shell" ]] && break
 	done
 
 	if [[ -z "$selected_shell" ]]; then
@@ -184,7 +185,7 @@ ZSH_COMPLETION = zsh_complete_dir
 all:
 	$(info "make install" will install lesspipe.sh in $(PREFIX))
 test:
-	./test.pl
+	./test.sh
 install:
 	mkdir -p $(DESTDIR)$(BINDIR)
 	mkdir -p $(DESTDIR)$(MANDIR)
@@ -224,7 +225,7 @@ fi
 rm -f Makefile-e
 
 # Shebang von lesspipe.sh und lesscomplete ggf. anpassen
-for file in "lesspipe.sh" "lesscomplete" "archive_color"; do
+for file in "lesspipe.sh" "lesscomplete" "archive_color" "test.sh"; do
 	if [[ -f "$file" ]]; then
 		{
 			IFS= read -r first_line || true

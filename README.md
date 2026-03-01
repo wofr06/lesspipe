@@ -193,8 +193,9 @@ the author by email.
  installed. That is foremost `bash` or `zsh` (have the appropriate first line
  in the script), then `file` and other utilities like `cat`,
  `grep`, `ln`, `ls`, `mkdir`, `rm`, `strings`, `tar` and `tr`.
- For testing lesspipe.sh `perl` is used, that is however not
- required in just using `lesspipe.sh`.
+ For testing lesspipe.sh the `perl` script `vimcolor` can be used, that is
+ however not required in just using `lesspipe.sh`. It is planned to unbundle
+ vimcolor from lesspipe.sh
 
 ## 4. Supported file formats
 
@@ -302,8 +303,8 @@ the author by email.
 #### 5.1.1 Syntax highlighting choices
  The filter is able to do syntax highlighting for a wide variety of file
  types. If installed, `nvimpager` is used for colorizing the output. If
- not, `bat`/`batcat`, `pygmentize`, `source-highlight`, `code2color`
- and `vimcolor` are
+ not, `bat`/`batcat`, `pygmentize`, `source-highlight`, `vimcolor`
+ and `code2color` are
  tried. Among these colorizers a preferred one can be forced for colorizing
  by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
  For `pygmentize` and `bat/batcat` a restricted set of options can be added:
@@ -331,7 +332,7 @@ batcat --list-languages
 pygmentize -L lexers
 source-highlight --lang-list
 code2color -h
-vimcolor -L (both for vimcolor and nvimpager)
+vimcolor -L (this command is valid both for vimcolor and nvimpager)
 ```
 
 ### 5.2 Colored Directory listing

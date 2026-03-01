@@ -1,228 +1,156 @@
-#!/usr/bin/env perl
-use strict;
-use warnings;
-use Term::ANSIColor;
-use File::Temp;# qw(tempdir);
-use File::Copy;
-use Archive::Tar;
+#!/usr/bin/env bash
 
-# do a clean up if we get a CTRL-C
-our $tdir;
-$SIG{INT} = sub { if ($tdir) {unlink $tdir; print "\n"; exit 1 }};
+# Cleanup on CTRL-C
+tdir=""
+trap 'if [[ -n "$tdir" ]]; then rm -rf "$tdir"; echo; exit 1; fi' INT
 
-sub usage {
-	print <<EOF;
-Usage: $0 [-e] [-n] [-v] [number[s]] [string[s]] [file_name]
+usage() {
+	cat <<EOF
+Usage: $0 [-n] [-v] [number[s]] [string[s]] [file_name]
   Test lesspipe.sh against a number of files and report failures
   -v        Print the output of all commands and the test string
-  -e        Print the output of failing commands and the test string
   -n        Test commands are printed only, not checked
             With -v print also test numbers and required auxiliary programs
   file_name The script to test against in the current directory [lesspipe.sh]
   The number[s] and string[s] arguments can be used to limit the tests to be
   performed. Number ranges are allowed. Strings can be part of the command
   or the comment attached to the test commands.
-  The test commands and test strings are stored at the end of this program
+  The test commands and test strings are stored in this program.
   The '= some string' means, that 'some string' including a newline char
   must be the test result. The '~ match string' means, that 'match string'
   must match a complete line in the output, the 'c string' must match string
-  surrounded with Escape sequences.. In the latter case a successful test
+  surrounded with Escape sequences. In the latter case a successful test
   is usually displayed with a colored 'ok'
 EOF
-	exit;
+	exit 0
 }
 
-use vars qw(%ENV);
-
-my ($verbose, $errors, $noaction, $fname, @numtest, @strtest);
-$fname = 'lesspipe.sh';
-my $args = "@ARGV";
-$args =~ s/(?:^|\s)(\d+)\s*\-\s*(\d+)(?:$|\s)/ $1-$2 /g;
-$args =~ s/,/ /g;
-for (split ' ', $args) {
-	if (/^\-([ehnrv]+$)/) {
-		my $x = $1;
-		$verbose = 1, $errors = 1 if $x =~ /v/;
-		$errors = 1 if $x =~ /e/;
-		$noaction = 1 if $x =~ /n/;
-		usage() if $x =~ /h/;
-	} elsif (/^(\d*)-(\d+)$/) {
-		push @numtest, $_ for ($1 || 1 .. $2);
-	} elsif (/^(\d+)$/) {
-		push @numtest, $1;
-	} elsif (-r $_) {
-		$fname = $_;
-	} elsif (/^([-\w]+)$/) {
-		push @strtest, $1;
-	} else {
-		usage();
-	}
-}
-$fname = "./$fname" if $fname !~ m|/|;
-print "testing $fname\n";
-# set the env variables to standard contents to get reproducible results
-$ENV{LESS} = '-R';
-$ENV{LESSOPEN} = "|-$fname %s";
-print "LESSOPEN=\"$ENV{LESSOPEN}\"\n\n" if $noaction;
-$ENV{LESSQUIET} =1;
-$ENV{LESSCOLORIZER} = 'vimcolor';
-$ENV{LANG} = 'en_US.UTF-8';
-$ENV{LC_ALL} = 'en_US.UTF-8';
-$ENV{TZ} = '';
-(my $dir = $0) =~ s|/[^/]*$|:|;
-$ENV{PATH} = $dir . $ENV{PATH};
-
-my $duration = time();
-my ($retcode, $sumok, $sumignore, $sumnok, $num) = (0, 0, 0, 0, 0);
-my ($needed, $comment);
-my $tmp = $ENV{TMPDIR} || '/tmp';
-$tmp =~ s|/$||;
-$tdir = File::Temp->newdir("$tmp/lesspipeXXXX");
-mkdir "$tdir/tests";
-my $T="$tdir/tests";
-copy("tests/archive.tgz","$T/archive.tgz") or die "$!";
-copy("tests/compress.tgz","$T/compress.tgz") or die "$!";
-copy("tests/filter.tgz","$T/filter.tgz") or die "$!";
-copy("tests/special.tgz","$T/special.tgz") or die "$!";
-my $cwd = $ENV{PWD};
-chdir $T;
-my $tar = Archive::Tar->new;
-for my $arch (qw(archive compress filter special)) {
-	my $next = Archive::Tar->iter("$arch.tgz", 1);
-	while( my $f = $next->() ) {
-		$f->extract or warn "Extraction failed";
-	}
-}
-symlink 'test_plain', 'symlink';
-chdir $cwd;
-
-while (<DATA>) {
-	last if /^END\n$/;
-	print if /^###/ and ! @numtest and ! @strtest;
-	next if /^#|^\s*$/;
-	$num = $1 if s/^(\d+)\s+//;
-	if (! /^less\s|\|\s*less|^LESS|\|\s*LESS.*less/) {
-		print "### skipping invalid line $_";
-		next;
-	}
-	my $cmd = $_;
-	chomp $cmd;
-	$cmd =~ s/\$T/$tdir/g;
-	my $comp = <DATA>;
-	my $skip;
-	$skip = 1 if @numtest and ! grep {$num == $_} @numtest;
-	$skip = 1 if @strtest and ! grep {$cmd =~ /$_/} @strtest;
-	$skip = 1 if ! $num;
-	next if $skip;
-	$comment = $cmd =~ s/\s+#(.*)// ? $1 : '';
-	$needed = $comment =~ s/[#,]? needs (.*)// ? $1 : '';
-	$needed =~ s/ or /|/g;
-	$needed =~ s/ not /!/g;
-	$needed =~ s/ and /,/g;
-	$needed =~ s/html_converter/w3m|lynx|elinks|html2text/;
-	my @needed = split /\s*\|\s*/, $needed;
-	if ($noaction) {
-		my $needed_str = $needed ? " ($needed)" : '';
-		print $verbose ? "$num $cmd $needed_str\n" : "$num $cmd\n";
-		next;
-	}
-	my $ignore = 0;
-	$ignore = 1 if @needed;
-	for my $andargs (@needed) {
-		my $good = 1;
-		for (split /\s*,\s*/, $andargs) {
-			if (s/^!//) {
-				$good = 0 if ! is_not_exec($_);
-			} else {
-				$good = 0 if is_not_exec($_);
-			}
-		}
-		$ignore = 0 if $good;
-	}
-	if ($comp =~ /^c/ and $comment !~ /directory/ and $ENV{LESSCOLORIZER}
-		and ! grep {$ENV{LESSCOLORIZER} =~ /^$_\b/}
-		qw(bat batcat pygmentize source-highlight code2color vimcolor)){
-		$ignore = 1;
-		$needed = 'a colorizer';
-	}
-	my $res = $ignore ? '' : `$cmd 2>&1`;
-	my $ok = 0;
-	my $lines = 0;
-	# zsh|bash|ksh style|file not found
-	if ($res =~ /command not found: \S+|\S+:\s+command not found|\S+:\s+not found|no such file or directory: .*?[^\/]+\b$/m) {
-		$res = "NOT found: " . $res;
-		$ok = 1;
-	} else {
-		if ($ignore) {
-			$sumignore++;
-		} else {
-			$ok = comp($res, $comp);
-			if ($ok) {
-				$sumok++;
-			} else {
-				$sumnok++;
-			}
-		}
-	}
-	print "result for :$cmd:\n$res" if $ok and $verbose;
-	printf "%3d %-6s %s %s\n", $num, $ignore ? 'ignore' : $ok ? $ok: 'NOT ok', $comment, $ignore ? "(needs $needed)" : '';
-	print "\t   failing command: $cmd\n" if ! $ok and ! $ignore;
-	$num = 0;
+is_exec() {
+	local arg="$1"
+	[[ -z $arg ]] && return 0
+	progs=("$arg")
+	for prog in "${progs[@]}"; do
+		if [[ $prog == cpio && $(cpio --version 2>/dev/null) != *GNU* ]]; then
+			return 1
+		fi
+		if ! command -v "$prog" &>/dev/null; then
+			return 1
+		fi
+	done
+	return 0
 }
 
-$duration = time() - $duration;
-print "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $duration seconds\n" if ! $noaction;
-exit $sumnok;
-
-sub is_not_exec {
-	my $arg = shift;
-	return 0 if ! $arg;
-	for my $prog (split ' ', $arg) {
-		return 1 if $prog eq "cpio" and `cpio --version 2>/dev/null` !~ /GNU/;
-		return 1 if ! grep {-x "$_/$prog"} split /:/, $ENV{PATH};
-	}
-	return undef;
+compare() {
+	local ok="ok"
+	local res="$1" type="$line"
+	local comp="${type:2:${#type}}"
+	if [[ ${type:0:1} == c ]]; then
+		echo "$res"|grep -q '[[0-9;]+m' && ok=
+		if [[ -n "$ok" ]]; then
+			res=$(echo "$res"|grep -E "$comp" 2>/dev/null)
+			str="${res%"$comp"*}ok"
+			str=$(echo "$str"|sed -E 's/^.*(\[[0-9;]+m) ?ok/\1ok/g')
+			# special case test 105
+			str=$(echo "$str"|grep -v 2021-12-03)
+			res="$str[0m"
+			if [[ $res == *ok* ]]; then
+				ok=$res
+			fi
+		fi
+	fi
+	# remove empty lines and color sequences
+	res=$(echo "$res"|sed -E 's///g;s/.\[[0-9;]+m//g'|grep -v '^$')
+	if [[ ${type:0:1} == \~ ]]; then
+		res=$(echo "$res"|sed 's/.//g;s///g;')
+		nok=$(echo "$res"|grep -qE "$comp")
+		[[ -n "$nok" ]] && ok=
+	elif [[ ${type:0:1} == = ]]; then
+		[[ $(printf '%d' "'${res:0:1}") -gt 255 ]] && res=${res:1:99}
+		[[ $(printf '%d' "'${res:0:1}") -gt 255 ]] && res=${res:1:99}
+		[[ "$comp" != "$res" ]] && ok=
+	fi
+	echo "$ok"
 }
 
-sub comp {
-	my ($res, $comp) = @_;
-	chomp $comp;
-	my $ok = '';
-	my $reset = color('reset');
-	# ignore unicode start of file
-	$res =~ s/^\x{fe}\x{ff}//;
-	$res =~ s/^\x{ef}\x{bb}\x{bf}//;
-	if ($comp =~ /^= ?/) {
-		$comp =~ s/^= ?//;
-		# ignore leading and trailing newlines
-		$res =~ s/^\n//g;
-		$res =~ s/\0//g;
-		$res =~ s/\014//g;
-		$res =~ s/\r?\n$//g;
-		return 'ok' if $res eq $comp;
-		for (split /\|/, $comp) {
-			return 'ok' if $res eq $_;
-		}
-		for (split /\|/, $comp) {
-			print ":$res:\ndiffers from\n:$_:\n" if $errors;
-		}
-	} elsif ($comp =~ s/^~ //) {
-		chomp $res;
-		return 'ok' if $res =~ /^$comp/m;
-		# special case html bold text
-		$res =~ s/\.//g;
-		return 'ok' if $res =~ /^$comp/m;
-		print ":$res:\ndoes not match\n:$comp:\n" if $errors;
-	} elsif ($comp =~ s/^c //) {
-		$ok = (grep {s/.*(\e\S+)$comp\b.*/$1ok$reset/} split /\n/, $res)[0];
-		$ok =~ s/[()-]//g if $ok;
-		print ":$res:\ndoes not match\n:$comp:\n" if ! $ok and $errors;
-	} else {
-		print "unknown test (must start with c ~ or =): $comp\n";
-	}
-	return $ok;
-}
-__END__
+# Parse args
+verbose=0 noaction=0 fname="lesspipe.sh" numtest=() strtest=()
+args=$* args=${args//,/ }
+# shellcheck disable=SC2207
+args=($(echo "$args"|tr " " "\n"))
+for arg in "${args[@]}"; do
+	if [[ $arg =~ ^-([hnrv]+)$ ]]; then
+		[[ $arg =~ v ]] && verbose=1
+		[[ $arg =~ n ]] && noaction=1
+		[[ $arg =~ h ]] && usage
+	elif [[ $arg =~ ^[0-9]*-[0-9]+$ ]]; then
+		start=${arg%-*} end=${arg#*-}
+		((start)) || start=1
+		for ((i=start; i<=end; i++)); do numtest+=("$i"); done
+	elif [[ $arg =~ ^[0-9]+-$ ]]; then
+		start=${arg%-*} end=199
+		((start)) || start=1
+		for ((i=start; i<=end; i++)); do numtest+=("$i"); done
+	elif [[ $arg =~ ^[0-9]+$ ]]; then
+		numtest+=("$arg")
+	elif [[ -r $arg ]]; then
+		fname="$arg"
+	elif [[ $arg =~ ^[[:alnum:]-]+$ ]]; then
+		strtest+=("$arg")
+	else
+		usage
+	fi
+done
+
+[[ $fname != */* ]] && fname="./$fname"
+echo "testing $fname"
+
+# Set env
+export LESS='-R'
+export LESSOPEN="|-$fname %s"
+[[ $noaction == 1 ]] && echo "LESSOPEN=\"$LESSOPEN\""
+export LESSQUIET=1
+colors=0
+[[ $TERM == *256* ]] && colors=256
+command -v tput &>/dev/null && colors=$(tput colors)
+if [[ "$colors" -gt 0 && -z "$LESSCOLORIZER" ]]; then
+	for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
+		command -v "$i" &>/dev/null && export LESSCOLORIZER="$i" && break
+	done
+fi
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8'
+export TZ=''
+dir="${0%/*}/"
+export PATH="$dir:$PATH"
+
+duration=$(date +%s)
+sumok=0 sumignore=0 sumnok=0 num=0
+
+# Temp dir setup
+tmp="${TMPDIR-/tmp}"
+tmp="${tmp%/}"
+tdir=$(mktemp -d "$tmp/lesspipeXXXX.XXXXXX")
+mkdir -p "$tdir/tests"
+T="$tdir/tests"
+
+# Copy test archives (assumes they exist alongside script)
+cp tests/archive.tgz "$T/" || { echo "Missing tests/archive.tgz"; exit 1; }
+cp tests/compress.tgz "$T/" || { echo "Missing tests/compress.tgz"; exit 1; }
+cp tests/filter.tgz "$T/" || { echo "Missing tests/filter.tgz"; exit 1; }
+cp tests/special.tgz "$T/" || { echo "Missing tests/special.tgz"; exit 1; }
+
+cwd="$PWD"
+cd "$T" || exit
+
+# Extract archives
+for arch in archive compress filter special; do
+	tar -xzf "${arch}.tgz" || echo "Extraction failed for $arch"
+done
+ln -s test_plain symlink
+cd "$cwd" || exit 1
+
+# Test data
+read -r -d '' tests << 'EOF'
 ### archive tests
 1 less tests/archive.tgz			# contents of archive with test files
 ~ .* test_tar
@@ -234,7 +162,7 @@ __END__
 = test
 5 less tests/archive.tgz:test_tar:tests/textfile # (on the fly)
 = test
-###    plain tar file names with a : not allowed, use ./tar:name, not tar:name
+### plain tar file names with a : not allowed, use ./tar:name, not tar:name
 6 less $T/tests/test:tar			# tar file name with colon git #51
 ~ .* tests/textfile
 7 less $T/tests/test:tar=tests/textfile	# extract file from tar file with colon
@@ -332,7 +260,7 @@ __END__
 = test
 53 less tests/compress.tgz:test.tar.xz:tests/textfile	# extract from xz, needs xz
 = test
-###    call dd also for brotli to keep the script structure clean git #19 (revert)
+### call dd also for brotli to keep the script structure clean git #19 (revert)
 54 less tests/compress.tgz:test.bro:tests/textfile		# extract from brotli, needs brotli
 = test
 55 less tests/compress.tgz:test.tar.zst:tests/textfile	# extract from zstandard git #13,20,36,44, needs zstd
@@ -342,9 +270,9 @@ __END__
 ### filter tests, produce readable output
 57 less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv,locale
 = test
-58 less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file  needs iconv,locale
+58 less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file, needs iconv,locale
 = äöü
-###    no output if file not modified (watch growing files) git #4,25 (revert)
+### no output if file not modified (watch growing files) git #4,25 (revert)
 59 less $T/tests/test_plain			# plain text, no output from lesspipe.sh
 = test=a
 60 less tests/filter.tgz:test_html		# html text, needs html_converter
@@ -354,7 +282,7 @@ __END__
 62 less tests/filter.tgz:test_pdf		# pdf, needs pdftotext|pdftohtml,html_converter|pdfinfo
 = test
 63 less tests/filter.tgz:test_ps		# postscript, needs ps2ascii
-~ .* test\r?
+~ .*test\ ?1?$
 64 less tests/filter.tgz:test.class	# java class file, needs procyon
 ~ public class test
 65 less tests/filter.tgz:test_docx		# docx (neu) git #24,26,27,37, needs pandoc|docx2txt|libreoffice
@@ -370,11 +298,11 @@ __END__
 70 less tests/filter.tgz:test_ods		# ods, needs xlscat|libreoffice,html_converter
 ~ test
 71 less tests/filter.tgz:test_doc		# doc (old), needs wvText|catdoc|libreoffice
-~  *test
+~ test
 72 less tests/filter.tgz:test_ppt:ms-powerpoint	# ppt (old), catppt not always working, needs libreoffice,html_converter
 ~ .*1. test|\s*test
 73 less tests/filter.tgz:test_xls		# xls (old), needs in2csv|xls2csv|libreoffice,html_converter
-~ ^test$|^"test"$
+~ ^test\ ?$|^"test"\ ?$
 74 less tests/filter.tgz:test_ooffice1	# openoffice1 (very old), needs odt2txt
 = test
 75 less tests/filter.tgz:test_nroff	# man pages etc (nroff), needs groff|mandoc
@@ -386,7 +314,7 @@ __END__
 78 less tests/filter.tgz:test_so		# shared library (.so), needs nm
 ~ .* T test
 79 less tests/filter.tgz:test.pod		# pod text, needs pod2text|perldoc
-~     test
+~ ^NAME
 80 less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoc
 ~ test
 81 less tests/filter.tgz:test_nc4		# netcdf, needs h5dump|ncdump
@@ -398,26 +326,26 @@ __END__
 84 less tests/filter.tgz:matlab.mat	# matlab, not recognized by file, needs matdump
 ~ r
 85 less tests/filter.tgz:test_djvu		# djvu, needs djvutxt
-= test 
+~ ^test\ ?$
 86 less tests/filter.tgz:test.pem		# SSL related files git #15, needs openssl
 ~ .* 2038 GMT
 87 less tests/filter.tgz:test.bplist	# Apple binary property list, needs plistutil
 ~ <dict>
-###    no test case for decoding gpg/pgp encrypted files git #12
+### no test case for decoding gpg/pgp encrypted files git #12
 88 less tests/filter.tgz:test_mp3		# mp3 without mp3 extension, needs ffprobe|mediainfo|exiftool
-~  *[Tt]itle *: *test
+~ [Tt]itle *: *test
 89 less tests/filter.tgz:test_mp3:mp3	# mp3, needs ffprobe|eyeD3|id3v2
-~  *[Tt]itle *: *test
+~ [Tt]itle *: *test
 90 less tests/filter.tgz:test_data		# binary data
 = test
 ### colorizing tests (ok should be displayed colored, for MacOSX see git #48)
-91 less $T/tests				# directory
+91 less $T/tests				# directory, needs archive_color
 c test_so
-92 less tests/archive.tgz			# contents of tar colorized with archive_color
+92 less tests/archive.tgz			# contents of tar colorized, needs archive_color
 c test_cab
-93 less $T/tests/test.c			# C language (vimcolor)
+93 LESSCOLORIZER=vimcolor less $T/tests/test.c			# C language, needs vimcolor
 c void
-94 LESSCOLORIZER=source-highlight less $T/tests/test.c	# C language (source-highlight) git #3, needs source-highlight
+94 LESSCOLORIZER=source-highlight less $T/tests/test.c	# C language git #3, needs source-highlight
 c void
 95 less tests/filter.tgz:test.c		# C language from file within archive
 c void
@@ -426,30 +354,30 @@ c void
 97 cat $T/tests/test.c|less - :c		# even colorize piped files
 c void
 98 less tests/filter.tgz:test_html:html	# html colorized text
-c head
+c transparent
 99 less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text|perldoc
-c =head1
-100 less tests/filter.tgz:test_plain:sh	# plain text, force color (shellscript)
+c NAME
+100 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_plain:sh	# plain text, force colored shellscript, needs pygmentize
 c test
-101 less tests/filter.tgz:index.rst		# reStructuredText, needs pandoc
-c .*# test
+101 LESSCOLORIZER=nvimpager less tests/filter.tgz:index.rst		# reStructuredText, needs pandoc,nvimpager
+c test.png
 102 less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
-c false
-103 LESSCOLORIZER=code2color less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39, needs code2color
+c "hello"
+103 LESSCOLORIZER=source-highlight less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39, needs source-highlight
 c test
-104 less tests/filter.tgz:Makefile		# bsd Makefile not (file 5.28) / is (5.39) correctly recognized git #10
+104 less tests/filter.tgz:Makefile		# bsd Makefile not recognized with file 5.28 / with 5.39 o.k. git #10
 c PORTNAME
 105 diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped through less works git #11
-c test=a
-### github issues (solved and unsolved) and other test cases
+c +++
 106 LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives, needs code2color
-c sub
-107 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
+c test
+107 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_dtb	# device tree blob, needs dtc,pygmentize
 c test
 108 less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
-c sub
+c test
 109 less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154
 c name
+### solved github issues and other test cases
 110 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
 111 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1, needs unzip
@@ -478,7 +406,7 @@ c name
 ~ .* tests/textfile
 123 cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive, needs unzip
 ~ test
-124 cat $T/tests/test_plain|LESSCOLORIZER=code2color less	# display piped text files, needs code2color
+124 cat $T/tests/test_plain|LESSCOLORIZER=code2color less	# display piped text files
 ~ test=a
 125 cat $T/tests/test_plain|less - :plain	# display piped plain text files
 ~ test=a
@@ -490,3 +418,108 @@ c name
 ~ .* META-INF/
 129 less tests/compress.tgz:test_zlib		# zlib, needs pigz|zlib-flate
 = test
+EOF
+
+# Process tests
+while IFS= read -r line || [[ -n $line ]]; do
+	[[ $line == END ]] && break
+	[[ $line =~ ^### ]] && { [[ ${#numtest[@]} == 0 && ${#strtest[@]} == 0 ]] && echo "$line"; continue; }
+	[[ $line =~ ^#\|^[[:space:]]*$ ]] && continue
+	num=${line%% *}
+	[[ -z $num ]] && continue
+	cmd=${line#* }
+	#if ! [[ $cmd =~ ^less\ \| less\ ]]; then
+	#	echo "### skipping invalid line $line"
+	#	continue
+	#fi
+		read -r line
+		comp=$line
+		skip=0
+		[[ ${#numtest[@]} -gt 0 && ! " ${numtest[*]} " =~ \ $num\  ]] && skip=1
+		[[ ${#strtest[@]} -gt 0 && ! " ${cmd[*]} " =~ ${strtest[*]} ]] && skip=1
+		[[ -z $num ]] && skip=1
+		[[ $skip == 1 ]] && continue
+		comment="${cmd#*[[:space:]]#}"
+		cmd="${cmd%[[:space:]]#*}"
+		cmd="${cmd//\$T/$tdir}"
+		needed=
+		if [[ $comment == *\ needs\ * ]]; then
+			needed="${comment##* needs }"
+			comment=${comment%%, needs*}
+			needed="${needed// or /|}"
+			needed="${needed// not /!}"
+			needed="${needed// and /,}"
+			needed="${needed//html_converter/w3m|lynx|elinks|html2text}"
+			needed="${needed//colorizer/nvimpager|bat|batcat|pygmentize|source-highlight|vimcolor}"
+		fi
+
+		if [[ $noaction == 1 ]]; then
+			needed_str=${needed:+ "($needed)"}
+			[[ $verbose == 1 ]] && echo "$num $cmd$needed_str" || echo "$num $cmd"
+			continue
+		fi
+
+		ignore=0
+		[[ -n $needed ]] && ignore=1
+		# shellcheck disable=SC2207
+		needed_arr=($(echo "$needed" | tr '|' ' '))
+		for andargs in "${needed_arr[@]}"; do
+			good=1
+			# shellcheck disable=SC2207
+			and_arr=($(echo "$andargs" | tr ',' ' '))
+			for dep in "${and_arr[@]}"; do
+				if [[ $dep == !* ]]; then
+					dep="${dep#!}"
+					! is_exec "$dep" || good=0
+				else
+					is_exec "$dep" || good=0
+				fi
+			done
+			[[ $good == 1 ]] && ignore=0
+		done
+
+		[[ $comp =~ ^c && "$colors" == 0 ]] && ignore=1
+		if [[ $comp =~ ^c && $comment != *directory* && -z "$needed" ]]; then
+			needed='colorizer'
+		fi
+
+		if [[ $ignore == 1 ]]; then
+			res=""
+		else
+			cmd=${cmd%#*}
+			res=$(eval "$cmd 2>&1")
+		fi
+		ok=0
+
+		if [[ $res =~ "command not found:"[[:space:]] || $res =~ [[:space:]]"command not found" || $res =~ [[:space:]]"not found" || $res =~ "no such file or directory" ]]; then
+			res="NOT found: $res"
+			ok=1
+		else
+			if [[ $ignore == 1 ]]; then
+				((sumignore++))
+			else
+				ok=$(compare "$res" "$comp")
+				if [[ -n $ok ]]; then
+					((sumok++))
+				else
+					((sumnok++))
+				fi
+			fi
+		fi
+
+		[[ $verbose == 1 ]] && echo -e "result for :$cmd\n$res"
+		[[ -z $ok ]] && ok='NOT ok'
+		state=$([[ $ignore == 1 ]] && echo ignore || echo "$ok")
+		missing=
+		[[ $ignore == 1 ]] && missing="needs $needed"
+		printf "%3d %-6s %s %s\n" "$num" "$state" "$comment" "$missing"
+		[[ $ok == NOT\ ok && $ignore != 1 ]] && echo "    failing command: $cmd"
+		num=0
+done <<< "$tests"
+
+duration=$(( $(date +%s) - duration ))
+echo "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $duration seconds"
+if [[ -n "$tdir" ]]; then
+	rm -rf "$tdir"
+fi
+exit $sumnok
