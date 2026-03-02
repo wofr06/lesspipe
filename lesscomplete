@@ -374,7 +374,7 @@ fi
 tmpdir=${TMPDIR:-/tmp}/lesspipe."$RANDOM"
 [[ -d "$tmpdir" ]] || mkdir "$tmpdir"
 [[ -d "$tmpdir" ]] || exit 1
-trap 'rm -rf "$tmpdir";exit 1' INT
+trap 'rm -rf "$tmpdir";exit 1' SIGINT
 trap 'rm -rf "$tmpdir"' EXIT
 trap - PIPE
 

@@ -2,15 +2,16 @@
 
 # Cleanup on CTRL-C
 tdir=""
-trap 'if [[ -n "$tdir" ]]; then rm -rf "$tdir"; echo; exit 1; fi' INT
+trap 'if [[ -n "$tdir" ]]; then rm -rf "$tdir"; echo; exit 1; fi' SIGINT
 
 usage() {
 	cat <<EOF
-Usage: $0 [-n] [-v] [number[s]] [string[s]] [file_name]
+Usage: $0 [-h] [-n] [-v] [number[s]] [string[s]] [file_name]
   Test lesspipe.sh against a number of files and report failures
+  -h        This help message
   -v        Print the output of all commands and the test string
   -n        Test commands are printed only, not checked
-            With -v print also test numbers and required auxiliary programs
+            With -v print also n parentheses required auxiliary programs
   file_name The script to test against in the current directory [lesspipe.sh]
   The number[s] and string[s] arguments can be used to limit the tests to be
   performed. Number ranges are allowed. Strings can be part of the command
@@ -72,16 +73,18 @@ compare() {
 	echo "$ok"
 }
 
+seconds=$(date +%s)
+
 # Parse args
-verbose=0 noaction=0 fname="lesspipe.sh" numtest=() strtest=()
-args=$* args=${args//,/ }
-# shellcheck disable=SC2207
-args=($(echo "$args"|tr " " "\n"))
-for arg in "${args[@]}"; do
-	if [[ $arg =~ ^-([hnrv]+)$ ]]; then
+fname="lesspipe.sh" numtest=() strtest=()
+args="$*" args=${args//,/ }
+while [[ "$args" != "$arg" ]]; do
+	arg=${args%% *}
+	args=${args#"$arg" }
+	if [[ $arg =~ ^-([hnv]+)$ ]]; then
+		[[ $arg =~ h ]] && usage
 		[[ $arg =~ v ]] && verbose=1
 		[[ $arg =~ n ]] && noaction=1
-		[[ $arg =~ h ]] && usage
 	elif [[ $arg =~ ^[0-9]*-[0-9]+$ ]]; then
 		start=${arg%-*} end=${arg#*-}
 		((start)) || start=1
@@ -94,60 +97,57 @@ for arg in "${args[@]}"; do
 		numtest+=("$arg")
 	elif [[ -r $arg ]]; then
 		fname="$arg"
-	elif [[ $arg =~ ^[[:alnum:]-]+$ ]]; then
+	elif [[ $arg =~ ^[a-zA-Z0-9/:] ]]; then
 		strtest+=("$arg")
 	else
 		usage
 	fi
 done
 
-[[ $fname != */* ]] && fname="./$fname"
-echo "testing $fname"
-
 # Set env
-export LESS='-R'
+dir="${0%/*}/"
+export PATH="$dir:$PATH"
+[[ $fname != */* ]] && fname="./$fname"
 export LESSOPEN="|-$fname %s"
-[[ $noaction == 1 ]] && echo "LESSOPEN=\"$LESSOPEN\""
+echo "testing $fname" && echo "LESSOPEN=\"$LESSOPEN\""
+export LESS='-R'
 export LESSQUIET=1
-colors=0
-[[ $TERM == *256* ]] && colors=256
-command -v tput &>/dev/null && colors=$(tput colors)
-if [[ "$colors" -gt 0 && -z "$LESSCOLORIZER" ]]; then
-	for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
-		command -v "$i" &>/dev/null && export LESSCOLORIZER="$i" && break
-	done
-fi
 export LANG='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
 export TZ=''
-dir="${0%/*}/"
-export PATH="$dir:$PATH"
 
-duration=$(date +%s)
-sumok=0 sumignore=0 sumnok=0 num=0
+sumok=0 sumignore=0 sumnok=0 num=0 colors=0
 
-# Temp dir setup
-tmp="${TMPDIR-/tmp}"
-tmp="${tmp%/}"
-tdir=$(mktemp -d "$tmp/lesspipeXXXX.XXXXXX")
-mkdir -p "$tdir/tests"
-T="$tdir/tests"
+if [[ -z $noaction ]]; then
+	[[ $TERM == *256* ]] && colors=256
+	command -v tput &>/dev/null && colors=$(tput colors)
+	if [[ "$colors" -gt 0 && -z "$LESSCOLORIZER" ]]; then
+		for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
+			command -v "$i" &>/dev/null && export LESSCOLORIZER="$i" && break
+		done
+	fi
 
-# Copy test archives (assumes they exist alongside script)
-cp tests/archive.tgz "$T/" || { echo "Missing tests/archive.tgz"; exit 1; }
-cp tests/compress.tgz "$T/" || { echo "Missing tests/compress.tgz"; exit 1; }
-cp tests/filter.tgz "$T/" || { echo "Missing tests/filter.tgz"; exit 1; }
-cp tests/special.tgz "$T/" || { echo "Missing tests/special.tgz"; exit 1; }
+	# Temp dir setup
+	tmp="${TMPDIR-/tmp}"
+	tmp="${tmp%/}"
+	tdir=$(mktemp -d "$tmp/lesspipeXXXX.XXXXXX")
+	mkdir -p "$tdir/tests"
+	T="$tdir/tests"
 
-cwd="$PWD"
-cd "$T" || exit
+	# Copy test archives (assumes they exist alongside script)
+	for ar in archive compress filter special; do
+		cp tests/${ar}.tgz "$T/" || { echo "Missing tests/${ar}.tgz"; exit 1; }
+	done
 
-# Extract archives
-for arch in archive compress filter special; do
-	tar -xzf "${arch}.tgz" || echo "Extraction failed for $arch"
-done
-ln -s test_plain symlink
-cd "$cwd" || exit 1
+	cwd="$PWD"
+	cd "$T" || exit
+	# Extract archives
+	for ar in archive compress filter special; do
+		tar -xzf "${ar}.tgz" || echo "Extraction failed for $ar"
+	done
+	ln -s test_plain symlink
+	cd "$cwd" || exit 1
+fi
 
 # Test data
 read -r -d '' tests << 'EOF'
@@ -235,9 +235,9 @@ read -r -d '' tests << 'EOF'
 = test
 41 less tests/archive.tgz:test_iso:ISO.TXT	# (on the fly), needs bsdtar
 = test
-42 less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo, not bsdtar
+42 less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo,!bsdtar
 = test
-43 less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo, not bsdtar
+43 less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo,!bsdtar
 = test
 44 less $T/tests/test_ar			# ar archive contents, needs ar
 ~ .* a=b/?
@@ -419,106 +419,96 @@ c name
 129 less tests/compress.tgz:test_zlib		# zlib, needs pigz|zlib-flate
 = test
 EOF
-
+#echo $tests|sed -E '/^[0-9]+ /s/(^[0-9]+).*/\1/'|grep '^[0-9]'|tail -1
 # Process tests
 while IFS= read -r line || [[ -n $line ]]; do
 	[[ $line == END ]] && break
-	[[ $line =~ ^### ]] && { [[ ${#numtest[@]} == 0 && ${#strtest[@]} == 0 ]] && echo "$line"; continue; }
-	[[ $line =~ ^#\|^[[:space:]]*$ ]] && continue
+	[[ $line =~ ^### ]] && { [[ ${#numtest[@]} == 0 && ${#strtest[@]} == 0 ]] &&
+		echo "$line"; continue; }
+	[[ $line =~ ^#\|^[\ \	]$ ]] && continue
 	num=${line%% *}
 	[[ -z $num ]] && continue
 	cmd=${line#* }
-	#if ! [[ $cmd =~ ^less\ \| less\ ]]; then
-	#	echo "### skipping invalid line $line"
-	#	continue
-	#fi
-		read -r line
-		comp=$line
-		skip=0
-		[[ ${#numtest[@]} -gt 0 && ! " ${numtest[*]} " =~ \ $num\  ]] && skip=1
-		[[ ${#strtest[@]} -gt 0 && ! " ${cmd[*]} " =~ ${strtest[*]} ]] && skip=1
-		[[ -z $num ]] && skip=1
-		[[ $skip == 1 ]] && continue
-		comment="${cmd#*[[:space:]]#}"
-		cmd="${cmd%[[:space:]]#*}"
-		cmd="${cmd//\$T/$tdir}"
-		needed=
-		if [[ $comment == *\ needs\ * ]]; then
-			needed="${comment##* needs }"
-			comment=${comment%%, needs*}
-			needed="${needed// or /|}"
-			needed="${needed// not /!}"
-			needed="${needed// and /,}"
-			needed="${needed//html_converter/w3m|lynx|elinks|html2text}"
-			needed="${needed//colorizer/nvimpager|bat|batcat|pygmentize|source-highlight|vimcolor}"
-		fi
+	read -r line
+	comp=$line
+	[[ ${#numtest[@]} -gt 0 && ! " ${numtest[*]} " =~ \ $num\  ]] && continue
+	[[ ${#strtest[@]} -gt 0 && ! " ${cmd[*]} " =~ ${strtest[*]} ]] && continue
+	comment="${cmd#*[\ \	]#}"
+	cmd="${cmd%[\ \	]#*}"
+	cmd="${cmd//\$T/$tdir}"
+	needed=
+	if [[ $comment == *\ needs\ * ]]; then
+		needed="${comment##* needs }"
+		comment=${comment%%, needs*}
+		needed="${needed//html_converter/w3m|lynx|elinks|html2text}"
+		needed="${needed//colorizer/nvimpager|bat|batcat|pygmentize|source-highlight|vimcolor}"
+	fi
 
-		if [[ $noaction == 1 ]]; then
-			needed_str=${needed:+ "($needed)"}
-			[[ $verbose == 1 ]] && echo "$num $cmd$needed_str" || echo "$num $cmd"
-			continue
-		fi
-
-		ignore=0
-		[[ -n $needed ]] && ignore=1
+	if [[ $noaction == 1 ]]; then
+		needed_str=${needed:+ "($needed)"}
+		[[ $verbose == 1 ]] && echo "$num $cmd$needed_str" || echo "$num $cmd"
+		continue
+	fi
+	[[ -n $needed ]] && ignore=1
+	# shellcheck disable=SC2207
+	needed_arr=($(echo "$needed" | tr '|' ' '))
+	for andargs in "${needed_arr[@]}"; do
+		good=1
 		# shellcheck disable=SC2207
-		needed_arr=($(echo "$needed" | tr '|' ' '))
-		for andargs in "${needed_arr[@]}"; do
-			good=1
-			# shellcheck disable=SC2207
-			and_arr=($(echo "$andargs" | tr ',' ' '))
-			for dep in "${and_arr[@]}"; do
-				if [[ $dep == !* ]]; then
-					dep="${dep#!}"
-					! is_exec "$dep" || good=0
-				else
-					is_exec "$dep" || good=0
-				fi
-			done
-			[[ $good == 1 ]] && ignore=0
-		done
-
-		[[ $comp =~ ^c && "$colors" == 0 ]] && ignore=1
-		if [[ $comp =~ ^c && $comment != *directory* && -z "$needed" ]]; then
-			needed='colorizer'
-		fi
-
-		if [[ $ignore == 1 ]]; then
-			res=""
-		else
-			cmd=${cmd%#*}
-			res=$(eval "$cmd 2>&1")
-		fi
-		ok=0
-
-		if [[ $res =~ "command not found:"[[:space:]] || $res =~ [[:space:]]"command not found" || $res =~ [[:space:]]"not found" || $res =~ "no such file or directory" ]]; then
-			res="NOT found: $res"
-			ok=1
-		else
-			if [[ $ignore == 1 ]]; then
-				((sumignore++))
+		and_arr=($(echo "$andargs" | tr ',' ' '))
+		for dep in "${and_arr[@]}"; do
+			if [[ $dep == !* ]]; then
+				dep="${dep#!}"
+				! is_exec "$dep" || good=0
 			else
-				ok=$(compare "$res" "$comp")
-				if [[ -n $ok ]]; then
-					((sumok++))
-				else
-					((sumnok++))
-				fi
+				is_exec "$dep" || good=0
+			fi
+		done
+		[[ $good == 1 ]] && ignore=
+	done
+
+	[[ $comp =~ ^c && "$colors" == 0 ]] && ignore=1
+	if [[ $comp =~ ^c && $comment != *directory* && -z "$needed" ]]; then
+		needed='colorizer'
+	fi
+
+	if [[ $ignore == 1 ]]; then
+		res=""
+	else
+		cmd=${cmd%#*}
+		res=$(eval "$cmd 2>&1")
+	fi
+	ok=0
+
+	if [[ $res =~ "command not found:" || $res =~ "not found" ||
+		$res =~ "no such file or directory" ]]; then
+		res="NOT found: $res"
+		ok=1
+	else
+		if [[ $ignore == 1 ]]; then
+			((sumignore++))
+		else
+			ok=$(compare "$res" "$comp")
+			if [[ -n $ok ]]; then
+				((sumok++))
+			else
+				((sumnok++))
 			fi
 		fi
+	fi
 
-		[[ $verbose == 1 ]] && echo -e "result for :$cmd\n$res"
-		[[ -z $ok ]] && ok='NOT ok'
-		state=$([[ $ignore == 1 ]] && echo ignore || echo "$ok")
-		missing=
-		[[ $ignore == 1 ]] && missing="needs $needed"
-		printf "%3d %-6s %s %s\n" "$num" "$state" "$comment" "$missing"
-		[[ $ok == NOT\ ok && $ignore != 1 ]] && echo "    failing command: $cmd"
-		num=0
+	[[ $verbose == 1 ]] && echo -e "result for :$cmd\n$res"
+	[[ -z $ok ]] && ok='NOT ok'
+	state=$([[ $ignore == 1 ]] && echo ignore || echo "$ok")
+	missing=
+	[[ $ignore == 1 ]] && missing="needs $needed"
+	printf "%3d %-6s %s %s\n" "$num" "$state" "$comment" "$missing"
+	[[ $ok == NOT\ ok && $ignore != 1 ]] && echo "    failing command: $cmd"
+	num=0
 done <<< "$tests"
 
-duration=$(( $(date +%s) - duration ))
-echo "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $duration seconds"
+seconds=$(( $(date +%s) - seconds ))
+echo "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $seconds seconds"
 if [[ -n "$tdir" ]]; then
 	rm -rf "$tdir"
 fi
