@@ -83,7 +83,6 @@ cd $RPM_BUILD_DIR
 %dir %{bindir}
 %{bindir}/lesspipe.sh
 %{bindir}/archive_color
-%{bindir}/code2color
 %{bindir}/vimcolor
 %{bindir}/lesscomplete
 %{_mandir}/man*/*
@@ -95,7 +94,7 @@ cd $RPM_BUILD_DIR
 
 %changelog
 * Mon Dec 15 2025 2.22-1 - wp.friebel@gmail.com
-- bug fixes, documentation changes, sxw2txt removed
+- bug fixes, documentation changes, sxw2txt and code2color removed
 * Mon Nov 24 2025 2.21-1 - wp.friebel@gmail.com
 - documentation changes, markdown support changed, correctly report empty files
 * Fri Sep 12 2025 2.20-1 - wp.friebel@gmail.com

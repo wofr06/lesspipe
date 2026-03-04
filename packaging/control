@@ -1,14 +1,14 @@
 Package: lesspipe
-Version: 2.07-1
+Version: 2.22-1
 Section: text
 Priority: optional
 Architecture: all
 Essential: no
 Depends: gzip
-Suggests: libreoffice, elinks, mediainfo, pdftotext
+Suggests: libreoffice, bat
 Enhances: less
 Installed-Size: 263KB
-Homepage: https://www-zeuthen.desy.de/~friebel/unix/lesspipe.html
+Homepage: https://lesspipe.org
 Maintainer: Wolfgang Friebel
 Description: lesspipe.sh is an input filter for the pager less.
  lesspipe.sh is a sophisticated version to enhance less. It is able to process
