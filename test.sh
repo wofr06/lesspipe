@@ -42,21 +42,21 @@ is_exec() {
 }
 
 compare() {
-	local ok="ok"
+	local ok='ok'
 	local res="$1" type="$line"
 	local comp="${type:2:${#type}}"
 	if [[ ${type:0:1} == c ]]; then
-		echo "$res"|grep -q '[[0-9;]+m' && ok=
-		if [[ -n "$ok" ]]; then
+		ok=$(echo "$res"|grep -cE '[[0-9;]+m')
+		if [[ "$ok" -gt 0 ]]; then
 			res=$(echo "$res"|grep -E "$comp" 2>/dev/null)
 			str="${res%"$comp"*}ok"
 			str=$(echo "$str"|sed -E 's/^.*(\[[0-9;]+m) ?ok/\1ok/g')
 			# special case test 105
 			str=$(echo "$str"|grep -v 2021-12-03)
 			res="$str[0m"
-			if [[ $res == *ok* ]]; then
-				ok=$res
-			fi
+			ok=$res
+		else
+			ok=
 		fi
 	fi
 	# remove empty lines and color sequences
@@ -355,7 +355,7 @@ c void
 c void
 98 less tests/filter.tgz:test_html:html	# html colorized text
 c transparent
-99 less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text|perldoc
+99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text|perldoc
 c NAME
 100 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_plain:sh	# plain text, force colored shellscript, needs pygmentize
 c test
