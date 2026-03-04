@@ -347,7 +347,7 @@ c test_cab
 c void
 94 LESSCOLORIZER=source-highlight less $T/tests/test.c	# C language git #3, needs source-highlight
 c void
-95 less tests/filter.tgz:test.c		# C language from file within archive
+95 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.c		# C language from file within archive
 c void
 96 LESSCOLORIZER='pygmentize -O style=vim' less $T/tests/test.c # allow setting pygmentize style option git #5, needs pygmentize
 c void
