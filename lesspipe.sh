@@ -431,8 +431,8 @@ has_colorizer () {
 	[[ $prog == vimcolor ]] && ! has_cmd vim && ! has_cmd nvim && prog=
 
 	for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
-		[[ -z $prog ]] && has_cmd "$i" ]] && prog=$i
-		[[ $prog == "$i" ]] && ! has_cmd "$prog" ]] && prog=
+		[[ -z $prog ]] && has_cmd "$i" && prog=$i
+		[[ $prog == "$i" ]] && ! has_cmd "$prog" && prog=
 	done
 	[[ $prog == "*vim" ]] && prog=vimcolor
 	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
