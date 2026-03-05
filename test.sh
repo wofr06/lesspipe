@@ -60,14 +60,17 @@ compare() {
 		fi
 	fi
 	# remove empty lines and color sequences
-	res=$(echo "$res"|sed -E 's///g;s/.\[[0-9;]+m//g'|grep -v '^$')
+	res=$(echo "$res"|sed -E 's///g;s/.\[[0-9;]+m//g')
+	res=$(echo "$res"|grep  --binary-files=text -v '^$' 2>/dev/null)
+	res=$(echo "$res"|grep  -v '^$' 2>/dev/null)
 	if [[ ${type:0:1} == \~ ]]; then
 		res=$(echo "$res"|sed 's/.//g;s///g;')
 		nok=$(echo "$res"|grep -qE "$comp")
 		[[ -n "$nok" ]] && ok=
 	elif [[ ${type:0:1} == = ]]; then
-		[[ $(printf '%d' "'${res:0:1}") -gt 255 ]] && res=${res:1:99}
-		[[ $(printf '%d' "'${res:0:1}") -gt 255 ]] && res=${res:1:99}
+		res=${res//$'\UFEFF'/}
+		res=${res//$'\UEFBBBF'/}
+		res=${res//$'\UBBBF'/}
 		[[ "$comp" != "$res" ]] && ok=
 	fi
 	echo "$ok"
@@ -269,9 +272,9 @@ read -r -d '' tests << 'EOF'
 = test
 ### filter tests, produce readable output
 57 less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv,locale
-= test
+~ test
 58 less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file, needs iconv,locale
-= äöü
+= testäöü
 ### no output if file not modified (watch growing files) git #4,25 (revert)
 59 less $T/tests/test_plain			# plain text, no output from lesspipe.sh
 = test=a
@@ -365,7 +368,7 @@ c test.png
 c "hello"
 103 LESSCOLORIZER=source-highlight less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39, needs source-highlight
 c test
-104 less tests/filter.tgz:Makefile		# bsd Makefile not recognized with file 5.28 / with 5.39 o.k. git #10
+104 LESSCOLORIZER=vimcolor less tests/filter.tgz:Makefile		# bsd Makefile not recognized with file 5.28 / with 5.39 o.k. git #10, needs vimcolor
 c PORTNAME
 105 diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped through less works git #11
 c +++

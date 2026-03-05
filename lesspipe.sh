@@ -438,6 +438,7 @@ has_colorizer () {
 	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
 	# prefer an explicitly requested language
 	[[ -n $3 ]] && reql=$3
+	[[ $reql == *.* ]] && reql=${reql##*.}
 	case $prog in
 		bat|batcat)
 			batconfig=$($prog --config-file)
@@ -491,7 +492,7 @@ has_colorizer () {
 			opt+=(--failsafe -f "$style" --style-file "$style".style) ;;
 		code2color)
 			opt=("$1")
-			[[ -n "$3" ]] && opt=(-l "$3" "$1") ;;
+			[[ -n "$reql" ]] && opt=(-l "$reql" "$1") ;;
 		vimcolor)
 			# lowercase file extension and remove dot
 			if [[ -n "$reql" ]]; then
