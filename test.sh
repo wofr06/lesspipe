@@ -124,7 +124,7 @@ sumok=0 sumignore=0 sumnok=0 num=0 colors=0
 if [[ -z $noaction ]]; then
 	[[ $TERM == *256* ]] && colors=256
 	command -v tput &>/dev/null && colors=$(tput colors)
-	if [[ "$colors" -gt 0 && -z "$LESSCOLORIZER" ]]; then
+	if [[ "$colors" -lt 8 && -z "$LESSCOLORIZER" ]]; then
 		for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
 			command -v "$i" &>/dev/null && export LESSCOLORIZER="$i" && break
 		done
@@ -283,7 +283,7 @@ read -r -d '' tests << 'EOF'
 61 less tests/filter.tgz:test_html::	# html unmodified text
 ~ </head>
 62 less tests/filter.tgz:test_pdf		# pdf, needs pdftotext|pdftohtml,html_converter|pdfinfo
-= test
+~ \s*test
 63 less tests/filter.tgz:test_ps		# postscript, needs ps2ascii
 ~ .*test\ ?1?$
 64 less tests/filter.tgz:test.class	# java class file, needs procyon
