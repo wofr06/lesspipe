@@ -470,7 +470,7 @@ while IFS= read -r line || [[ -n $line ]]; do
 		[[ $good == 1 ]] && ignore=
 	done
 
-	[[ $comp =~ ^c && "$colors" == 0 ]] && ignore=1
+	[[ $comp =~ ^c && $colors -lt 8 ]] && ignore=1
 	if [[ $comp =~ ^c && $comment != *directory* && -z "$needed" ]]; then
 		needed='colorizer'
 	fi
