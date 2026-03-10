@@ -2,7 +2,7 @@
 
 Version: 2.22
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto:wp.friebel@gmail.com)
-License: GPL
+License: GPL-2.0-or-later
 
 Latest version available as:
  [zip file on github](https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip)

@@ -9,6 +9,8 @@
 #
 # The format for TAR_COLORS is similar to the format used by LS_COLORS
 # Check out the online LSCOLORS generator at https://geoff.greer.fm/lscolors/
+#
+# License: GPL-2.0-or-later
 
 get_file_code() {
 	local line=$1

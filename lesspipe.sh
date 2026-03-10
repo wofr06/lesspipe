@@ -2,6 +2,7 @@
 # lesspipe.sh, a preprocessor for less
 lesspipe_version=2.22
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
+# LICENSE: GPL-2.0-or-later
 
 has_cmd () {
 	[[ -n "$2" && "$2" > $($1 --version 2>/dev/null) ]] && return 1
