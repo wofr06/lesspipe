@@ -125,7 +125,7 @@ if [[ -z $noaction ]]; then
 	[[ $TERM == *256* ]] && colors=256
 	command -v tput &>/dev/null && colors=$(tput colors)
 	if [[ "$colors" -lt 8 && -z "$LESSCOLORIZER" ]]; then
-		for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
+		for i in nvimpager batcat bat pygmentize source-highlight vim nvim code2color ; do
 			command -v "$i" &>/dev/null && export LESSCOLORIZER="$i" && break
 		done
 	fi
@@ -444,7 +444,7 @@ while IFS= read -r line || [[ -n $line ]]; do
 		needed="${comment##* needs }"
 		comment=${comment%%, needs*}
 		needed="${needed//html_converter/w3m|lynx|elinks|html2text}"
-		needed="${needed//colorizer/nvimpager|bat|batcat|pygmentize|source-highlight|vimcolor}"
+		needed="${needed//colorizer/nvimpager|batcat|bat|pygmentize|source-highlight|vimcolor}"
 	fi
 
 	if [[ $noaction == 1 ]]; then
