@@ -379,7 +379,7 @@ c test
 108 less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
 c test
 109 less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154
-c name
+c user
 ### solved github issues and other test cases
 110 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
