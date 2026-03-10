@@ -104,8 +104,7 @@ not installed. To execute the test suite the command
 or
   ./test.sh [-n] [-v] [testnumber[s]] [file_name]
 
-can be used. The script test.sh respects the contents of the LESSCOLORIZER
-variable and choses an appropriate value if not set.
+can be used.
 The option -v is for debugging.
 
 Step 3: install lesspipe.sh and helper programs

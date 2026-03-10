@@ -346,39 +346,39 @@ read -r -d '' tests << 'EOF'
 c test_so
 92 less tests/archive.tgz			# contents of tar colorized, needs archive_color
 c test_cab
-93 LESSCOLORIZER=vimcolor less $T/tests/test.c			# C language, needs vimcolor
+93 LESSCOLORIZER=source-highlight less $T/tests/test.c	# C language git #3, needs source-highlight
 c void
-94 LESSCOLORIZER=source-highlight less $T/tests/test.c	# C language git #3, needs source-highlight
+94 LESSCOLORIZER=batcat less tests/filter.tgz:test.c		# C language from file within archive, needs batcat
 c void
-95 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.c		# C language from file within archive
+95 LESSCOLORIZER=bat less tests/filter.tgz:test.c		# C language from file within archive, needs bat,!batcat
 c void
 96 LESSCOLORIZER='pygmentize -O style=vim' less $T/tests/test.c # allow setting pygmentize style option git #5, needs pygmentize
 c void
-97 cat $T/tests/test.c|less - :c		# even colorize piped files
+97 LESSCOLORIZER=vimcolor cat $T/tests/test.c|less - :c		# even colorize piped files, needs vimcolor
 c void
 98 less tests/filter.tgz:test_html:html	# html colorized text
 c transparent
-99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text|perldoc
+99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs vimcolor,pod2text|perldoc
 c NAME
 100 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_plain:sh	# plain text, force colored shellscript, needs pygmentize
 c test
 101 LESSCOLORIZER=nvimpager less tests/filter.tgz:index.rst		# reStructuredText, needs pandoc,nvimpager
 c test.png
-102 less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs pandoc
+102 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs vimcolor,pandoc
 c "hello"
 103 LESSCOLORIZER=source-highlight less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39, needs source-highlight
 c test
 104 LESSCOLORIZER=vimcolor less tests/filter.tgz:Makefile		# bsd Makefile not recognized with file 5.28 / with 5.39 o.k. git #10, needs vimcolor
 c PORTNAME
-105 diff -u $T/tests/t.eclass $T/tests/test.c|less - :diff # unified diff piped through less works git #11
+105 diff -u $T/tests/t.eclass $T/tests/test.c|LESSCOLORIZER=vimcolor less - :diff # unified diff piped through less works git #11, needs vimcolor
 c +++
 106 LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives, needs code2color
 c test
-107 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_dtb	# device tree blob, needs dtc,pygmentize
+107 less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
+~ model = "test"
+108 LESSCOLORIZER=vimcolor less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77, needs vimcolor
 c test
-108 less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77
-c test
-109 less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154
+109 LESSCOLORIZER=vimcolor less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154, needs vimcolor
 c name
 ### solved github issues and other test cases
 110 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
@@ -409,7 +409,7 @@ c name
 ~ .* tests/textfile
 123 cat $T/tests/test_zip|less - :tests/test.tar:tests/textfile	# extract files from piped archive, needs unzip
 ~ test
-124 cat $T/tests/test_plain|LESSCOLORIZER=code2color less	# display piped text files
+124 cat $T/tests/test_plain|less	# display piped text files
 ~ test=a
 125 cat $T/tests/test_plain|less - :plain	# display piped plain text files
 ~ test=a
