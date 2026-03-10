@@ -430,7 +430,7 @@ has_colorizer () {
 	prog=${LESSCOLORIZER%% *}
 	[[ $prog == vimcolor ]] && ! has_cmd vim && ! has_cmd nvim && prog=
 
-	for i in nvimpager bat batcat pygmentize source-highlight vim nvim code2color ; do
+	for i in nvimpager batcat bat pygmentize source-highlight vim nvim code2color ; do
 		[[ -z $prog ]] && has_cmd "$i" && prog=$i
 		[[ $prog == "$i" ]] && ! has_cmd "$prog" && prog=
 	done

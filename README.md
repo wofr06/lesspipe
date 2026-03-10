@@ -182,7 +182,7 @@ the author by email.
  **LESS** can be used to switch on colored less output (should contain -R).
 
  **LESSCOLORIZER** can be set to prefer a highlighting program from the following
- choices (`nvimpager` `bat` `batcat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
+ choices (`nvimpager` `batcat` `bat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
  Otherwise the first program in that list that is installed will be used, with
  the caveat that `bat` will use the [ansi theme](https://github.com/wofr06/lesspipe/issues/155#issuecomment-2312972276) instead of its default colors.
 
