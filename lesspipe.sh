@@ -429,7 +429,7 @@ has_colorizer () {
 	[[ $COLOR == *always ]] || return
 	[[ $2 == plain || -z $2 ]] && return
 	prog=${LESSCOLORIZER%% *}
-	[[ $prog == vimcolor ]] && ! has_cmd vim && ! has_cmd nvim && prog=
+	[[ $prog == *vimcolor ]] && ! has_cmd vim && ! has_cmd nvim && prog=
 
 	for i in nvimpager batcat bat pygmentize source-highlight vim nvim code2color ; do
 		[[ -z $prog ]] && has_cmd "$i" && prog=$i
@@ -440,7 +440,8 @@ has_colorizer () {
 	# prefer an explicitly requested language
 	[[ -n $3 ]] && reql=$3
 	[[ $reql == *.* ]] && reql=${reql##*.}
-	case $prog in
+	pname=${prog##*/}
+	case $pname in
 		bat|batcat)
 			batconfig=$($prog --config-file)
 			languages=$($prog --list-languages|sed "s/.*:/,/;s/$/,/;s/\n/,/")
