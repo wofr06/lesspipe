@@ -232,7 +232,7 @@ the author by email.
 - nroff(man)		requires `mandoc` or `man` or `groff`
 - shared library	requires `nm`
 - MS Word (doc)		requires `wvText` or `catdoc` or `libreoffice`
-- Powerpoint (ppt)	requires `catppt`
+- Powerpoint (ppt)	requires `libreoffice`
 - Excel (xls)		requires `in2csv` (csvkit) or `xls2csv`
 - odt			requires `pandoc` or `odt2txt` or `libreoffice`
 - odp			requires `libreoffice`
@@ -460,7 +460,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 - [7zz](https://sourceforge.net/projects/sevenzip/) (2025)
 - archive_color - modified version of tarcolor (contained in this package)
 - [cabextract](https://www.cabextract.org.uk/) (2023)
-- [catdoc,catppt,xls2csv](https://www.wagner.pp.ru/~vitus/software/catdoc/) (2016)
+- [catdoc,xls2csv](https://www.wagner.pp.ru/~vitus/software/catdoc/) (2016)
 - [code2color](https://github.com/wofr06/code2color) (2026)
 - [csvtable](https://github.com/wofr06/csvtable) (2024)
 - [djvutxt](https://djvu.sourceforge.net/) (2025)

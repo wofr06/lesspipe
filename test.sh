@@ -282,7 +282,7 @@ read -r -d '' tests << 'EOF'
 ~ \s*test
 61 less tests/filter.tgz:test_html::	# html unmodified text
 ~ </head>
-62 less tests/filter.tgz:test_pdf		# pdf, needs pdftotext|pdftohtml,html_converter|pdfinfo
+62 less tests/filter.tgz:test_pdf		# pdf, needs pdfinfo|pdftotext|pdftohtml,html_converter
 ~ \s*test
 63 less tests/filter.tgz:test_ps		# postscript, needs ps2ascii
 ~ .*test\ ?1?$
@@ -358,7 +358,7 @@ c void
 c void
 98 less tests/filter.tgz:test_html:html	# html colorized text
 c transparent
-99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs vimcolor,pod2text|perldoc
+99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text|perldoc,vimcolor
 c NAME
 100 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_plain:sh	# plain text, force colored shellscript, needs pygmentize
 c test
@@ -422,6 +422,7 @@ c name
 129 less tests/compress.tgz:test_zlib		# zlib, needs pigz|zlib-flate
 = test
 EOF
+# number of last test
 #echo $tests|sed -E '/^[0-9]+ /s/(^[0-9]+).*/\1/'|grep '^[0-9]'|tail -1
 # Process tests
 while IFS= read -r line || [[ -n $line ]]; do
@@ -443,8 +444,23 @@ while IFS= read -r line || [[ -n $line ]]; do
 	if [[ $comment == *\ needs\ * ]]; then
 		needed="${comment##* needs }"
 		comment=${comment%%, needs*}
-		needed="${needed//html_converter/w3m|lynx|elinks|html2text}"
-		needed="${needed//colorizer/nvimpager|batcat|bat|pygmentize|source-highlight|vimcolor}"
+		if [[ $needed == *html_converter* ]]; then
+			if is_exec w3m || is_exec lynx || is_exec elinks || is_exec html2text; then
+				needed="${needed//html_converter/}"
+			fi
+		fi
+		if [[ $needed == *colorizer* ]]; then
+			if is_exec nvimpager || is_exec batcat || is_exec bat || is_exec pygmentize || is_exec source-highlight; then
+				needed="${needed//colorizer/}"
+			fi
+		fi
+		if [[ $needed == *colorizer* ]]; then
+			is_exec vimcolor && is_exec vim && needed="${needed//colorizer/}"
+			is_exec vimcolor && is_exec nvim && needed="${needed//colorizer/}"
+		fi
+		if [[ $needed == *vimcolor* ]]; then
+			is_exec vim || is_exec nvim || needed="vim_or_nvim"
+		fi
 	fi
 
 	if [[ $noaction == 1 ]]; then
