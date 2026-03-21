@@ -403,7 +403,7 @@ analyze_args () {
 		[[ $arg1 == less ]] && lessarg=$line
 	done <<< "$cmdtree"
 	# return if we want to watch growing files
-	[[ $lessarg == *less\ *\ +F\ * || $lessarg == *less\ *\ : ]] && exit 0
+	[[ $lessarg == *less\ *\+F\ * || $lessarg == *less\ *\ :* ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
 	COLOR="--color=auto"
 	colors=0

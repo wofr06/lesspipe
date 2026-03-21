@@ -150,20 +150,18 @@ As \fBless\fP is used as a default browser in other programs (e.g. \fIman\fP,
 \fIgit\fP, and \fIperldoc\fP) \fBlesspipe.sh\fP may be engaged and alter 
 the output of those programs.
 .SH WATCHING GROWING FILES
-As soon as \fBlesspipe.sh\fP
-calls a program to convert the input the ability to watch growing files
-(using the F command within less) is lost. This is usually wanted for log
-files like syslog. To temporarily disengage \fBlesspipe.sh\fP
-a colon as the last argument for \fBless\fP needs to be added as e.g in
+The ability to watch growing files (usually wanted for log files like syslog)
+(using the F command within less or calling less with the +F option)
+may get lost if \fBlesspipe.sh\fP stores the input in a temporary file for
+further processing.
+That can be repaired by adding a colon as the last argument for \fBless\fP such as e.g.
 .RS
 .I \fBless\fP /var/log/syslog :
 .RE
-or \fBless\fP
-can be called with the +F argument, which is equivalent to F within the pager:
+or if LESSOPEN starts with |- and less is called in a pipe
 .RS
-.I \fBless\fP +F /var/log/syslog
+.I \fBcat\fP /var/log/syslog | less +F - :
 .RE
-Appending a colon to the file name does not work, as then the filter has to be engaged to at least remove that colon and use cat for the original file.
 .SH ADVANCED USAGE
 This version of \fBlesspipe.sh\fP
 allows you to view individual files contained in a file archive, which itself
