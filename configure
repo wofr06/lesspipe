@@ -9,15 +9,19 @@ usage() {
 	cat << 'EOF'
 Usage: configure [options]
 Options:
- --help                  print this message
- --shell=<filename>      specify an alternative shell path (zsh/bash) to use
- --nomake                do not generate a Makefile
+ --help                   print this message
+ --shell=<filename>       specify an alternative shell path (zsh/bash) to use
+ --nomake                 do not generate a Makefile
 Directory and file names:
- --prefix=PREFIX         install lesspipe stuff in PREFIX (/usr/local)
- --bindir=BINDIR         install lesspipe.sh in BINDIR (PREFIX/bin)
- --mandir=MANDIR         install man pages in in MANDIR (PREFIX/share/man/man1)
- --bash-completion-dir=DIR  install bash auto-completion file in in DIR (pkg-config --variable=completionsdir bash-completion)
- --zsh-completion-dir=DIR   install zsh auto-completion file in in DIR (PREFIX/share/zsh/site-functions)
+ --prefix=PREFIX          install lesspipe stuff in PREFIX (/usr/local)
+ --bindir=BINDIR          install binaries in BINDIR (PREFIX/bin)
+ --libexecdir=LIBEXECDIR  install lesscomplete in LIBEXECDIR
+                          (PREFIX/libexec/lesspipe)
+ --mandir=MANDIR          install man pages in in MANDIR (PREFIX/share/man/man1)
+ --bash-completion-dir=DIR install bash auto-completion file in in DIR
+                          (pkg-config --variable=completionsdir bash-completion)
+ --zsh-completion-dir=DIR install zsh auto-completion file in in DIR
+                          (PREFIX/share/zsh/site-functions)
 
 configure generates by default a Makefile
 EOF
@@ -26,6 +30,7 @@ EOF
 opt_help=0
 opt_prefix=""
 opt_bindir=""
+opt_libexecdir=""
 opt_mandir=""
 opt_bash_completion_dir=""
 opt_zsh_completion_dir=""
@@ -44,6 +49,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--bindir=*)
 			opt_bindir="${1#--bindir=}"
+			shift
+			;;
+		--libexecdir=*)
+			opt_libexecdir="${1#--libexecdir=}"
 			shift
 			;;
 		--mandir=*)
@@ -81,6 +90,7 @@ fi
 # Defaults
 prefix="${opt_prefix:-${PREFIX:-/usr/local}}"
 bindir="${opt_bindir:-${BINDIR:-$prefix/bin}}"
+libexecdir="${opt_libexecdir:-${LIBEXECDIR:-$prefix/libexec/lesspipe}}"
 mandir="${opt_mandir:-${MANDIR:-$prefix/share/man/man1}}"
 bash_complete_dir="${opt_bash_completion_dir:-$prefix/etc/bash_completion.d}"
 
@@ -176,6 +186,7 @@ if [[ "$opt_nomake" -eq 0 ]]; then
 # This is a generated file, do not edit it. Use configure to modify it
 PREFIX = opt_prefix
 BINDIR = opt_bindir
+LIBEXECDIR = opt_libexecdir
 MANDIR = opt_mandir
 BASH_COMPLETION = bash_complete_dir
 ZSH_COMPLETION = zsh_complete_dir
@@ -188,17 +199,19 @@ test:
 	./test.sh
 install:
 	mkdir -p $(DESTDIR)$(BINDIR)
+	mkdir -p $(DESTDIR)$(LIBEXECDIR)
 	mkdir -p $(DESTDIR)$(MANDIR)
 	mkdir -p $(DESTDIR)$(ZSH_COMPLETION)
 	mkdir -p $(DESTDIR)$(BASH_COMPLETION)
-	cp ./archive_color ./lesspipe.sh ./vimcolor ./lesscomplete $(DESTDIR)$(BINDIR)
+	cp ./archive_color ./vimcolor ./lesspipe.sh $(DESTDIR)$(BINDIR)
+	cp ./lesscomplete $(DESTDIR)$(LIBEXECDIR)
 	cp ./lesspipe.1 $(DESTDIR)$(MANDIR)
-	sed -e "s@__BINDIR__@$(BINDIR)@" ./bash_completion > $(DESTDIR)$(BASH_COMPLETION)/less
-	sed -e "s@__BINDIR__@$(BINDIR)@" ./zsh_completion > $(DESTDIR)$(ZSH_COMPLETION)/_less
+	sed -e "s@__LIBEXECDIR__@$(LIBEXECDIR)@" ./bash_completion > $(DESTDIR)$(BASH_COMPLETION)/less
+	sed -e "s@__LIBEXECDIR__@$(LIBEXECDIR)@" ./zsh_completion > $(DESTDIR)$(ZSH_COMPLETION)/_less
 	chmod 0755 $(DESTDIR)$(BINDIR)/lesspipe.sh
 	chmod 0755 $(DESTDIR)$(BINDIR)/archive_color
 	chmod 0755 $(DESTDIR)$(BINDIR)/vimcolor
-	chmod 0755 $(DESTDIR)$(BINDIR)/lesscomplete
+	chmod 0755 $(DESTDIR)$(LIBEXECDIR)/lesscomplete
 clean:
 	mv Makefile Makefile.old
 EOF
@@ -206,6 +219,7 @@ EOF
 	sed -i -e " \
 		s@opt_prefix@$prefix@g; \
 		s@opt_bindir@$bindir@g; \
+		s@opt_libexecdir@$libexecdir@g; \
 		s@opt_mandir@$mandir@g; \
 		s@bash_complete_dir@$bash_complete_dir@g; \
 		s@zsh_complete_dir@$zsh_complete_dir@g"  Makefile
@@ -217,6 +231,7 @@ EOF
 	echo "A Makefile has been generated"
 	echo "    prefix $prefix"
 	echo "    bindir $bindir"
+	echo "    libexecdir $libexecdir"
 	echo "    mandir $mandir"
 	echo "    bash_complete_dir $bash_complete_dir"
 	echo "    zsh_complete_dir  $zsh_complete_dir"

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# synced with lesspipe 2.22
+# synced with lesspipe 2.23
 # lesscomplete, a helper script for the _less (zsh) and less (bash) completion
 # mechanisms.
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
+# LICENSE: GPL-2.0-or-later
 
 has_cmd () {
 	[[ -n "$2" && "$2" > $($1 --version 2>/dev/null) ]] && return 1

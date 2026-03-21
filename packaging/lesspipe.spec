@@ -1,5 +1,5 @@
 %define packagename lesspipe
-%define packageversion 2.22
+%define packageversion 2.23
 %define packagerelease 1
 
 Name:          %{packagename}
@@ -33,7 +33,8 @@ for archive contents are provided.
 %build
 
 %define prefix /usr
-%define bindir %{prefix}/libexec/%{name}
+%define bindir %{prefix}/bin
+%define libexecdir %{prefix}/libexec/%{name}
 %define bash_completion %{_datarootdir}/bash-completion/completions
 %define zsh_completion %{_datarootdir}/zsh/site-functions
 ./configure --prefix=%{prefix} --bindir=%{bindir} --bash-completion-dir=%{bash_completion} --zsh-completion-dir=%{zsh_completion}
@@ -52,11 +53,11 @@ make install DESTDIR=$RPM_BUILD_ROOT
 # create profile.d scripts to set LESSOPEN
 mkdir -p $RPM_BUILD_ROOT/etc/profile.d
 cat << EOF > $RPM_BUILD_ROOT/etc/profile.d/zzless.sh
-[ -x %{bindir}/lesspipe.sh ] && export LESSOPEN="|%{bindir}/lesspipe.sh %s"
+[ -x %{libexecdir}/lesspipe.sh ] && export LESSOPEN="|%{libexecdir}/lesspipe.sh %s"
 EOF
 cat << EOF > $RPM_BUILD_ROOT/etc/profile.d/zzless.csh
-if ( -x %{bindir}/lesspipe.sh ) then
-  setenv LESSOPEN "|%{bindir}/lesspipe.sh %s"
+if ( -x %{libexecdir}/lesspipe.sh ) then
+  setenv LESSOPEN "|%{libexecdir}/lesspipe.sh %s"
 endif
 EOF
 
@@ -80,11 +81,11 @@ cd $RPM_BUILD_DIR
 
 %defattr(-,root,root)
 %doc ChangeLog COPYING INSTALL README.md german.txt
-%dir %{bindir}
-%{bindir}/lesspipe.sh
+%dir %{libexecdir}
+%{libexecdir}/lesspipe.sh
+%{libexecdir}/lesscomplete
 %{bindir}/archive_color
 %{bindir}/vimcolor
-%{bindir}/lesscomplete
 %{_mandir}/man*/*
 %{bash_completion}
 %{zsh_completion}
@@ -93,6 +94,8 @@ cd $RPM_BUILD_DIR
 #%docdir %{prefix}/share/man/man1
 
 %changelog
+* Sat Mar 21 2026 2.23-1 - wp.friebel@gmail.com
+- more consistent test suite, convert some scripts from perl to bash
 * Mon Dec 15 2025 2.22-1 - wp.friebel@gmail.com
 - bug fixes, documentation changes, sxw2txt and code2color removed
 * Mon Nov 24 2025 2.21-1 - wp.friebel@gmail.com

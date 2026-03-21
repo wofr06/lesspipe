@@ -1,6 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.23 Mar 21 2026
+- license info updated
+- test suite changed to get consistent results on most systems
 - for color tests fix the choice of the colorizer
 - replace test.pl by test.sh (both for bash and zsh)
 - fix several bugs in colorizing (also in vimcolor)
