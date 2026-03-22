@@ -435,7 +435,7 @@ has_colorizer () {
 		[[ -z $prog ]] && has_cmd "$i" && prog=$i
 		[[ $prog == "$i" ]] && ! has_cmd "$prog" && prog=
 	done
-	[[ $prog == "*vim" ]] && prog=vimcolor
+	[[ $prog == *vim ]] && prog=vimcolor
 	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
 	# prefer an explicitly requested language
 	[[ -n $3 ]] && reql=$3
