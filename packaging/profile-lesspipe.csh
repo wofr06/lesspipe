@@ -1,3 +1,4 @@
+#!/usr/bin/env csh
 if ( $?LESSOPEN && { eval 'test ! -z "$LESSOPEN"' } ) then
   :
 else

@@ -1,1 +1,2 @@
-[ -z "$LESSOPEN" -a -x __BINDIR__/lesspipe.sh ] && export LESSOPEN="|__BINDIR__/lesspipe.sh %s"
+#!/usr/bin/env bash
+[[ -z "$LESSOPEN" ]] && [[ -x __BINDIR__/lesspipe.sh ]] && export LESSOPEN="|__BINDIR__/lesspipe.sh %s"
