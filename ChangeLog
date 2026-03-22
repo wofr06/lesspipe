@@ -1,7 +1,8 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
-Version 2.23 Mar 21 2026
+Version 2.23 Mar 22 2026
+- spec file for RPM creation updated
 - license info updated
 - test suite changed to get consistent results on most systems
 - for color tests fix the choice of the colorizer

@@ -70,21 +70,24 @@ Step 1: create Makefile (and modify shell scripts, if bash not usable)
 
  ./configure [--help] [--nomake] [--shell=<location|shell_name>]
              [--prefix=<path>] [--bindir=<path>] [--mandir=<path>]
-             [--bash-completion-dir=<path>] [--zsh-completion-dir=<path>]
+             [--libececdir=<path>] [--bash-completion-dir=<path>]
+             [--zsh-completion-dir=<path>]
 
 Options:
-  --help               print this message
-  --shell=<location>   specify full path to an alternative shell to use or
-  --shell=<shell name> shell name to use for scripts (zsh or bash)
-  --nomake             do not generate a Makefile
+  --help                  print this message
+  --shell=<location>      specify full path to an alternative shell to use or
+  --shell=<shell name>    shell name to use for scripts (zsh or bash)
+  --nomake                do not generate a Makefile
 Directory and file names:
-  --prefix=PREFIX      install lesspipe.sh in PREFIX/bin (/usr/local)
-  --bindir=BINDIR      install lesspipe.sh in BINDIR (PREFIX/bin)
-  --mandir=MANDIR      install man pages in in MANDIR (PREFIX/share/man/man1)
+  --prefix=PREFIX         install files below PREFIX (/usr/local)
+  --bindir=BINDIR         install binaries in BINDIR (PREFIX/bin)
+  --libexecdir=LIBEXECDIR install lesscomplete in LIBEXECDIR
+                          (PREFIX/libexec/lesspipe)
+  --mandir=MANDIR         install man pages in in MANDIR (PREFIX/share/man/man1)
   --bash-completion-dir=DIR	install bash auto-completion file in in DIR
-                       (pkg-config --variable=completionsdir bash-completion)
-  --zsh-completion-dir=DIR	install zsh auto-completion file in in DIR
-                            (default is PREFIX/share/zsh/site-functions)
+                          (pkg-config --variable=completionsdir bash-completion)
+  --zsh-completion-dir=DIR install zsh auto-completion file in in DIR
+                          (default is PREFIX/share/zsh/site-functions)
 
 configure generates by default a Makefile and if an alternate shell is
 given, then the shell scripts lesspipe.sh, archive_color, lesscomplete and

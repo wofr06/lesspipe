@@ -13,7 +13,7 @@ Options:
  --shell=<filename>       specify an alternative shell path (zsh/bash) to use
  --nomake                 do not generate a Makefile
 Directory and file names:
- --prefix=PREFIX          install lesspipe stuff in PREFIX (/usr/local)
+ --prefix=PREFIX          install files below PREFIX (/usr/local)
  --bindir=BINDIR          install binaries in BINDIR (PREFIX/bin)
  --libexecdir=LIBEXECDIR  install lesscomplete in LIBEXECDIR
                           (PREFIX/libexec/lesspipe)
@@ -194,7 +194,7 @@ ZSH_COMPLETION = zsh_complete_dir
 .PHONY: install
 
 all:
-	$(info "make install" will install lesspipe.sh in $(PREFIX))
+	$(info "make install" will install lesspipe.sh in $(BINDIR))
 test:
 	./test.sh
 install:

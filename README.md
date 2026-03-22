@@ -193,8 +193,8 @@ the author by email.
  installed. That is foremost `bash` or `zsh` (have the appropriate first line
  in the script), then `file` and other utilities like `cat`,
  `grep`, `ln`, `ls`, `mkdir`, `rm`, `strings`, `tar` and `tr`.
- For testing lesspipe.sh the `perl` script `vimcolor` can be used, that is
- however not required in just using `lesspipe.sh`. It is planned to unbundle
+ For testing lesspipe.sh, the `perl` script `vimcolor` can be used, that is
+ however not required in just using `lesspipe.sh`. That script requires a working `vim` or `nvim`. It is planned to unbundle
  vimcolor from lesspipe.sh
 
 ## 4. Supported file formats
