@@ -1,4 +1,4 @@
-.TH LESSPIPE.SH "1" "December 2025" "lesspipe.sh" "User Commands"
+.TH LESSPIPE.SH "1" "March 2026" "lesspipe.sh" "User Commands"
 .SH NAME
 lesspipe.sh \- a filter for less
 .SH SYNOPSIS
@@ -102,6 +102,10 @@ For bat/batcat the theme is set to \fIansi\fP and the style is set to
 \fIplain\fP which comes closer to the unfiltered output of \fBless\fP.
 These settings can be changed in \fI~/.config/bat/config\fP or by the
 environment variables \fBBAT_STYLE\fP and \fBBAT_THEME\fP.
+.PP
+The contents of log files can get colorized if the \fItspin\fP program is
+installed and the string ":log" is appended to the file name or the file
+extension is "log".
 .PP
 Among the colorizers
 a preferred one can be forced for colorizing by setting the ENV variable
@@ -256,7 +260,7 @@ Wolfgang Friebel
 .SH "REPORTING BUGS"
 Report bugs to <wp.friebel AT gmail DOT com>.
 .SH COPYRIGHT
-Copyright \(co 2005-2025 Wolfgang Friebel
+Copyright \(co 2005-2026 Wolfgang Friebel
 .br
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

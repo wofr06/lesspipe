@@ -343,6 +343,22 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
  If the executable `archive_color` is installed, then the listing of tar file
  contents is colored in a similar fashion as directory contents.
 
+### 5.4 Colored listing of log file contents
+ Log files are typically recognized as plain text files only and do not get
+ filtered. Within lesspipe.sh a file is recognized as a log file if it  has the
+ extension .log or the string :log is appended to the file name. Then the log
+ file gets colorized using the program `tspin` if installed. The colored output
+ can be suppressed by appending only a colon to the file name.
+
+ To colorize e.g the syslog the following command can be used:
+```
+        less /var/log/syslog:log
+```
+
+ To to colorize growing files you need to use `tspin` directly such as:
+```
+        tspin -f /var/log/syslog
+```
 ## 6. Calling less from standard input
 
  Normally `lesspipe.sh` is not called when less is used within a pipe, such as
@@ -452,12 +468,12 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 
 ## 12. External links
 
-(last checked: Jul 6 2025):
+(last checked: Mar 22 2026):
 
 ### 12.1 URLs to some utilities (with last known release)
 
-- [7z, 7zr](https://github.com/ip7z/7zip)
-- [7zz](https://sourceforge.net/projects/sevenzip/) (2025)
+- [7z, 7zr](https://github.com/ip7z/7zip) (2026)
+- [7zz](https://sourceforge.net/projects/sevenzip/) (2026)
 - archive_color - modified version of tarcolor (contained in this package)
 - [cabextract](https://www.cabextract.org.uk/) (2023)
 - [catdoc,xls2csv](https://www.wagner.pp.ru/~vitus/software/catdoc/) (2016)
@@ -465,26 +481,26 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 - [csvtable](https://github.com/wofr06/csvtable) (2024)
 - [djvutxt](https://djvu.sourceforge.net/) (2025)
 - [docx2txt](https://docx2txt.sourceforge.net/) (2014)
-- [dtc](https://git.kernel.org/cgit/utils/dtc/dtc.git) (2025)
+- [dtc](https://git.kernel.org/cgit/utils/dtc/dtc.git) (2026)
 - [dvi2tty](https://www.ctan.org/tex-archive/dviware/dvi2tty/) (2016)
 - [excel2csv](https://github.com/informationsea/excel2csv) (2018)
 - [html2text](https://github.com/grobian/html2text) (2025)
 - [id3v2](https://id3v2.sourceforge.net/) (2010)
-- [lzip](https://www.nongnu.org/lzip/lzip.html) (2025)
-- [matdump](https://sourceforge.net/projects/matio/) (2024)
-- [mediainfo](https://mediaarea.net/MediaInfo/) (2025)
-- [nvimpager](https://github.com/lucc/nvimpager) (2024)
+- [lzip](https://www.nongnu.org/lzip/lzip.html) (2026)
+- [matdump](https://sourceforge.net/projects/matio/) (2026)
+- [mediainfo](https://mediaarea.net/MediaInfo/) (2026)
+- [nvimpager](https://github.com/lucc/nvimpager) (2026)
 - [odt2txt](https://github.com/dstosberg/odt2txt) (2017)
-- [pandoc](https://pandoc.org/) (2025)
+- [pandoc](https://pandoc.org/) (2026)
 - [pigz](https://github.com/madler/pigz) (2023)
 - [pptx2md](https://github.com/ssine/pptx2md) (2024)
-- [tarcolor](https://github.com/msabramo/tarcolor) (2014)
+- [tspin](https://github.com/bensadeh/tailspin) (2026)
 - [unrtf](https://www.gnu.org/software/unrtf/) (2018)
 - [wvText](https://github.com/AbiWord/wv/) (2014)
-- [xlscat](https://metacpan.org/dist/Spreadsheet-Read) (2025)
-- [xlsx2csv (>=0.8.3)](https://github.com/dilshod/xlsx2csv) (2025)
-- [xmq](https://github.com/libxmq/xmq/releases/latest) (2025)
-- [zlib-flate](https://github.com/qpdf/qpdf)(2025)
+- [xlscat](https://metacpan.org/dist/Spreadsheet-Read) (2026)
+- [xlsx2csv (>=0.8.3)](https://github.com/dilshod/xlsx2csv) (2026)
+- [xmq](https://github.com/libxmq/xmq/releases/latest) (2026)
+- [zlib-flate](https://github.com/qpdf/qpdf)(2026)
 
 ### 12.2 References
 - [1] [www.greenwoodsoftware.com/less](https://www.greenwoodsoftware.com/less) (less)

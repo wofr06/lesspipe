@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- reenable colorizing log files, now using tspin (fixes #175)
 Version 2.23 Mar 22 2026
 - spec file for RPM creation updated
 - license info updated

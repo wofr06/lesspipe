@@ -402,8 +402,11 @@ analyze_args () {
 		arg1=${line%% *}; arg1=${arg1##*/}
 		[[ $arg1 == less ]] && lessarg=$line
 	done <<< "$cmdtree"
+	# last argument starting with colon or equal sign is used for piping into less
+	[[ $lessarg == *\ [:=]* ]] && fext=${lessarg#*[:=]}
 	# return if we want to watch growing files
-	[[ $lessarg == *less\ *\+F\ * || $lessarg == *less\ *\ : ]] && exit 0
+	[[ $lessarg == *less\ *\ : ]] && exit 0
+	[[ $lessarg == *less\ *\+F\ * && $fext != log ]] && exit 0
 	# color is set when calling less with -r or -R or LESS contains that option
 	COLOR="--color=auto"
 	colors=0
@@ -421,8 +424,6 @@ analyze_args () {
 			[[ $i =~ ^-[aABcCdeEfFgGiIJKLmMnNqQsSuUwWX~]*[rR] ]] && COLOR="--color=always"
 		done
 	fi
-	# last argument starting with colon or equal sign is used for piping into less
-	[[ $lessarg == *\ [:=]* ]] && fext=${lessarg#*[:=]}
 }
 
 has_colorizer () {
@@ -541,6 +542,7 @@ has_colorizer () {
 }
 
 isfinal () {
+	[[ $x == plain && -n $fext ]] && x="$fext"
 	if [[ "$2" == *$sep ]]; then
 		if [[ "$2" == "$sep" && "$x" == html ]]; then
 			[[ $COLOR == *always ]] && colarg="--color" || colarg="--mono"
@@ -649,6 +651,9 @@ isfinal () {
 			{ has_cmd ffprobe && cmd=(ffprobe -hide_banner -- "$1"); } ||
 			{ has_cmd eyeD3 && cmd=(istemp "eyeD3" "$1"); } ||
 			{ has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1"); } ;;
+		log)
+			#[[ $COLOR == *always* ]] && has_cmd tspin && cmd=(nodash tspin -f "$1") ;;
+			[[ $COLOR == *always* ]] && has_cmd tspin && colorizer=(nodash tspin -f "$1") ;;
 		csv)
 			msg "type -S<ENTER> for better display of very wide tables"
 			{ has_cmd csvtable && csvtable -h >/dev/null 2>&1 && cmd=(csvtable "$1"); } ||
@@ -931,10 +936,14 @@ analyze_args
 # make LESSOPEN="|- ... " work
 [[ $LESSOPEN == *\|\|* ]] && retval=1 || retval=0
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
-	cat > "$t"
-	[[ -n "$fext" ]] && t="$t$sep$fext"
-	set "$1" "$t"
-	nexttmp >/dev/null
+	if [[ "$fext" == log && $COLOR == *always* ]] && has_cmd tspin; then
+		tspin
+	else
+		cat > "$t"
+		[[ -n "$fext" ]] && t="$t$sep$fext"
+		set "$1" "$t"
+		nexttmp >/dev/null
+	fi
 fi
 
 if [[ -z "$1" && "$0" == */lesspipe.sh ]]; then
