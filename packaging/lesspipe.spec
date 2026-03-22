@@ -114,9 +114,6 @@ sed -e "s@__BINDIR__@%{lesspipe_exec_dir}@g" %{SOURCE2} > %{buildroot}%{_sysconf
 
 %check
 
-# XXX: color tests cause some issues atm. They will be changed soon according to the author
-#      in order to deal with these issues - so let's skip them for the time being
-#      https://github.com/wofr06/lesspipe/pull/190#issuecomment-4032056639
 env TERM=xterm-256color ./test.sh %{buildroot}%{lesspipe_exec_dir}/lesspipe.sh
 
 %files
