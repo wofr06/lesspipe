@@ -16,8 +16,8 @@ License:	GPL-2.0-or-later
 URL:		https://lesspipe.org/
 Packager:	Wolfgang Friebel <wp.friebel@gmail.com>
 Source0:	https://github.com/wofr06/lesspipe/archive/refs/tags/v%{version}.tar.gz
-Source1:	lesspipe.sh
-Source2:	lesspipe.csh
+Source1:	profile-lesspipe.sh
+Source2:	profile-lesspipe.csh
 BuildArch:	noarch
 AutoReqProv:	on
 
