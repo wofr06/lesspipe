@@ -14,10 +14,12 @@ Release:	%{packagerelease}%{?dist}
 Summary:	Input filter for less to better display files
 License:	GPL-2.0-or-later
 URL:		https://lesspipe.org/
-Source:		https://github.com/wofr06/lesspipe/archive/refs/tags/v%{version}.tar.gz
+Packager:	Wolfgang Friebel <wp.friebel@gmail.com>
+Source0:	https://github.com/wofr06/lesspipe/archive/refs/tags/v%{version}.tar.gz
 Source1:	lesspipe.sh
 Source2:	lesspipe.csh
 BuildArch:	noarch
+AutoReqProv:	on
 
 Requires:	less
 Requires:	/usr/bin/ps
