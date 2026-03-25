@@ -566,8 +566,7 @@ isfinal () {
 			msg="$x: showing the output of ${cmd[*]}" ;;
 		xml)
 			[[ -z $file2 ]] &&
-			{ { has_cmd xmq && cmd=(isxmq "$1" xml); } ||
-			{ has_htmlprog && cmd=(ishtml "$1"); }; } ;;
+			has_cmd xmr && cmd=(isxmq "$1" xml) ;;
 		html)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
 		dtb|dts)
