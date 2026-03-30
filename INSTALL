@@ -23,7 +23,7 @@ A minimal installation could also be done by the following steps:
   sed -e "s@__BINDIR__/@@" ./zsh_completion > /usr/share/zsh/site-functions/_less
   sed -e "s@__BINDIR__/@@" ./bash_completion > /etc/bashcompletion.d/less
 
-  # optional intallation of a man page
+  # optional installation of a man page
   cp lesspipe.1 /usr/local/share/man/man1
 
 or INSTALL locally for the logged in user
