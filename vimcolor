@@ -9,7 +9,7 @@
 set -euo pipefail
 
 usage() {
-    cat <<'EOF'
+	cat <<'EOF'
 usage: vimcolor [-c] [-l language] [filename]
 usage: vimcolor -h
 usage: vimcolor -L [pattern]
@@ -21,7 +21,7 @@ The script then reads back this markup and converts it to text marked with
 ANSI escape sequences based on the Vim syntax coloring of the input file.
 
 OPTIONS:
-    -c report color settings at the end of the program
+   -c report color settings at the end of the program
     -h print this help and exit
     -l specify the type of file Vim should expect, if not recognized correctly
     -L list supported languages (file types) [that match pattern] and exit
@@ -39,40 +39,38 @@ For example:
 If you want to benefit from finer-grained syntax highlighting you can
 request in VIMCOLOR_ANSI additional syntax groups and chose appropriate colors.
 EOF
-    exit 0
+	exit 0
 }
 
 set_defaults() {
-    local ex=vim
+	local ex=vim
 	command -v nvim > /dev/null && ex=nvim
-    local -a opts
-    if [[ "$ex" == "vim" ]]; then
-        opts=(--not-a-term -XZ)
-    else
-        opts=(--headless)
-    fi
-    VIM_COMMAND="$ex"
-    VIM_OPTIONS=("${opts[@]}" -R -i NONE -u NONE -N -n "+set nomodeline")
+	if [[ "$ex" == "vim" ]]; then
+		VIM_OPTIONS=(--not-a-term -XZ -R -i NONE -u NONE -N -n "+set nomodeline")
+	else
+		VIM_OPTIONS=(--headless -R -i NONE -u NONE -N -n "+set nomodeline")
+	fi
+	VIM_COMMAND="$ex"
 }
 
 languages() {
-    local pat="${1:-}"
-    local cmds typefile
-    cmds="$(mktemp "$TDIR/cmdsXXXX")"
-    typefile="$(mktemp "$TDIR/typesXXXX")"
-    {
-        printf "redir! >%s|set columns=10000|echo getcompletion('%s', 'filetype')|q!\n" \
-               "$typefile" "$pat"
-    } >"$cmds"
-    "$VIM_COMMAND" "${VIM_OPTIONS[@]}" -S "$cmds" "$typefile" >/dev/null 2>&1 || true
-    {
-        read -r _          || true
-        read -r line || true
-        line="${line//[\[\]\',]/}" # protect '
-        printf '%s\n' "$line"
-    } <"$typefile"
-    rm -f "$cmds" "$typefile"
-    exit 0
+	local pat="${1:-}"
+	local cmds typefile
+	cmds="$(mktemp "$TDIR/cmdsXXXX")"
+	typefile="$(mktemp "$TDIR/typesXXXX")"
+	{
+		printf "redir! >%s|set columns=10000|echo getcompletion('%s', 'filetype')|q!\n" \
+		"$typefile" "$pat"
+	} >"$cmds"
+	"$VIM_COMMAND" "${VIM_OPTIONS[@]}" -S "$cmds" "$typefile" >/dev/null 2>&1 || true
+	{
+		read -r _	 || true
+		read -r line || true
+		line="${line//[\[\]\',]/}" # protect '
+		printf '%s\n' "$line"
+	} <"$typefile"
+	rm -f "$cmds" "$typefile"
+	exit 0
 }
 
 # Option processing
@@ -80,14 +78,14 @@ REPORT_COLORS=0
 FILETYPE=""
 LIST_LANG=""
 while getopts ":chl:L" opt; do
-    case "$opt" in
-        c) REPORT_COLORS=1 ;;
-        h) usage ;;
-        l) FILETYPE="$OPTARG" ;;
-        L) LIST_LANG=1 ;;
-        \?) echo "Unknown option: -$OPTARG" >&2; usage ;;
-        :)  echo "Option -$OPTARG requires an argument." >&2; exit 1 ;;
-    esac
+	case "$opt" in
+		c) REPORT_COLORS=1 ;;
+		h) usage ;;
+		l) FILETYPE="$OPTARG" ;;
+		L) LIST_LANG=1 ;;
+		\?) echo "Unknown option: -$OPTARG" >&2; usage ;;
+		:) echo "Option -$OPTARG requires an argument." >&2; exit 1 ;;
+	esac
 done
 shift $((OPTIND - 1))
 
@@ -100,16 +98,15 @@ trap 'rm -rf "$TDIR"' EXIT
 set_defaults
 
 if [[ -n "$LIST_LANG" ]]; then
-    languages "$*"
+	languages "$*"
 fi
 
 FILE="${1:-}"
 if [[ -z "$FILE" || "$FILE" == "-" ]]; then
-    FILE="$(mktemp "$TDIR/inputXXXX")"
-    cat >"$FILE"
+	FILE="$(mktemp "$TDIR/inputXXXX")"
+	cat >"$FILE"
 fi
 
-# Farbschema über Vim ermitteln
 cmds="$(mktemp "$TDIR/cmdsXXXX")"
 
 # nvim does not output color codes if --headless is used
@@ -117,45 +114,31 @@ colorcontent=$(vim --not-a-term -XZ +hi +qa)
 #$(nvim --headless +hi +q -- > "$colorfile" 2>&1)
 declare -A ATTRS
 
-colorcontent=$(echo $colorcontent|sed -E "s/\\[[0-9]*C/ /g")
+colorcontent=${colorcontent//$'\033'\[[0-9]C/ }
+colorcontent=${colorcontent//$'\015'/X}
 RESET=$'\033[0m'
-IFS="
-" lines=($colorcontent)
-for line in "${lines[@]}"; do
-    [[ "$line" =~ ^[[:space:]]*$ ]] && continue
-	color=${line%%xxx*}
-	key=${color%% $'\033'*}
-	color=${color##"${key} "}
-	key=${key## }
-	[[ "$key" =~ ^[[:alpha:]]* && -n $key ]] || continue
+IFS=
+while [[ "$colorcontent" =~ X ]]; do
+	prefix="${colorcontent%%X*}"
+	colorcontent="${colorcontent#"$prefix"}"
+	key="${colorcontent%%XX*}"
+	key="${key%%xxx*}"
+	key="${key#X }"
+	color="${key#* }"
+	key="${key% "$color"}"
+	key="${key//X$'\n'/}"
+	colorcontent="${colorcontent#*X}"
+	[[ "$key" == [A-Z]* && -n $key && -n $color ]] || continue
 	ATTRS[$key]=$color
 	#echo :$color:$key:$RESET
 done
 
-# process contents of VIMCOLOR_ANSI 
-if [[ -n "${VIMCOLOR_ANSI:-}" ]]; then
-    IFS='=;' read -ra ADD <<< "$VIMCOLOR_ANSI"
-    if (( ${#ADD[@]} % 2 != 0 )); then
-        printf '### VIMCOLOR_ANSI has wrong content: %s\n' "$VIMCOLOR_ANSI" >&2
-    else
-        for ((i=0; i<${#ADD[@]}; i+=2)); do
-            k="${ADD[i]}"
-            v="${ADD[i+1]}"
-            k="${k//[[:space:]]/}"
-            v="${v#"${v%%[![:space:]]*}"}" # trim left
-            v="${v%"${v##*[![:space:]]}"}" # trim right
-            [[ -z "$k" ]] && continue
-            ATTRS["$k"]="$v"
-        done
-    fi
-fi
-
 # Vim-Skript für Markup
 markup_vim_script() {
-    cat <<'EOF'
+	cat <<'EOF'
 set report=1000000
 if !strlen(&filetype)
-    filetype detect
+	filetype detect
 endif
 syn on
 new
@@ -166,31 +149,31 @@ wincmd p
 let s:end = line("$")
 let s:lnum = 1
 while s:lnum <= s:end
-    let s:line = getline(s:lnum)
-    let s:len = strlen(s:line)
-    let s:new = ""
-    let s:col = 1
-    while s:col <= s:len
-        let s:startcol = s:col
-        let s:id = synID(s:lnum, s:col, 1)
-        let s:col = s:col + 1
-        while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
-        let s:id = synIDtrans(s:id)
-        let s:name = synIDattr(s:id, 'name')
-        let s:new = s:new . '>' . s:name . '>' .
-                    \ substitute(substitute(substitute(
-                    \ strpart(s:line, s:startcol - 1, s:col - s:startcol),
-                    \ '&', '\&a', 'g'),
-                    \ '<', '\&l', 'g'),
-                    \ '>', '\&g', 'g') .
-                    \ '<' . s:name . '<'
-        if s:col > s:len
-            break
-        endif
-    endwhile
-    exe "normal \<C-W>pa" . strtrans(s:new) . "\n\e\<C-W>p"
-    let s:lnum = s:lnum + 1
-    +
+	let s:line = getline(s:lnum)
+	let s:len = strlen(s:line)
+	let s:new = ""
+	let s:col = 1
+	while s:col <= s:len
+		let s:startcol = s:col
+		let s:id = synID(s:lnum, s:col, 1)
+		let s:col = s:col + 1
+		while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
+		let s:id = synIDtrans(s:id)
+		let s:name = synIDattr(s:id, 'name')
+		let s:new = s:new . '>' . s:name . '>' .
+					\ substitute(substitute(substitute(
+					\ strpart(s:line, s:startcol - 1, s:col - s:startcol),
+					\ '&', '\&a', 'g'),
+					\ '<', '\&l', 'g'),
+					\ '>', '\&g', 'g') .
+					\ '<' . s:name . '<'
+		if s:col > s:len
+			break
+		endif
+	endwhile
+	exe "normal \<C-W>pa" . strtrans(s:new) . "\n\e\<C-W>p"
+	let s:lnum = s:lnum + 1
+	+
 endwhile
 wincmd p
 normal dd
@@ -204,17 +187,17 @@ markup_vim_script >"$markupfile"
 # Vim-Script (Batch) für diesen Lauf
 scriptfile="$(mktemp "$TDIR/scriptXXXX")"
 {
-    # :edit vor :let, siehe Perl-Kommentar
-    printf ':edit %s\n' "${FILE//\"/\\\"}"
-    printf ':let perl_include_pod=1\n'
-    printf ':let b:is_bash=1\n'
-    printf ':filetype on\n'
-    if [[ -n "$FILETYPE" ]]; then
-        printf ':set filetype=%s\n' "$FILETYPE"
-    fi
-    printf ':source %s\n' "$markupfile"
-    printf ':write! %s\n' "$TDIR/vimc.out"
-    printf ':qall!\n'
+	# :edit vor :let, siehe Perl-Kommentar
+	printf ':edit %s\n' "${FILE//\"/\\\"}"
+	printf ':let perl_include_pod=1\n'
+	printf ':let b:is_bash=1\n'
+	printf ':filetype on\n'
+	if [[ -n "$FILETYPE" ]]; then
+		printf ':set filetype=%s\n' "$FILETYPE"
+	fi
+	printf ':source %s\n' "$markupfile"
+	printf ':write! %s\n' "$TDIR/vimc.out"
+	printf ':qall!\n'
 } >"$scriptfile"
 
 "$VIM_COMMAND" "${VIM_OPTIONS[@]}" "$FILE" -s "$scriptfile" >/dev/null 2>&1 || true
@@ -222,22 +205,20 @@ data="$(<"$TDIR/vimc.out")"
 data="${data//$'\r\n'/\&nl}"
 data="${data//$'\r'/\&nl;}"
 
-declare -A TYPES_USED
+TYPES_USED=()
 while [[ "$data" =~ \>([^\>]*)\>([^\<]+)\< ]]; do
 	prefix="${data%%>*}"
-	out+=$prefix
 	data2="${data#"$prefix">}"
 	name="${data2%%>*}"
-    #name="${BASH_REMATCH[1]}"
 	esc=$RESET
 	if [[ -n $name ]]; then
-		TYPES_USED["$name"]=1
+		TYPES_USED+=("$name")
 		esc="${ATTRS[$name]:-$RESET}"
 	fi
-	data=$(echo $data|sed "s/>$name>/$esc/g;s/<$name</$RESET/g")
+	data=${data//>$name>/$esc}
+	data=${data//<$name</$RESET}
 done
-#data="${data//&nl;/$'\n'}"
-data=$(echo $data|sed 's/&nl;/\n/g')
+data="${data//&nl;/$'\n'}"
 
 # Unescape ampersands and pointies, restore escape
 data="${data//&l/<}"
@@ -249,14 +230,13 @@ data="${data//&a/\&}"
 printf '%s' "$data"
 
 if (( REPORT_COLORS == 1 )); then
-    printf '%s\n' "$RESET"
-    printf '### Report color settings:\n'
-    for k in $(printf '%s\n' "${!TYPES_USED[@]}" | LC_ALL=C sort); do
-        if [[ -n "${ATTRS[$k]:-}" ]]; then
-            esc="${ATTRS[$k]}"
-            printf '%s (%s%s%s)\n' "$k" "$esc" "${ATTRS[$k]}" "$RESET"
-        else
-            printf '%s color not set\n' "$k"
-        fi
-    done
+	printf '%s\n' "$RESET"
+	printf '### Report color settings:\n'
+	for k in "${TYPES_USED[@]}"; do
+		if [[ -n "${ATTRS[$k]:-}" ]]; then
+			printf "%-20s %s%s\n" "$k" "${ATTRS[$k]}(xxx)" "$RESET"
+		else
+			printf '%-20s color not set\n' "$k"
+		fi
+	done
 fi
