@@ -50,7 +50,7 @@ jobs:
             texlive-binaries \
             unrar \
             unrtf \
-            nvim
+            neovim
 
       - name: Run test suite
         run: |
