@@ -193,9 +193,8 @@ the author by email.
  installed. That is foremost `bash` or `zsh` (have the appropriate first line
  in the script), then `file` and other utilities like `cat`,
  `grep`, `ln`, `ls`, `mkdir`, `rm`, `strings`, `tar` and `tr`.
- For testing lesspipe.sh, the `perl` script `vimcolor` can be used, that is
- however not required in just using `lesspipe.sh`. That script requires a working `vim` or `nvim`. It is planned to unbundle
- vimcolor from lesspipe.sh
+ For testing lesspipe.sh, the scripts `test.sh` and `vimcolor` can be used.
+ The `bash`/`zsh` script vimcolor requires a working `vim` or `nvim`.
 
 ## 4. Supported file formats
 
@@ -496,6 +495,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 - [pptx2md](https://github.com/ssine/pptx2md) (2024)
 - [tspin](https://github.com/bensadeh/tailspin) (2026)
 - [unrtf](https://www.gnu.org/software/unrtf/) (2018)
+- [vimcolor](https://github.com/wofr06/vimcolor) (2026)
 - [wvText](https://github.com/AbiWord/wv/) (2014)
 - [xlscat](https://metacpan.org/dist/Spreadsheet-Read) (2026)
 - [xlsx2csv (>=0.8.3)](https://github.com/dilshod/xlsx2csv) (2026)

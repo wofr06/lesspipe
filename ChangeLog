@@ -1,6 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- move vimcolor to a separate git repository
+- add a bash/zsh script vimcolor for color tests with same functionality
+- do no longer install a vimcolor ih´n the bin directory
 - reenable colorizing log files, now using tspin (fixes #175)
 Version 2.23 Mar 22 2026
 - spec file for RPM creation updated

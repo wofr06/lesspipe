@@ -33,8 +33,6 @@ BuildRequires:	diffutils
 BuildRequires:	glibc-langpack-en
 BuildRequires:	less
 BuildRequires:	make
-BuildRequires:	perl
-#BuildRequires:	perl-generators
 # try to run as many tests as possible from test.sh
 #BuildRequires:	/usr/bin/7za
 #BuildRequires:	/usr/bin/brotli
