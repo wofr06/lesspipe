@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- test suite updated, supplied vimcolor gets used for testing only
 - move vimcolor to a separate git repository
 - add a bash/zsh script vimcolor for color tests with same functionality
 - do no longer install a vimcolor ih´n the bin directory

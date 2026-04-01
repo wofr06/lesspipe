@@ -34,7 +34,10 @@ is_exec() {
 		if [[ $prog == cpio && $(cpio --version 2>/dev/null) != *GNU* ]]; then
 			return 1
 		fi
-		if ! command -v "$prog" &>/dev/null; then
+		cmdpath=$(command -v "$prog")
+		if [[ -n $cmdpath && -x $cmdpath ]]; then
+			return 0
+		else
 			return 1
 		fi
 	done
@@ -51,10 +54,9 @@ compare() {
 			res=$(echo "$res"|grep -E "$comp" 2>/dev/null)
 			str="${res%"$comp"*}ok"
 			str=$(echo "$str"|sed -E 's/^.*(\[[0-9;]+m) ?ok/\1ok/g')
-			# special case test 105
-			str=$(echo "$str"|grep -v 2021-12-03)
 			res="$str[0m"
-			ok=$res
+			# special case test 105
+			ok=${res//-/}
 		else
 			ok=
 		fi
@@ -126,10 +128,9 @@ if [[ -z $noaction ]]; then
 	command -v tput &>/dev/null && colors=$(tput colors)
 	if [[ "$colors" -lt 8 && -z "$LESSCOLORIZER" ]]; then
 		for i in nvimpager batcat bat pygmentize source-highlight vim nvim code2color ; do
-			command -v "$i" &>/dev/null && export LESSCOLORIZER="$i" && break
+			is_exec $i && export LESSCOLORIZER="$i" && break
 		done
 	fi
-
 	# Temp dir setup
 	tmp="${TMPDIR-/tmp}"
 	tmp="${tmp%/}"
@@ -354,11 +355,11 @@ c void
 c void
 96 LESSCOLORIZER='pygmentize -O style=vim' less $T/tests/test.c # allow setting pygmentize style option git #5, needs pygmentize
 c void
-97 LESSCOLORIZER=vimcolor cat $T/tests/test.c|less - :c		# even colorize piped files, needs vimcolor
+97 cat $T/tests/test.c|LESSCOLORIZER=pygmentize less - :c		# even colorize piped files, needs vimcolor
 c void
 98 less tests/filter.tgz:test_html:html	# html colorized text
-c transparent
-99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text|perldoc,vimcolor
+c "created"
+99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text,vimcolor
 c NAME
 100 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_plain:sh	# plain text, force colored shellscript, needs pygmentize
 c test
@@ -371,16 +372,16 @@ c test
 104 LESSCOLORIZER=vimcolor less tests/filter.tgz:Makefile		# bsd Makefile not recognized with file 5.28 / with 5.39 o.k. git #10, needs vimcolor
 c PORTNAME
 105 diff -u $T/tests/t.eclass $T/tests/test.c|LESSCOLORIZER=vimcolor less - :diff # unified diff piped through less works git #11, needs vimcolor
-c +++
+c test=a
 106 LESSCOLORIZER=code2color less tests/special.tgz:a-r-R.pl	# colorize works within archives, needs code2color
 c test
-107 less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
-~ model = "test"
-108 LESSCOLORIZER=vimcolor less $T/tests/a-r-R.pl		# do not call vimcolor with -l extension git #77, needs vimcolor
-c test
-109 LESSCOLORIZER=vimcolor less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154, needs vimcolor
+107 LESSCOLORIZER=vimcolor less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154, needs vimcolor
 c name
+108 LESSCOLORIZER=vimcolor less $T/tests/special.tgz:a-r-R.pl:perl		# do not call vimcolor with -l extension git #77, needs vimcolor
+c test
 ### solved github issues and other test cases
+109 less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
+~ model = "test"
 110 LESS= less $T/tests/a-r-R.pl		# name contains -r or -R git #78
 = sub test {}
 111 less $T/tests/test_zip:non-existent-file	# nonexisting file in a zip archive git #1, needs unzip
@@ -441,6 +442,7 @@ while IFS= read -r line || [[ -n $line ]]; do
 	cmd="${cmd%[\ \	]#*}"
 	cmd="${cmd//\$T/$tdir}"
 	needed=
+	ignore=0
 	if [[ $comment == *\ needs\ * ]]; then
 		needed="${comment##* needs }"
 		comment=${comment%%, needs*}
@@ -498,7 +500,6 @@ while IFS= read -r line || [[ -n $line ]]; do
 		res=$(eval "$cmd 2>&1")
 	fi
 	ok=0
-
 	if [[ $res =~ "command not found:" || $res =~ "not found" ||
 		$res =~ "no such file or directory" ]]; then
 		res="NOT found: $res"

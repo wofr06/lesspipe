@@ -6,7 +6,9 @@ lesspipe_version=2.23
 
 has_cmd () {
 	[[ -n "$2" && "$2" > $($1 --version 2>/dev/null) ]] && return 1
-	command -v "$1" > /dev/null
+	cmdpath=$(command -v "$1")
+	[[ -n $cmdpath && -x $cmdpath ]] && return 0
+	return 1
 }
 
 fileext () {
@@ -442,6 +444,7 @@ has_colorizer () {
 	[[ -n $3 ]] && reql=$3
 	[[ $reql == *.* ]] && reql=${reql##*.}
 	pname=${prog##*/}
+	! has_cmd "$pname" && pname= && prog=
 	case $pname in
 		bat|batcat)
 			batconfig=$($prog --config-file)
@@ -536,7 +539,7 @@ has_colorizer () {
 			[[ -z ${opt[*]} ]] && opt=(-c "$1")
 			;;
 		*)
-			return ;;
+			;;
 	esac
 	colorizer=("$prog" "${opt[@]}")
 }
@@ -909,7 +912,6 @@ ishtml () {
 # the main program
 set +o noclobber
 setopt sh_word_split 2>/dev/null
-PATH=$PATH:${0%%/lesspipe.sh}
 # the current locale in lowercase (or generic utf-8)
 charmap=$(locale -k charmap 2>/dev/null|tr '[:upper:]' '[:lower:]') || charmap="charmap=utf-8"
 eval "$charmap"
