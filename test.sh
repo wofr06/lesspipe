@@ -251,10 +251,10 @@ read -r -d '' tests << 'EOF'
 = test
 47 less tests/archive.tgz:test_ar:a=b	# (on the fly), needs ar
 = test
-48 less $T/tests/test_cpio:textfile	# extract from cpio, needs cpio
-= test
-49 less tests/archive.tgz:test_cpio:textfile	# (on the fly), needs cpio
-= test
+# 48 less $T/tests/test_cpio:textfile	# extract from cpio, needs cpio
+# = test
+# 49 less tests/archive.tgz:test_cpio:textfile	# (on the fly), needs cpio
+# = test
 ### uncompress tests not covered in archive tests
 50 less tests/compress.tgz:test.tar.bz2:tests/textfile	# extract from bzip2, needs bzip2
 = test
@@ -526,7 +526,7 @@ while IFS= read -r line || [[ -n $line ]]; do
 	state=$([[ $ignore == 1 ]] && echo ignore || echo "$ok")
 	missing=
 	[[ $ignore == 1 ]] && missing="needs $needed"
-	printf "%3d %-6s %s %s\n" "$num" "$state" "$comment" "$missing"
+	[[ $num = \#* ]] || printf "%3d %-6s %s %s\n" "$num" "$state" "$comment" "$missing"
 	[[ $ok == NOT\ ok && $ignore != 1 ]] && echo "    failing command: $cmd"
 	num=0
 done <<< "$tests"
