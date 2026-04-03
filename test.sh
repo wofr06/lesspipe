@@ -251,9 +251,9 @@ read -r -d '' tests << 'EOF'
 = test
 47 less tests/archive.tgz:test_ar:a=b	# (on the fly), needs ar
 = test
-48 less $T/tests/test_cpio:textfile	# extract from cpio needs cpio
+48 less $T/tests/test_cpio:textfile	# extract from cpio, needs cpio
 = test
-49 less tests/archive.tgz:test_cpio:textfile	# (on the fly) needs cpio
+49 less tests/archive.tgz:test_cpio:textfile	# (on the fly), needs cpio
 = test
 ### uncompress tests not covered in archive tests
 50 less tests/compress.tgz:test.tar.bz2:tests/textfile	# extract from bzip2, needs bzip2
@@ -272,7 +272,7 @@ read -r -d '' tests << 'EOF'
 56 less tests/compress.tgz:test.tar.lz4:tests/textfile	# extract from lz4 git #14, needs lz4
 = test
 ### filter tests, produce readable output
-57 less tests/filter.tgz:test_utf16	# UTF-16 Unicode needs iconv,locale
+57 less tests/filter.tgz:test_utf16	# UTF-16 Unicode, needs iconv,locale
 ~ test
 58 less tests/filter.tgz:test_latin1	# ISO-8859-1 encoded file, needs iconv,locale
 = testäöü
@@ -487,6 +487,10 @@ while IFS= read -r line || [[ -n $line ]]; do
 		done
 		[[ $good == 1 ]] && ignore=
 	done
+	if [[ $needed == cpio && $(cpio --version) != *GNU* ]]; then
+		needed=GNU-cpio
+		ignore=1
+	fi
 
 	[[ $comp =~ ^c && $colors -lt 8 ]] && ignore=1
 	if [[ $comp =~ ^c && $comment != *directory* && -z "$needed" ]]; then
