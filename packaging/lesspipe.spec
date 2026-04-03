@@ -102,7 +102,7 @@ on login.
 %autosetup
 
 %build
-./configure --prefix=%{_prefix} --bindir=%{lesspipe_exec_dir} --bash-completion-dir=%{bash_completion} --zsh-completion-dir=%{zsh_completion}
+./configure --prefix=%{_prefix} --bindir=%{lesspipe_exec_dir} --libexecdir=%{lesspipe_exec_dir} --bash-completion-dir=%{bash_completion} --zsh-completion-dir=%{zsh_completion}
 
 %install
 %make_install
