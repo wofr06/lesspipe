@@ -5,7 +5,7 @@
 %global zsh_completion		%{_datarootdir}/zsh/site-functions
 
 %define packagename lesspipe
-%define packageversion 2.23
+%define packageversion 2.24
 %define packagerelease 1
 
 Name:		%{packagename}
@@ -131,6 +131,8 @@ env TERM=xterm-256color ./test.sh %{buildroot}%{lesspipe_exec_dir}/lesspipe.sh
 %{_sysconfdir}/profile.d/*
 
 %changelog
+* Sat Apr 04 2026 2.24-1 - wp.friebel@gmail.com
+- no more perl dependency, log files can get colorized using tspin 
 * Sat Mar 21 2026 2.23-1 - wp.friebel@gmail.com
 - more consistent test suite, convert some scripts from perl to bash
 * Mon Dec 15 2025 2.22-1 - wp.friebel@gmail.com

@@ -1,6 +1,6 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.23
+Version: 2.24
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto:wp.friebel@gmail.com)
 License: GPL-2.0-or-later
 
@@ -262,10 +262,10 @@ the author by email.
 - json			requires `jq`
 - device tree blobs	requires `dtc` (extension dtb or dts)
 
- Files in the html, xml and perl pod format are always rendered. Sometimes
+ Files in the html and perl pod format are always rendered. Sometimes
  however the original contents of the file should be viewed instead.
  That can be achieved by appending a colon to the file name. If the correct
- file type (html, xml, pod) follows, the output can get colorized (see also
+ file type (html, pod) follows, the output can get colorized (see also
  the section below).
 
  If the binary xmq is installed, then xml is rendered differently, so that
