@@ -182,7 +182,7 @@ the author by email.
  **LESS** can be used to switch on colored less output (should contain -R).
 
  **LESSCOLORIZER** can be set to prefer a highlighting program from the following
- choices (`nvimpager` `batcat` `bat` `pygmentize` `source-highlight` `vimcolor` `code2color`).
+ choices (`nvimpager` `batcat` `bat` `pygmentize` `e2ansi-cat` `source-highlight` `vimcolor` `code2color`).
  Otherwise the first program in that list that is installed will be used, with
  the caveat that `bat` will use the [ansi theme](https://github.com/wofr06/lesspipe/issues/155#issuecomment-2312972276) instead of its default colors.
 
@@ -302,7 +302,7 @@ the author by email.
 #### 5.1.1 Syntax highlighting choices
  The filter is able to do syntax highlighting for a wide variety of file
  types. If installed, `nvimpager` is used for colorizing the output. If
- not, `bat`/`batcat`, `pygmentize`, `source-highlight`, `vimcolor`
+ not, `bat`/`batcat`, `pygmentize`, `e2ansi-cat`, `source-highlight`, `vimcolor`
  and `code2color` are
  tried. Among these colorizers a preferred one can be forced for colorizing
  by setting the ENV variable **LESSCOLORIZER** to the name of the colorizer.
@@ -329,6 +329,7 @@ following colorizer commands:
 bat --list-languages
 batcat --list-languages
 pygmentize -L lexers
+M-x -mode [TAB] within emacs
 source-highlight --lang-list
 code2color -h
 vimcolor -L (this command is valid both for vimcolor and nvimpager)
@@ -482,6 +483,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 - [docx2txt](https://docx2txt.sourceforge.net/) (2014)
 - [dtc](https://git.kernel.org/cgit/utils/dtc/dtc.git) (2026)
 - [dvi2tty](https://www.ctan.org/tex-archive/dviware/dvi2tty/) (2016)
+- [e2ansi-cat](https://github.com/Lindydancer/e2ansi) (2026)
 - [excel2csv](https://github.com/informationsea/excel2csv) (2018)
 - [html2text](https://github.com/grobian/html2text) (2025)
 - [id3v2](https://id3v2.sourceforge.net/) (2010)

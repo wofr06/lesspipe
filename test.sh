@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Cleanup on CTRL-C
-tdir=""
+tdir='dir_with_unpacked_files'
 trap 'if [[ -n "$tdir" ]]; then rm -rf "$tdir"; echo; exit 1; fi' SIGINT
 
 usage() {
@@ -251,10 +251,10 @@ read -r -d '' tests << 'EOF'
 = test
 47 less tests/archive.tgz:test_ar:a=b	# (on the fly), needs ar
 = test
-# 48 less $T/tests/test_cpio:textfile	# extract from cpio, needs cpio
-# = test
-# 49 less tests/archive.tgz:test_cpio:textfile	# (on the fly), needs cpio
-# = test
+48 less $T/tests/test_cpio:textfile	# extract from cpio, needs cpio
+= test
+49 less tests/archive.tgz:test_cpio:textfile	# (on the fly), needs cpio
+= test
 ### uncompress tests not covered in archive tests
 50 less tests/compress.tgz:test.tar.bz2:tests/textfile	# extract from bzip2, needs bzip2
 = test

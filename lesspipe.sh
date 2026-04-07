@@ -434,7 +434,7 @@ has_colorizer () {
 	prog=${LESSCOLORIZER%% *}
 	[[ $prog == *vimcolor ]] && ! has_cmd vim && ! has_cmd nvim && prog=
 
-	for i in nvimpager batcat bat pygmentize source-highlight vim nvim code2color ; do
+	for i in nvimpager batcat bat pygmentize e2ansi-cat source-highlight vim nvim code2color ; do
 		[[ -z $prog ]] && has_cmd "$i" && prog=$i
 		[[ $prog == "$i" ]] && ! has_cmd "$prog" && prog=
 	done
@@ -446,6 +446,15 @@ has_colorizer () {
 	pname=${prog##*/}
 	! has_cmd "$pname" && pname= && prog=
 	case $pname in
+		e2ansi-cat)
+			#opt=("$2")
+			if [[ -n "$reql" ]]; then
+				echo ''|e2ansi-cat -- --mode "$reql" - 2>/dev/null && opt=(-- --mode "$reql" "$1")
+			elif [[ -n "$lang" ]]; then
+				echo ''|e2ansi-cat -- --mode "$lang" - 2>/dev/null && opt=(-- --mode "$lang" "$1")
+			fi
+			[[ -z ${opt[*]} ]] && opt=(-- "$1")
+			;;
 		bat|batcat)
 			batconfig=$($prog --config-file)
 			languages=$($prog --list-languages|sed "s/.*:/,/;s/$/,/;s/\n/,/")
@@ -569,7 +578,7 @@ isfinal () {
 			msg="$x: showing the output of ${cmd[*]}" ;;
 		xml)
 			[[ -z $file2 ]] &&
-			has_cmd xmr && cmd=(isxmq "$1" xml) ;;
+			has_cmd xmq && cmd=(isxmq "$1" xml) ;;
 		html)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
 		dtb|dts)
@@ -654,7 +663,6 @@ isfinal () {
 			{ has_cmd eyeD3 && cmd=(istemp "eyeD3" "$1"); } ||
 			{ has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1"); } ;;
 		log)
-			#[[ $COLOR == *always* ]] && has_cmd tspin && cmd=(nodash tspin -f "$1") ;;
 			[[ $COLOR == *always* ]] && has_cmd tspin && colorizer=(nodash tspin -f "$1") ;;
 		csv)
 			msg "type -S<ENTER> for better display of very wide tables"
