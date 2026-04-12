@@ -11,7 +11,9 @@ Usage: $0 [-h] [-n] [-v] [number[s]] [string[s]] [file_name]
   -h        This help message
   -v        Print the output of all commands and the test string
   -n        Test commands are printed only, not checked
-            With -v print also n parentheses required auxiliary programs
+            With -v print also required auxiliary programs in parentheses
+  -c        color tests only, override colorizer used,
+            take it from LESSCOLORIZER, or try to find a suitable one
   file_name The script to test against in the current directory [lesspipe.sh]
   The number[s] and string[s] arguments can be used to limit the tests to be
   performed. Number ranges are allowed. Strings can be part of the command
@@ -26,34 +28,40 @@ EOF
 	exit 0
 }
 
+# Check if a program is executable
+# Special handling for cpio to ensure GNU version
 is_exec() {
-	local arg="$1"
+	local arg="$1" cmdpath
+
 	[[ -z $arg ]] && return 0
-	progs=("$arg")
-	for prog in "${progs[@]}"; do
-		if [[ $prog == cpio && $(cpio --version 2>/dev/null) != *GNU* ]]; then
-			return 1
-		fi
-		cmdpath=$(command -v "$prog")
-		if [[ -n $cmdpath && -x $cmdpath ]]; then
-			return 0
-		else
-			return 1
-		fi
-	done
-	return 0
+
+	if [[ $arg == cpio && $(cpio --version 2>/dev/null) != *GNU* ]]; then
+		return 1
+	fi
+
+	cmdpath=$(command -v "$arg")
+	[[ -n $cmdpath && -x $cmdpath ]]
 }
 
+# Remove ANSI escape sequences and empty lines
+remove_ansi() {
+	local text="$1"
+	echo "$text" | sed -E 's/\x1b\[[0-9;]*m//g; /^$/d'
+}
+
+# Compare test result with expected output
+# Supports three comparison types: c (colored), ~ (regex), = (exact)
 compare() {
 	local ok='ok'
 	local res="$1" type="$line"
 	local comp="${type:2:${#type}}"
+
+	# Handle colored output (c)
 	if [[ ${type:0:1} == c ]]; then
-		ok=$(echo "$res"|grep -cE '[[0-9;]+m')
-		if [[ "$ok" -gt 0 ]]; then
-			res=$(echo "$res"|grep -E "$comp" 2>/dev/null)
-			str="${res%"$comp"*}ok"
-			str=$(echo "$str"|sed -E 's/^.*(\[[0-9;]+m) ?ok/\1ok/g')
+		if echo "$res"|grep -qE '\[[0-9;]+m'; then
+			res=$(echo "$res" | grep -E "$comp" 2>/dev/null)
+			local str="${res%"$comp"*}ok"
+			str=$(echo "$str" | sed -E 's/^.*(\x1b\[[0-9;]+m) ?ok/\1ok/g')
 			res="$str[0m"
 			# special case test 105
 			ok=${res//-/}
@@ -61,35 +69,42 @@ compare() {
 			ok=
 		fi
 	fi
-	# remove empty lines and color sequences
-	res=$(echo "$res"|sed -E 's///g;s/.\[[0-9;]+m//g')
-	res=$(echo "$res"|grep  --binary-files=text -v '^$' 2>/dev/null)
-	res=$(echo "$res"|grep  -v '^$' 2>/dev/null)
+
+	# Remove ANSI sequences and empty lines
+	res=$(remove_ansi "$res")
+
+	# Handle regex match (~ type)
 	if [[ ${type:0:1} == \~ ]]; then
 		res=$(echo "$res"|sed 's/.//g;s///g;')
 		nok=$(echo "$res"|grep -qE "$comp")
 		[[ -n "$nok" ]] && ok=
+	# # Handle exact match (= type)
 	elif [[ ${type:0:1} == = ]]; then
+		# Remove various BOM markers
 		res=${res//$'\UFEFF'/}
 		res=${res//$'\UEFBBBF'/}
 		res=${res//$'\UBBBF'/}
 		[[ "$comp" != "$res" ]] && ok=
 	fi
+
 	echo "$ok"
 }
 
 seconds=$(date +%s)
 
-# Parse args
-fname="lesspipe.sh" numtest=() strtest=()
+# Parse command-line arguments
+fname="lesspipe.sh"
+declare -a numtest strtest
 args="$*" args=${args//,/ }
+
 while [[ "$args" != "$arg" ]]; do
 	arg=${args%% *}
 	args=${args#"$arg" }
-	if [[ $arg =~ ^-([hnv]+)$ ]]; then
+	if [[ $arg =~ ^-([chnv]+)$ ]]; then
 		[[ $arg =~ h ]] && usage
 		[[ $arg =~ v ]] && verbose=1
 		[[ $arg =~ n ]] && noaction=1
+		[[ $arg =~ c ]] && force_colorizer=1
 	elif [[ $arg =~ ^[0-9]*-[0-9]+$ ]]; then
 		start=${arg%-*} end=${arg#*-}
 		((start)) || start=1
@@ -109,10 +124,10 @@ while [[ "$args" != "$arg" ]]; do
 	fi
 done
 
-# Set env
+# Set up environment
 dir="${0%/*}/"
-export PATH="$dir:$PATH"
 [[ $fname != */* ]] && fname="./$fname"
+
 export LESSOPEN="|-$fname %s"
 echo "testing $fname" && echo "LESSOPEN=\"$LESSOPEN\""
 export LESS='-R'
@@ -120,37 +135,74 @@ export LESSQUIET=1
 export LANG='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
 export TZ=''
+colorizers=(nvimpager batcat bat pygmentize source-highlight vimcolor code2color e2ansi-cat)
 
 sumok=0 sumignore=0 sumnok=0 num=0 colors=0
 
+errmsg=
 if [[ -z $noaction ]]; then
 	[[ $TERM == *256* ]] && colors=256
 	command -v tput &>/dev/null && colors=$(tput colors)
-	if [[ "$colors" -lt 8 && -z "$LESSCOLORIZER" ]]; then
-		for i in nvimpager batcat bat pygmentize source-highlight vim nvim code2color ; do
-			is_exec $i && export LESSCOLORIZER="$i" && break
+	if ! is_exec "$LESSCOLORIZER" ; then
+		errmsg=" $LESSCOLORIZER not available,"
+		unset LESSCOLORIZER
+	fi
+	if [[ "$colors" -ge 8 && -z "$LESSCOLORIZER" && -n "$force_colorizer" ]]; then
+		for i in "${colorizers[@]}" ; do
+			is_exec "$i" && export LESSCOLORIZER="$i" && break
 		done
 	fi
+	[[ -n "$force_colorizer" ]] && echo "Use $LESSCOLORIZER as colorizer,$errmsg usually not all tests will succeed"
+
 	# Temp dir setup
 	tmp="${TMPDIR-/tmp}"
 	tmp="${tmp%/}"
-	tdir=$(mktemp -d "$tmp/lesspipeXXXX.XXXXXX")
+	tdir=$(mktemp -d "$tmp/lesspipeXXXX.XXXXXX") || {
+		echo "Failed to create temp directory"
+		exit 1
+	}
 	mkdir -p "$tdir/tests"
 	T="$tdir/tests"
 
-	# Copy test archives (assumes they exist alongside script)
+	# Copy test archives (validate they exist)
 	for ar in archive compress filter special; do
-		cp tests/${ar}.tgz "$T/" || { echo "Missing tests/${ar}.tgz"; exit 1; }
+		if [[ ! -f "tests/${ar}.tgz" ]]; then
+			echo "Error: Missing tests/${ar}.tgz"
+			rm -rf "$tdir"
+			exit 1
+		fi
+		cp "tests/${ar}.tgz" "$T/" || {
+			echo "Error: Failed to copy tests/${ar}.tgz"
+			rm -rf "$tdir"
+			exit 1
+		}
 	done
 
 	cwd="$PWD"
-	cd "$T" || exit
+	cd "$T" || {
+		echo "Error: Failed to cd to $T"
+		rm -rf "$tdir"
+		exit 1
+	}
+
 	# Extract archives
 	for ar in archive compress filter special; do
 		tar -xzf "${ar}.tgz" || echo "Extraction failed for $ar"
 	done
 	ln -s test_plain symlink
-	cd "$cwd" || exit 1
+	cd "$cwd" || {
+		echo "Error: Failed to cd back to $cwd"
+		rm -rf "$tdir"
+		exit 1
+	}
+fi
+
+# prefer lesspipe.sh in current directory
+export PATH="$dir:$PATH"
+# Verify lesspipe.sh exists and is executable
+if [[ ! -x "$fname" ]]; then
+	echo "Error: Cannot execute $fname"
+	exit 1
 fi
 
 # Test data
@@ -347,17 +399,17 @@ read -r -d '' tests << 'EOF'
 c test_so
 92 less tests/archive.tgz			# contents of tar colorized, needs archive_color
 c test_cab
-93 LESSCOLORIZER=source-highlight less $T/tests/test.c	# C language git #3, needs source-highlight
+93 LESSCOLORIZER=source-highlight less tests/filter.tgz:test.c	# C language git #3, needs source-highlight
 c void
 94 LESSCOLORIZER=batcat less tests/filter.tgz:test.c		# C language from file within archive, needs batcat
 c void
 95 LESSCOLORIZER=bat less tests/filter.tgz:test.c		# C language from file within archive, needs bat,!batcat
 c void
-96 LESSCOLORIZER='pygmentize -O style=vim' less $T/tests/test.c # allow setting pygmentize style option git #5, needs pygmentize
+96 LESSCOLORIZER='pygmentize -O style=vim' less tests/filter.tgz:test.c # allow setting pygmentize style option git #5, needs pygmentize
 c void
 97 cat $T/tests/test.c|LESSCOLORIZER=pygmentize less - :c		# even colorize piped files, needs vimcolor
 c void
-98 less tests/filter.tgz:test_html:html	# html colorized text
+98 LESSCOLORIZER=nvimpager less tests/filter.tgz:test_html:html	# html colorized text, needs nvimpager
 c "created"
 99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text,vimcolor
 c NAME
@@ -425,24 +477,42 @@ c test
 EOF
 # number of last test
 #echo $tests|sed -E '/^[0-9]+ /s/(^[0-9]+).*/\1/'|grep '^[0-9]'|tail -1
+
 # Process tests
-while IFS= read -r line || [[ -n $line ]]; do
-	[[ $line == END ]] && break
+while IFS= read -r line ; do
 	[[ $line =~ ^### ]] && { [[ ${#numtest[@]} == 0 && ${#strtest[@]} == 0 ]] &&
 		echo "$line"; continue; }
 	[[ $line =~ ^#\|^[\ \	]$ ]] && continue
+
 	num=${line%% *}
 	[[ -z $num ]] && continue
 	cmd=${line#* }
+
 	read -r line
 	comp=$line
+
 	[[ ${#numtest[@]} -gt 0 && ! " ${numtest[*]} " =~ \ $num\  ]] && continue
-	[[ ${#strtest[@]} -gt 0 && ! " ${cmd[*]} " =~ ${strtest[*]} ]] && continue
+	[[ ${#strtest[@]} -gt 0 && ! " ${cmd[*]} " =~ ${strtest[0]} ]] && continue
+
 	comment="${cmd#*[\ \	]#}"
-	cmd="${cmd%[\ \	]#*}"
+	cmd="${cmd%%[\ \	]#*}"
 	cmd="${cmd//\$T/$tdir}"
 	needed=
 	ignore=0
+
+	# force color tests with given colorizer
+	if [[ -n "$force_colorizer" ]]; then 
+		if [[ ${comp:0:1} == c ]]; then 
+			cmd=${cmd//LESSCOLORIZER/LESSCOLORIZER_NOT}
+			for i in "${colorizers[@]}" ; do
+				comment=${comment//,!*/}
+				comment=${comment//$i/$LESSCOLORIZER}
+			done
+		else
+			continue
+		fi
+	fi
+
 	if [[ $comment == *\ needs\ * ]]; then
 		needed="${comment##* needs }"
 		comment=${comment%%, needs*}
@@ -451,15 +521,7 @@ while IFS= read -r line || [[ -n $line ]]; do
 				needed="${needed//html_converter/}"
 			fi
 		fi
-		if [[ $needed == *colorizer* ]]; then
-			if is_exec nvimpager || is_exec batcat || is_exec bat || is_exec pygmentize || is_exec source-highlight; then
-				needed="${needed//colorizer/}"
-			fi
-		fi
-		if [[ $needed == *colorizer* ]]; then
-			is_exec vimcolor && is_exec vim && needed="${needed//colorizer/}"
-			is_exec vimcolor && is_exec nvim && needed="${needed//colorizer/}"
-		fi
+
 		if [[ $needed == *vimcolor* ]]; then
 			is_exec vim || is_exec nvim || needed="vim_or_nvim"
 		fi
@@ -470,11 +532,15 @@ while IFS= read -r line || [[ -n $line ]]; do
 		[[ $verbose == 1 ]] && echo "$num $cmd$needed_str" || echo "$num $cmd"
 		continue
 	fi
+
 	[[ -n $needed ]] && ignore=1
+
+	# Split on pipe character (OR)
 	# shellcheck disable=SC2207
 	needed_arr=($(echo "$needed" | tr '|' ' '))
 	for andargs in "${needed_arr[@]}"; do
 		good=1
+		# Split on comma character (AND)
 		# shellcheck disable=SC2207
 		and_arr=($(echo "$andargs" | tr ',' ' '))
 		for dep in "${and_arr[@]}"; do
@@ -487,15 +553,13 @@ while IFS= read -r line || [[ -n $line ]]; do
 		done
 		[[ $good == 1 ]] && ignore=
 	done
-	if [[ $needed == cpio && $(cpio --version) != *GNU* ]]; then
+
+	if [[ $needed == cpio && $(cpio --version 2>/dev/null) != *GNU* ]]; then
 		needed=GNU-cpio
 		ignore=1
 	fi
 
 	[[ $comp =~ ^c && $colors -lt 8 ]] && ignore=1
-	if [[ $comp =~ ^c && $comment != *directory* && -z "$needed" ]]; then
-		needed='colorizer'
-	fi
 
 	if [[ $ignore == 1 ]]; then
 		res=""
@@ -503,6 +567,7 @@ while IFS= read -r line || [[ -n $line ]]; do
 		cmd=${cmd%#*}
 		res=$(eval "$cmd 2>&1")
 	fi
+
 	ok=0
 	if [[ $res =~ "command not found:" || $res =~ "not found" ||
 		$res =~ "no such file or directory" ]]; then
