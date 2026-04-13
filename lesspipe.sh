@@ -27,7 +27,7 @@ filetype () {
 	if [[ "$1" == - || -z $1 ]]; then
 		declare t
 		t=$(nexttmp)
-		head -c 1000000 > "$t" 2>/dev/null
+		head -c 1000000 > "$t"
 		[[ -z $fileext ]] && fname="$t" || fname="$fileext"
 		set "$t" "$2"
 	fi
@@ -177,7 +177,8 @@ separatorline () {
 }
 
 nexttmp () {
-	declare new="$tmpdir/lesspipe.$RANDOM.${ft%%:*}"
+	#declare new="$tmpdir/lesspipe.$RANDOM.${ft%%:*}"
+	declare new=$(mktemp "$tmpdir/lesspipeXXXXXX.${ft%%:*}")
 	echo "$new"
 }
 
@@ -374,7 +375,7 @@ get_unpack_cmd () {
 	if [[ -z $prog ]]; then
 		case "$x" in
 			dmg)
-				has_cmd 7z && eval '7z l "$2" >/dev/null 2>&1' && prog=7z ;;
+				has_cmd 7z && $(7z l "$2" >/dev/null 2>&1) && prog=7z ;;
 			7z-compressed|lzma|xz|cab|arj|bzip2|cpio|iso)
 				{ has_cmd 7zz && prog=7zz; } ||
 				{ has_cmd 7zr && prog=7zr; } ||
@@ -666,7 +667,7 @@ isfinal () {
 			[[ $COLOR == *always* ]] && has_cmd tspin && colorizer=(nodash tspin -f "$1") ;;
 		csv)
 			msg "type -S<ENTER> for better display of very wide tables"
-			{ has_cmd csvtable && csvtable -h >/dev/null 2>&1 && cmd=(csvtable "$1"); } ||
+			{ has_cmd csvtable && cmd=(csvtable "$1"); } ||
 			{ has_cmd csvlook && cmd=(csvlook -S "$1"); } ||
 			{ has_cmd column && cmd=(istemp "column -s	,; -t" "$1"); } ||
 			{ has_cmd pandoc && cmd=(pandoc -f csv -t plain "$1"); } ;;
@@ -921,9 +922,11 @@ ishtml () {
 set +o noclobber
 setopt sh_word_split 2>/dev/null
 # the current locale in lowercase (or generic utf-8)
-charmap=$(locale -k charmap 2>/dev/null|tr '[:upper:]' '[:lower:]') || charmap="charmap=utf-8"
-eval "$charmap"
-has_cmd locale || charmap=
+charmap="utf-8"
+if has_cmd locale ; then
+	map=$(locale -k charmap 2>/dev/null|tr '[:upper:]' '[:lower:]')
+	charmap="${map#charmap=}"
+fi
 
 sep=:					# file name separator
 altsep='='				# alternate separator character
@@ -933,10 +936,8 @@ elif [[ "$1" == *"$altsep"* ]]; then
 	[[ -e "${1%%"$altsep"*}" ]] && sep=$altsep
 fi
 
-tmpdir=${TMPDIR:-/tmp}/lesspipe."$RANDOM"
-[[ -d "$tmpdir" ]] || mkdir "$tmpdir"
-[[ -d "$tmpdir" ]] || exit 1
-trap 'rm -rf "$tmpdir";exit 1' SIGINT
+tmpdir=$(mktemp -d --tmpdir "lesspipe.XXXXXX") || exit 1
+trap 'rm -rf "$tmpdir"; exit 1' SIGINT
 trap 'rm -rf "$tmpdir"' EXIT
 trap - PIPE
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Cleanup on CTRL-C
-tdir='dir_with_unpacked_files'
-trap 'if [[ -n "$tdir" ]]; then rm -rf "$tdir"; echo; exit 1; fi' SIGINT
+tmpdir='dir_with_unpacked_files'
+trap 'if [[ -n "$tmpdir" ]]; then rm -rf "$tmpdir"; echo; exit 1; fi' SIGINT
 
 usage() {
 	cat <<EOF
@@ -155,25 +155,23 @@ if [[ -z $noaction ]]; then
 	[[ -n "$force_colorizer" ]] && echo "Use $LESSCOLORIZER as colorizer,$errmsg usually not all tests will succeed"
 
 	# Temp dir setup
-	tmp="${TMPDIR-/tmp}"
-	tmp="${tmp%/}"
-	tdir=$(mktemp -d "$tmp/lesspipeXXXX.XXXXXX") || {
+	tmpdir=$(mktemp -d --tmpdir "lesspipe.XXXXXX") || {
 		echo "Failed to create temp directory"
 		exit 1
 	}
-	mkdir -p "$tdir/tests"
-	T="$tdir/tests"
+	mkdir -p "$tmpdir/tests"
+	T="$tmpdir/tests"
 
 	# Copy test archives (validate they exist)
 	for ar in archive compress filter special; do
 		if [[ ! -f "tests/${ar}.tgz" ]]; then
 			echo "Error: Missing tests/${ar}.tgz"
-			rm -rf "$tdir"
+			rm -rf "$tmpdir"
 			exit 1
 		fi
 		cp "tests/${ar}.tgz" "$T/" || {
 			echo "Error: Failed to copy tests/${ar}.tgz"
-			rm -rf "$tdir"
+			rm -rf "$tmpdir"
 			exit 1
 		}
 	done
@@ -181,7 +179,7 @@ if [[ -z $noaction ]]; then
 	cwd="$PWD"
 	cd "$T" || {
 		echo "Error: Failed to cd to $T"
-		rm -rf "$tdir"
+		rm -rf "$tmpdir"
 		exit 1
 	}
 
@@ -192,7 +190,7 @@ if [[ -z $noaction ]]; then
 	ln -s test_plain symlink
 	cd "$cwd" || {
 		echo "Error: Failed to cd back to $cwd"
-		rm -rf "$tdir"
+		rm -rf "$tmpdir"
 		exit 1
 	}
 fi
@@ -316,7 +314,7 @@ read -r -d '' tests << 'EOF'
 = test
 53 less tests/compress.tgz:test.tar.xz:tests/textfile	# extract from xz, needs xz
 = test
-### call dd also for brotli to keep the script structure clean git #19 (revert)
+# do not call dd for brotli files git #19 (revert git #16)
 54 less tests/compress.tgz:test.bro:tests/textfile		# extract from brotli, needs brotli
 = test
 55 less tests/compress.tgz:test.tar.zst:tests/textfile	# extract from zstandard git #13,20,36,44, needs zstd
@@ -417,11 +415,11 @@ c NAME
 c test
 101 LESSCOLORIZER=nvimpager less tests/filter.tgz:index.rst		# reStructuredText, needs pandoc,nvimpager
 c test.png
-102 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (fails if no syntax/json.vim), needs vimcolor,pandoc
+102 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.json		# json, epub and ipynb also covered git #62 (requires syntax/json.vim), needs vimcolor,pandoc
 c "hello"
 103 LESSCOLORIZER=source-highlight less tests/filter.tgz:t.eclass		# ebuild and eclass file git #9,38,39, needs source-highlight
 c test
-104 LESSCOLORIZER=vimcolor less tests/filter.tgz:Makefile		# bsd Makefile not recognized with file 5.28 / with 5.39 o.k. git #10, needs vimcolor
+104 LESSCOLORIZER=e2ansi-cat less tests/filter.tgz:Makefile		# bsd Makefile not recognized with file 5.28 / with 5.39 o.k. git #10, needs e2ansi-cat
 c PORTNAME
 105 diff -u $T/tests/t.eclass $T/tests/test.c|LESSCOLORIZER=vimcolor less - :diff # unified diff piped through less works git #11, needs vimcolor
 c test=a
@@ -496,7 +494,7 @@ while IFS= read -r line ; do
 
 	comment="${cmd#*[\ \	]#}"
 	cmd="${cmd%%[\ \	]#*}"
-	cmd="${cmd//\$T/$tdir}"
+	cmd="${cmd//\$T/$tmpdir}"
 	needed=
 	ignore=0
 
@@ -598,7 +596,7 @@ done <<< "$tests"
 
 seconds=$(( $(date +%s) - seconds ))
 echo "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $seconds seconds"
-if [[ -n "$tdir" ]]; then
-	rm -rf "$tdir"
+if [[ -n "$tmpdir" ]]; then
+	rm -rf "$tmpdir"
 fi
 exit $sumnok
