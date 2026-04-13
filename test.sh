@@ -480,7 +480,7 @@ EOF
 while IFS= read -r line ; do
 	[[ $line =~ ^### ]] && { [[ ${#numtest[@]} == 0 && ${#strtest[@]} == 0 ]] &&
 		echo "$line"; continue; }
-	[[ $line =~ ^#\|^[\ \	]$ ]] && continue
+	[[ $line =~ ^# ]] || [[ $line =~ ^[\ \	]$ ]] && continue
 
 	num=${line%% *}
 	[[ -z $num ]] && continue
