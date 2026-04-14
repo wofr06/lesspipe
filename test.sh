@@ -501,8 +501,8 @@ while IFS= read -r line ; do
 	ignore=0
 
 	# force color tests with given colorizer
-	if [[ -n "$force_colorizer" ]]; then 
-		if [[ ${comp:0:1} == c ]]; then 
+	if [[ -n "$force_colorizer" ]]; then
+		if [[ ${comp:0:1} == c ]]; then
 			cmd=${cmd//LESSCOLORIZER/LESSCOLORIZER_NOT}
 			for i in "${colorizers[@]}" ; do
 				comment=${comment//,!*/}

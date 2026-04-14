@@ -175,8 +175,10 @@ separatorline () {
 }
 
 nexttmp () {
-	new=$(mktemp "$tmpdir/lesspipeXXXXXX.${ft%%:*}")
-	echo "$new"
+	new=$(mktemp "$tmpdir/lesspipeXXXXXX")
+	new2="$new.${ft%%:*}"
+	mv "$new" "$new2"
+	echo "$new2"
 }
 
 istemp () {
@@ -413,7 +415,8 @@ analyze_args () {
 	has_cmd tput && colors=$(tput colors)
 	if [[ $colors -ge 8 ]]; then
 		lessarg="$LESS $lessarg"
-		read -ra r_string <<< "$lessarg"
+		# shellcheck disable=SC2206
+		r_string=($lessarg)
 		for i in "${r_string[@]}"
 		do
 			[[ $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
@@ -538,7 +541,7 @@ has_colorizer () {
 				[[ -n "$3" ]] &&
 					reql=${3##*/} reql=${reql##*.}
 					opt=(-c -- -c "set filetype=$reql" "$1")
-				[[ -z "$3" &&  -n "$2" ]] &&
+				[[ -z "$3" && -n "$2" ]] &&
 					opt=(-c -- -c "set filetype=$2" "$1")
 			fi
 			[[ -z ${opt[*]} ]] && opt=(-c "$1")
