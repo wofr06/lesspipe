@@ -25,7 +25,6 @@ filetype () {
 	# do not depend on the file extension, if possible
 	fname="$1"
 	if [[ "$1" == - || -z $1 ]]; then
-		declare t
 		t=$(nexttmp)
 		head -c 1000000 > "$t"
 		[[ -z $fileext ]] && fname="$t" || fname="$fileext"
@@ -33,7 +32,6 @@ filetype () {
 	fi
 	fext=$(fileext "$fname")
 	### get file type from mime type
-	declare ft
 	ft=$(file -L -s -b --mime "$1" 2> /dev/null)
 	[[ $ft == *=* ]] && fchar="${ft##*=}" || fchar=utf-8
 	fcat="${ft%/*}"
@@ -170,7 +168,7 @@ msg () {
 }
 
 separatorline () {
-	declare a="==================================="
+	a="==================================="
 	word="Contents"
 	[[ -n $1 ]] && word=$1
 	echo "$a $word $a"
@@ -293,7 +291,6 @@ get_unpack_cmd () {
 	x="${1%%:*}"
 	cmd=()
 	[[ "$3" == $sep$sep ]] && return
-	declare t
 	# uncompress / transform
 	case $x in
 		gzip|bzip2|lzip|lzma|xz|brotli|compress)
@@ -416,8 +413,7 @@ analyze_args () {
 	has_cmd tput && colors=$(tput colors)
 	if [[ $colors -ge 8 ]]; then
 		lessarg="$LESS $lessarg"
-		# shellcheck disable=SC2206
-		r_string=($lessarg)
+		read -ra r_string <<< "$lessarg"
 		for i in "${r_string[@]}"
 		do
 			[[ $i = --raw-control-chars || $i = --RAW-CONTROL-CHARS ]] && COLOR="--color=always"
@@ -626,7 +622,7 @@ isfinal () {
 			has_cmd pandoc && cmd=(pandoc -f "$x" -t plain "$1") ;;
 		troff)
 			fext=$(fileext "$1")
-			declare macro=andoc
+			macro=andoc
 			[[ "$fext" == me ]] && macro=e
 			[[ "$fext" == ms ]] && macro=s
 			{ has_cmd mandoc && cmd=(nodash mandoc "$1"); } ||
@@ -674,9 +670,9 @@ isfinal () {
 			[[ $COLOR = *always ]] && opt=(-C .) || opt=(.)
 			has_cmd jq && cmd=(jq "${opt[@]}" "$1") ;;
 		zlib)
-			# shellcheck disable=SC2002
-			{ has_cmd pigz && cat "$1" | pigz -d -z && return ; } ||
-			{ has_cmd zlib-flate && cat "$1" | zlib-flate -uncompress && return ; } ;;
+			[[ $1 == - ]] && arg='/dev/stdin' || arg="$1"
+			{ has_cmd pigz && pigz -d -z < "$arg" && return ; } ||
+			{ has_cmd zlib-flate && zlib-flate -uncompress < "$arg" && return ; } ;;
 	esac
 	fi
 	# not a specific file format
@@ -919,7 +915,7 @@ ishtml () {
 
 # the main program
 set +o noclobber
-setopt sh_word_split 2>/dev/null
+[[ -n "$ZSH_VERSION" ]] && setopt sh_word_split
 # the current locale in lowercase (or generic utf-8)
 charmap="utf-8"
 if has_cmd locale ; then

@@ -470,7 +470,9 @@ c test
 ~ test=a
 128 less $T/tests/test.jar			# support for jar files git #8,22, needs unzip
 ~ .* META-INF/
-129 less tests/compress.tgz:test_zlib		# zlib, needs pigz|zlib-flate
+129 less tests/compress.tgz:test_zlib	# zlib in archive, needs pigz|zlib-flate
+= test
+130 less $T/tests/test_zlib		# zlib, needs pigz|zlib-flate
 = test
 EOF
 # number of last test
