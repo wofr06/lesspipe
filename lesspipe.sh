@@ -177,7 +177,7 @@ separatorline () {
 nexttmp () {
 	new=$(mktemp "$tmpdir/lesspipeXXXXXX")
 	new2="$new.${ft%%:*}"
-	mv "$new" "$new2"
+	mv -n "$new" "$new2"
 	echo "$new2"
 }
 
