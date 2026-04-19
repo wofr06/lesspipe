@@ -176,7 +176,15 @@ separatorline () {
 
 nexttmp () {
 	new=$(mktemp "$tmpdir/lesspipeXXXXXX")
-	[[ -z $1 ]] && suffix="${ft%%:*}" || suffix="${1##*.}"
+	# Use the file extension from the original filename if available
+	if [[ -n "$fileext" && "$fileext" == *.* ]]; then
+		suffix="${fileext##*/}"
+		suffix="${suffix##*.}"
+	elif [[ -z "$1" ]]; then
+		suffix="${ft%%:*}"
+	else
+		suffix="${1##*.}"
+	fi
 	new2="$new.$suffix"
 	mv -n "$new" "$new2"
 	echo "$new2"
