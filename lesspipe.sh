@@ -718,6 +718,7 @@ isfinal () {
 		"${cmd[@]}" 2>&1
 	else
 		local final_input="$1"
+		# shellcheck disable=SC2128
 		if [[ -n $fileext && "$1" == - && $colorizer != archive_color ]]; then
 			final_input=$(nexttmp)
 			cat "$1" > "$final_input"
