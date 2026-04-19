@@ -53,8 +53,8 @@ remove_ansi() {
 # Supports three comparison types: c (colored), ~ (regex), = (exact)
 compare() {
 	local ok='ok'
-	local res="$1" type="$line"
-	local comp="${type:2:${#type}}"
+	local res="$1" type="$comp"
+	local comp="${comp:2:${#comp}}"
 
 	# Handle colored output (c)
 	if [[ ${type:0:1} == c ]]; then
@@ -479,17 +479,26 @@ EOF
 #echo $tests|sed -E '/^[0-9]+ /s/(^[0-9]+).*/\1/'|grep '^[0-9]'|tail -1
 
 # Process tests
+nmax=0
 while IFS= read -r line ; do
-	[[ $line =~ ^### ]] && { [[ ${#numtest[@]} == 0 && ${#strtest[@]} == 0 ]] &&
-		echo "$line"; continue; }
+	[[ $line =~ ^### ]] && comment="$line" && continue
 	[[ $line =~ ^# ]] || [[ $line =~ ^[\ \	]$ ]] && continue
 
 	num=${line%% *}
 	[[ -z $num ]] && continue
-	cmd=${line#* }
+	cmds[num]=${line#* }
+	[[ -n $comment ]] && comments[num]=$comment && comment=
 
 	read -r line
-	comp=$line
+	comps[num]="$line"
+	[[ $nmax -lt $num ]] && nmax=$num
+done <<< "$tests"
+
+for ((num = 1 ; num <= nmax ; num++)); do
+
+	cmd="${cmds[num]}"
+	comp="${comps[num]}"
+	comm="${comments[num]}"
 
 	[[ ${#numtest[@]} -gt 0 && ! " ${numtest[*]} " =~ \ $num\  ]] && continue
 	[[ ${#strtest[@]} -gt 0 && ! " ${cmd[*]} " =~ ${strtest[0]} ]] && continue
@@ -527,6 +536,7 @@ while IFS= read -r line ; do
 		fi
 	fi
 
+	[[ -n $comm ]] && echo "$comm"
 	if [[ $noaction == 1 ]]; then
 		needed_str=${needed:+ "($needed)"}
 		[[ $verbose == 1 ]] && echo "$num $cmd$needed_str" || echo "$num $cmd"
@@ -591,10 +601,9 @@ while IFS= read -r line ; do
 	state=$([[ $ignore == 1 ]] && echo ignore || echo "$ok")
 	missing=
 	[[ $ignore == 1 ]] && missing="needs $needed"
-	[[ $num = \#* ]] || printf "%3d %-6s %s %s\n" "$num" "$state" "$comment" "$missing"
+	printf "%3d %-6s %s %s\n" "$num" "$state" "$comment" "$missing"
 	[[ $ok == NOT\ ok && $ignore != 1 ]] && echo "    failing command: $cmd"
-	num=0
-done <<< "$tests"
+done
 
 seconds=$(( $(date +%s) - seconds ))
 echo "$sumok/$sumignore/$sumnok tests passed/ignored/failed in $seconds seconds"
