@@ -711,16 +711,23 @@ isfinal () {
 	[[ -z "$fext" ]] && fext=$(fileext "$fileext")
 	fext=${fext##*/}
 	[[ -z $fext ]] && fext=$x
-	[[ -z ${colorizer[*]} ]] && has_colorizer "$1" "$fext" "$fileext"
 	if [[ -n ${cmd[*]} ]]; then
 		# TAU: When cmd starts with environment variable settings, bash will refuse to execute it via : "${cmd[@]}"
 		# The remedy is simple : Just run it through the "env" command in that case.
 		[[ "$cmd" =~ '=' ]] && cmd=(env "${cmd[@]}")
 		"${cmd[@]}" 2>&1
 	else
-		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" && return
+		local final_input="$1"
+		if [[ -n $fileext && "$1" == - && $colorizer != archive_color ]]; then
+			final_input=$(nexttmp)
+			cat "$1" > "$final_input"
+		fi
+
+		[[ -z ${colorizer[*]} ]] && has_colorizer "$final_input" "$fext" "$fileext"
+		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" 2>/dev/null && return
 		# if fileext set, we need to filter to get rid of .fileext
-		[[ -n $fileext || "$1" == - || "$1" == "$t" ]] && cat "$1"
+		[[ -n $fileext && "$1" != - ]] && cat "$1" && return
+		cat "$final_input"
 	fi
 }
 
@@ -752,7 +759,7 @@ isarchive () {
 					if [[ "$2" == - ]]; then
 						cpio -i --quiet --to-stdout "$3"
 					else
-						cpio -i --quiet --to-stdout --file "$2" "$3"
+						istemp cpio -i --quiet --to-stdout --file "$2" "$3"
 					fi
 				else
 					msg "cpio: this version cannot extract files to a pipe"

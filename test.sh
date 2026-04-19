@@ -427,7 +427,7 @@ c test=a
 c test
 107 LESSCOLORIZER=vimcolor less $T/tests/special.tgz:.gitconfig	# colorize known dotfiles git #154, needs vimcolor
 c name
-108 LESSCOLORIZER=vimcolor less $T/tests/special.tgz:a-r-R.pl:perl		# do not call vimcolor with -l extension git #77, needs vimcolor
+108 LESSCOLORIZER=vimcolor less $T/tests/special.tgz:a-r-R.pl	# do not call vimcolor with -l extension git #77, needs vimcolor
 c test
 ### solved github issues and other test cases
 109 less tests/filter.tgz:test_dtb	# device tree blob, needs dtc
