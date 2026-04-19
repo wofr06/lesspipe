@@ -176,7 +176,8 @@ separatorline () {
 
 nexttmp () {
 	new=$(mktemp "$tmpdir/lesspipeXXXXXX")
-	new2="$new.${ft%%:*}"
+	[[ -z $1 ]] && suffix="${ft%%:*}" || suffix="${1##*.}"
+	new2="$new.$suffix"
 	mv -n "$new" "$new2"
 	echo "$new2"
 }
@@ -427,129 +428,130 @@ analyze_args () {
 	fi
 }
 
-has_colorizer () {
-	[[ $COLOR == *always ]] || return
-	[[ $2 == plain || -z $2 ]] && return
+find_colorizer () {
 	prog=${LESSCOLORIZER%% *}
+	# Handle vim/vimcolor special case
 	[[ $prog == *vimcolor ]] && ! has_cmd vim && ! has_cmd nvim && prog=
+	if [[ -z $prog ]]; then
+		for i in nvimpager batcat bat pygmentize e2ansi-cat source-highlight vim nvim code2color ; do
+			has_cmd "$i" && prog=$i && break
+		done
+		[[ $prog == *vim ]] && prog=vimcolor
+	else
+		has_cmd "$prog" || prog=
+	fi
+	echo "$prog"
+}
 
-	for i in nvimpager batcat bat pygmentize e2ansi-cat source-highlight vim nvim code2color ; do
-		[[ -z $prog ]] && has_cmd "$i" && prog=$i
-		[[ $prog == "$i" ]] && ! has_cmd "$prog" && prog=
-	done
-	[[ $prog == *vim ]] && prog=vimcolor
-	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || lang=$2
-	# prefer an explicitly requested language
-	[[ -n $3 ]] && reql=$3
-	[[ $reql == *.* ]] && reql=${reql##*.}
-	pname=${prog##*/}
-	! has_cmd "$pname" && pname= && prog=
-	case $pname in
-		e2ansi-cat)
-			#opt=("$2")
-			if [[ -n "$reql" ]]; then
-				echo ''|e2ansi-cat -- --mode "$reql" - 2>/dev/null && opt=(-- --mode "$reql" "$1")
-			elif [[ -n "$lang" ]]; then
-				echo ''|e2ansi-cat -- --mode "$lang" - 2>/dev/null && opt=(-- --mode "$lang" "$1")
-			fi
-			[[ -z ${opt[*]} ]] && opt=(-- "$1")
-			;;
+check_lang () {
+	prog=$1
+	lang=$2
+	[[ -z $lang ]] && return
+	case $prog in
 		bat|batcat)
-			batconfig=$($prog --config-file)
-			languages=$($prog --list-languages|sed "s/.*:/,/;s/$/,/;s/\n/,/")
-			if [[ -n "$reql" ]]; then
-				echo "$languages"|grep -q ",$reql," && opt=(-l "$reql")
-			elif [[ -n "$lang" ]]; then
-				echo "$languages"|grep -q ",$lang," && opt=(-l "$lang")
-			fi
+			lang=$(echo "$lang"|tr '[:upper:]' '[:lower:]')
+			languages=$($prog --list-languages|sed "s/^/:/;s/$/:/;s/\n/:/;s/,/:/g"|tr '[:upper:]' '[:lower:]') ;;
+		code2color)
+			languages=$($prog -L|sed "s/^/:/;s/$/:/;s/[ ]/:/g")
+			languages=${languages##*languages} ;;
+		vimcolor|nvimpager)
+			languages=$(vimcolor -L "$lang"|sed "s/^/:/;s/$/:/;s/ /:/g") ;;
+		source-highlight)
+			languages=$($prog --lang-list|sed "s/ =.*//;s/^/:/;s/$/:/;") ;;
+		pygmentize)
+			$prog -l "$lang" /dev/null &>/dev/null && languages=":$lang:" ;;
+		e2ansi-cat)
+			echo ''|e2ansi-cat -- --mode "$lang" - >/dev/null 2>&1 && languages=":$lang:" ;;
+		*)
+			;;
+	esac
+	[[ $languages == *:$lang:* ]] || lang=
+	echo "$lang"
+}
+
+colorizer_cmd () {
+	prog=$1
+	file=$2
+	[[ $file == - && -n $final_name ]] && file=$final_name
+	lang=$3
+	case $prog in
+		pygmentize)
+			# let pygmentite guess the language if not set and input from pipe
+			[[ -n $lang ]] && opt=(-l "$lang")
+			[[ $file == - && -z $lang ]] && opt=(-g)
+			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-[OP]\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
+			[[ -n $style ]] && opt+=(-O style="${style%% *}")
+			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
+			[[ "$file" == - ]] || opt+=("$file") ;;
+		source-highlight)
+			[[ -n $lang ]] && opt=(-s "${lang##*.}")
+			style=esc
+			[[ $colors -ge 256 ]] && style=esc256
+			opt+=(--failsafe -f "$style" --style-file "$style".style)
+			[[ "$file" == - ]] || opt+=(-i "$file") ;;
+		code2color|vimcolor)
+			[[ -n $lang ]] && opt=(-l "$lang")
+			opt+=("$file") ;;
+		nvimpager)
+			opt=(-c --)
+			[[ -n $lang ]] && opt+=(-c "set filetype=$lang")
+			opt+=("$file") ;;
+		e2ansi-cat)
+			opt=(-- "$file")
+			[[ -n $lang ]] && opt=(-- --mode "$lang" "$file") ;;
+		bat|batcat)
+			[[ -n $lang ]] && opt=(-l "$lang")
+			batconfig=$($prog --config-file 2>/dev/null)
+			# Extract style and theme from LESSCOLORIZER
 			opt2=${LESSCOLORIZER##*--}
 			[[ $opt2 == style=* ]] && style=${opt2##*=}
 			[[ $opt2 == theme=* ]] && theme=${opt2##*=}
-			opt2=$(echo "$LESSCOLORIZER"|tr -s ' ')
+			opt2=$(echo "$LESSCOLORIZER" | tr -s ' ')
 			opt2=${opt2%[ ]--*}
 			opt2=${opt2##*--}
 			[[ $opt2 == style=* ]] && style=${opt2##*=}
 			[[ $opt2 == theme=* ]] && theme=${opt2##*=}
-			[[ -n $theme ]] && theme=$(echo "${theme##*=}"|tr -d '/"\047\134/')
+			# Sanitize theme (apostroph or backslash in theme names with spaces)
+			[[ -n $theme ]] && theme=$(echo "${theme##*=}" | tr -d '/"\047\134/')
+			# Apply defaults from config or environment
 			[[ -z $style ]] && style=$BAT_STYLE
 			[[ -z $theme ]] && theme=$BAT_THEME
 			if [[ -r "$batconfig" ]]; then
-				if [[ -z $style ]]; then
-					grep -q -e '^--style' "$batconfig" || style=plain
-				fi
-				if [[ -z $theme ]]; then
-					grep -q -e '^--theme' "$batconfig" || theme=ansi
-				fi
+				[[ -z $style ]] && grep -q -e '^--style' "$batconfig" || style=plain
+				[[ -z $theme ]] && grep -q -e '^--theme' "$batconfig" || theme=ansi
 			else
 				[[ -z $style ]] && style=plain
 				[[ -z $theme ]] && theme=ansi
 			fi
 			style="${style%% *}" theme="${theme%%[|&;<>]*}"
 			opt+=(${style:+--style="$style"} ${theme:+--theme="$theme"})
-			opt+=("$COLOR" --paging=never "$1") ;;
-		pygmentize)
-			if [[ -n "$reql" ]]; then
-				pygmentize -l "$reql" /dev/null &>/dev/null && opt=(-l "$lang")
-			elif [[ -n "$lang" ]]; then
-				pygmentize -l "$lang" /dev/null &>/dev/null && opt=(-l "$lang")
-			fi
-			[[ -z "${opt[*]}" ]] && opt=(-g)
-			[[ -n $LESSCOLORIZER && $LESSCOLORIZER = *-[OP]\ *style=* ]] && style="${LESSCOLORIZER/*style=/}"
-			[[ -n $style ]] && opt+=(-O style="${style%% *}")
-			[[ $colors -ge 256 ]] && opt+=(-f terminal256)
-			[[ "$1" == - ]] || opt+=("$1") ;;
-		source-highlight)
-			[[ -n $1 && "$1" != - ]] && opt=(-i "$1") || opt=()
-			[[ -n $lang ]] && opt+=(-s "${lang##*.}")
-			style=esc
-			[[ $colors -ge 256 ]] && style=esc256
-			opt+=(--failsafe -f "$style" --style-file "$style".style) ;;
-		code2color)
-			opt=("$1")
-			[[ -n "$reql" ]] && opt=(-l "$reql" "$1") ;;
-		vimcolor)
-			# lowercase file extension and remove dot
-			if [[ -n "$reql" ]]; then
-				reql=${reql##*/} reql=${reql##*.}
-				reql=$(echo "$reql"|tr '[:upper:]' '[:lower:]')
-				list=$(vimcolor -L "$reql")
-				echo ",$list,"|sed 's/ /,/g'|grep -q ",$reql," &&
-					opt=(-l "$reql" "$1")
-			fi
-			if [[ -z ${opt[*]} && -n "$lang" ]]; then
-				list=$(vimcolor -L "$lang")
-				echo ",$list,"|sed 's/ /,/g'|grep -q ",$lang," &&
-					opt=(-l "$lang" "$1")
-			fi
-			[[ -z ${opt[*]} ]] && opt=("$1")
-			;;
-
-		nvimpager)
-			if [[ -n "$reql" ]]; then
-				reql=${reql##*/} reql=${reql##*.}
-				reql=$(echo "$reql"|tr '[:upper:]' '[:lower:]')
-				has_cmd vimcolor && list=$(vimcolor -L "$reql")
-				echo ",$list,"|sed 's/ /,/g'|grep -q ",$reql," &&
-					opt=(-c -- -c "set filetype=$reql" "$1")
-			fi
-			if [[ -z ${opt[*]} && -n "$lang" ]]; then
-				has_cmd vimcolor && list=$(vimcolor -L "$lang")
-				echo ",$list,"|sed 's/ /,/g'|grep -q ",$lang," &&
-					opt=(-c -- -c "set filetype=$lang" "$1")
-			fi
-			if [[ -z "$lang" ]]; then
-				[[ -n "$3" ]] &&
-					reql=${3##*/} reql=${reql##*.}
-					opt=(-c -- -c "set filetype=$reql" "$1")
-				[[ -z "$3" && -n "$2" ]] &&
-					opt=(-c -- -c "set filetype=$2" "$1")
-			fi
-			[[ -z ${opt[*]} ]] && opt=(-c "$1")
-			;;
+			opt+=("$COLOR" --paging=never "$file") ;;
 		*)
 			;;
 	esac
 	colorizer=("$prog" "${opt[@]}")
+}
+
+has_colorizer () {
+	[[ $COLOR == *always ]] || return
+	[[ $2 == plain || -z $2 ]] && return
+	prog=$(find_colorizer)
+	# prefer an explicitly requested language
+	[[ "$2" =~ ^[0-9]*$ || -z "$2" ]] || reql=$2
+	# if input is from a pipe use the suffix as language hint
+	[[ $1 == - ]] && lang=$3
+
+	pname=${prog##*/}
+	! has_cmd "$pname" && pname= && prog=
+
+	lang="$(check_lang "$pname" "$reql")"
+	if [[ -z "$lang" && $1 == - && -n $3 ]]; then
+		lang=$3
+		[[ $lang == *.* ]] && lang=${lang##*.}
+		lang="$(check_lang "$pname" "$lang")"
+	fi
+	# set colorizer name, options and file name to process
+	colorizer_cmd "$pname" "$1" "$lang"
 }
 
 isfinal () {
@@ -591,7 +593,9 @@ isfinal () {
 		java-applet)
 			# filename needs to end in .class
 			fileext='java'
-			has_cmd procyon && t=$t.class && cat "$1" > "$t" && cmd=(procyon "$t") ;;
+			t=$(nexttmp 'class')
+			#has_cmd procyon && t=$t.class && cat "$1" > "$t" && cmd=(procyon "$t") ;;
+			has_cmd procyon && cat "$1" > "$t" && cmd=(procyon "$t") ;;
 		docx)
 			{ has_cmd pandoc && cmd=(pandoc -f docx -t plain "$1"); } ||
 			{ has_cmd docx2txt && cmd=(docx2txt "$1" -); } ||
@@ -939,11 +943,11 @@ trap 'rm -rf "$tmpdir"; exit 1' SIGINT
 trap 'rm -rf "$tmpdir"' EXIT
 trap - PIPE
 
-t=$(nexttmp)
 analyze_args
 # make LESSOPEN="|- ... " work
 [[ $LESSOPEN == *\|\|* ]] && retval=1 || retval=0
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
+	t=$(nexttmp)
 	if [[ "$fext" == log && $COLOR == *always* ]] && has_cmd tspin; then
 		tspin
 	else
