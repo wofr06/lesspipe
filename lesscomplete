@@ -26,15 +26,13 @@ filetype () {
 	# do not depend on the file extension, if possible
 	fname="$1"
 	if [[ "$1" == - || -z $1 ]]; then
-		declare t
 		t=$(nexttmp)
-		head -c 1000000 > "$t" 2>/dev/null
+		head -c 1000000 > "$t"
 		[[ -z $fileext ]] && fname="$t" || fname="$fileext"
 		set "$t" "$2"
 	fi
 	fext=$(fileext "$fname")
 	### get file type from mime type
-	declare ft
 	ft=$(file -L -s -b --mime "$1" 2> /dev/null)
 	[[ $ft == *=* ]] && fchar="${ft##*=}" || fchar=utf-8
 	fcat="${ft%/*}"
@@ -64,7 +62,7 @@ filetype () {
 }
 
 nexttmp () {
-	declare new="$tmpdir/lesspipe.$RANDOM.${ft%%:*}"
+	new=$(mktemp "$tmpdir/lesspipeXXXXXX")
 	echo "$new"
 }
 
@@ -169,7 +167,6 @@ get_unpack_cmd () {
 	x="${1%%:*}"
 	cmd=()
 	[[ "$3" == $sep$sep ]] && return
-	declare t
 	# uncompress
 	case $x in
 		gzip|bzip2|lzip|lzma|xz|brotli|compress)
@@ -228,7 +225,7 @@ get_unpack_cmd () {
 	if [[ -z $prog ]]; then
 		case "$x" in
 			dmg)
-				has_cmd 7z && eval '7z l "$2" >/dev/null 2>&1' && prog=7z ;;
+				has_cmd 7z && 7z l "$2" >/dev/null 2>&1 && prog=7z ;;
 			7z-compressed|lzma|xz|cab|arj|bzip2|cpio|iso)
 				{ has_cmd 7zz && prog=7zz; } ||
 				{ has_cmd 7zr && prog=7zr; } ||
@@ -362,10 +359,13 @@ isdeb () {
 }
 
 # the main program
+# LESSOPEN needs to be set to complete names in archives
+[[ "$LESSOPEN" == *\|* ]] || exit 0
 set +o noclobber
-setopt sh_word_split 2>/dev/null
+[[ -n "$ZSH_VERSION" ]] && setopt sh_word_split
+# tilde and escaped chars file name expansion
 a="${1/#\~/$HOME}"
-a="${a//\\}"
+a="${a//\\/}"
 sep=:					# file name separator
 altsep='='				# alternate separator character
 if [[ -e "$a" && "$a" == *"$sep"* ]]; then
@@ -374,20 +374,16 @@ elif [[ "$a" == *"$altsep"* ]]; then
 	[[ -e "${a%%"$altsep"*}" ]] && sep=$altsep
 fi
 
-tmpdir=${TMPDIR:-/tmp}/lesspipe."$RANDOM"
-[[ -d "$tmpdir" ]] || mkdir "$tmpdir"
-[[ -d "$tmpdir" ]] || exit 1
-trap 'rm -rf "$tmpdir";exit 1' SIGINT
+tmpdir=$(mktemp -d --tmpdir "lesspipe.XXXXXX") || exit 1
+trap 'rm -rf "$tmpdir"; exit 1' SIGINT
 trap 'rm -rf "$tmpdir"' EXIT
 trap - PIPE
 
-t=$(nexttmp)
 # make LESSOPEN="|- ... " work
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
+	t=$(nexttmp)
 	cat > "$t"
-	[[ -n "$fext" ]] && t="$t$sep$fext"
 	a="$t"
-	nexttmp >/dev/null
 fi
 
 show "$a"

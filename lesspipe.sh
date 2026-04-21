@@ -968,9 +968,7 @@ if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
 		tspin
 	else
 		cat > "$t"
-		[[ -n "$fext" ]] && t="$t$sep$fext"
 		set "$1" "$t"
-		nexttmp >/dev/null
 	fi
 fi
 
