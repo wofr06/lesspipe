@@ -338,7 +338,7 @@ read -r -d '' tests << 'EOF'
 63 less tests/filter.tgz:test_ps		# postscript, needs ps2ascii
 ~ .*test\ ?1?$
 64 less tests/filter.tgz:test.class	# java class file, needs procyon
-~ public class test
+c public class test
 65 less tests/filter.tgz:test_docx		# docx (neu) git #24,26,27,37, needs pandoc|docx2txt|libreoffice
 = test
 66 less tests/filter.tgz:test_pptx		# pptx (neu), needs pptx2md,pandoc|libreoffice,html_converter
@@ -474,6 +474,8 @@ c test
 = test
 130 less $T/tests/test_zlib		# zlib, needs pigz|zlib-flate
 = test
+131 less tests/filter.tgz:test.class	# colored java class file git #81, needs procyon
+c package
 EOF
 # number of last test
 #echo $tests|sed -E '/^[0-9]+ /s/(^[0-9]+).*/\1/'|grep '^[0-9]'|tail -1
