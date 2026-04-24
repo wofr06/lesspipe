@@ -602,8 +602,7 @@ isfinal () {
 			# filename needs to end in .class
 			fileext='java'
 			t=$(nexttmp 'class')
-			#has_cmd procyon && t=$t.class && cat "$1" > "$t" && cmd=(procyon "$t") ;;
-			has_cmd procyon && cat "$1" > "$t" && cmd=(procyon "$t") ;;
+			has_cmd procyon && cat "$1" > "$t" && cmd=(JAVA_TOOL_OPTIONS=-DAnsi=true procyon "$t") ;;
 		docx)
 			{ has_cmd pandoc && cmd=(pandoc -f docx -t plain "$1"); } ||
 			{ has_cmd docx2txt && cmd=(docx2txt "$1" -); } ||

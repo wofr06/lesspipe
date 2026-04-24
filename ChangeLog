@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- make procyon (java decompiler) output colorful
 - replace colorizer input from pipe with temporary file input
 - parse tests before processing it in test.sh and properly display comments
 - refactor colorizer code in lesspipe.sh
