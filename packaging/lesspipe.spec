@@ -5,7 +5,7 @@
 %global zsh_completion		%{_datarootdir}/zsh/site-functions
 
 %define packagename lesspipe
-%define packageversion 2.24
+%define packageversion 2.25
 %define packagerelease 1
 
 Name:		%{packagename}
@@ -131,6 +131,8 @@ env TERM=xterm-256color ./test.sh %{buildroot}%{lesspipe_exec_dir}/lesspipe.sh
 %{_sysconfdir}/profile.d/*
 
 %changelog
+* Sat Apr 25 2026 2.25-1 - wp.friebel@gmail.com
+- emacs based colorizer e2ansi-cat added, procyon output can get colored
 * Sat Apr 04 2026 2.24-1 - wp.friebel@gmail.com
 - no more perl dependency, log files can get colorized using tspin 
 * Sat Mar 21 2026 2.23-1 - wp.friebel@gmail.com

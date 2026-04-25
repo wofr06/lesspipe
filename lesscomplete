@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# synced with lesspipe 2.24
+# synced with lesspipe 2.25
 # lesscomplete, a helper script for the _less (zsh) and less (bash) completion
 # mechanisms.
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)

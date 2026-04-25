@@ -1,6 +1,6 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.24
+Version: 2.25
 Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto:wp.friebel@gmail.com)
 License: GPL-2.0-or-later
 
