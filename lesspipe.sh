@@ -525,8 +525,8 @@ colorizer_cmd () {
 			[[ -z $style ]] && style=$BAT_STYLE
 			[[ -z $theme ]] && theme=$BAT_THEME
 			if [[ -r "$batconfig" ]]; then
-				[[ -z $style ]] && grep -q -e '^--style' "$batconfig" || style=plain
-				[[ -z $theme ]] && grep -q -e '^--theme' "$batconfig" || theme=ansi
+				[[ -z $style ]] && { grep -q -e '^--style' "$batconfig" || style=plain; }
+				[[ -z $theme ]] && { grep -q -e '^--theme' "$batconfig" || theme=ansi; }
 			else
 				[[ -z $style ]] && style=plain
 				[[ -z $theme ]] && theme=ansi
@@ -537,6 +537,7 @@ colorizer_cmd () {
 		*)
 			;;
 	esac
+	[[ -n $LESSCOLORIZER && -z $prog ]] && msg "$LESSCOLORIZER not found"
 	colorizer=("$prog" "${opt[@]}")
 }
 

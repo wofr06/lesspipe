@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+. fix bat option processing, issue warning if colorizer not found
 Version 2.25 Apr 25 2026
 - make procyon (java decompiler) output colorful
 - replace colorizer input from pipe with temporary file input

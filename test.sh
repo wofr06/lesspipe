@@ -474,7 +474,7 @@ c test
 = test
 130 less $T/tests/test_zlib		# zlib, needs pigz|zlib-flate
 = test
-131 less tests/filter.tgz:test.class	# colored java class file git #81, needs procyon
+131 less tests/filter.tgz:test.class	# colored java class file git #82, needs procyon
 c package
 EOF
 # number of last test
