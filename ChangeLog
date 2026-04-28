@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- rspeedup archive color and remove external programs from it
 . fix bat option processing, issue warning if colorizer not found
 Version 2.25 Apr 25 2026
 - make procyon (java decompiler) output colorful

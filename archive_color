@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 
 # archive_color (by Wolfgang Friebel), a modified tarcolor, works also for
-# other (archive) listings, such as rpm, debian, ar, isoinfo archives and ls -l
+# other (archive) listings, such as zip, rpm, debian, ar, isoinfo archives and ls -l
 #
-# Colors can be customized using an environment variable:
+# Colors can be customized using an environment variable such as:
 #
-# TAR_COLORS='di=01;34:ln=01;36:ex=01;32:so=01;40:pi=01;40:bd=40;33:cd=40;33:su=0;41:sg=0;46'
+# TAR_COLORS='so=01;40:pi=01;40:bd=40;33:cd=40;33:su=0;41:sg=0;46'
 #
 # The format for TAR_COLORS is similar to the format used by LS_COLORS
 # Check out the online LSCOLORS generator at https://geoff.greer.fm/lscolors/
 #
 # License: GPL-2.0-or-later
+
+get_fname () {
+	shift "$flds"
+	echo "$*"
+}
 
 get_file_code() {
 	local line=$1
@@ -40,36 +45,37 @@ get_file_code() {
 	echo "*.${line##*.}"
 }
 
-if [[ -t 0 ]]; then
-	echo "Example: tar tvzf some_tarball.tar.gz | archive_color"
-	exit 0
-fi
+[[ -t 0 ]] && echo "Example: tar tvzf some_tarball.tar.gz | archive_color" && exit 0
 
 declare -A FILE_TYPE_TO_COLOR
 default_colors='di=01;34:ln=01;36:ex=01;32:so=01;35:pi=40;33:bd=40;33;01:cd=40;33;01:su=37;41:sg=30;43:do=01;35:tw=30;42:ow=34;42'
-tar_colors=${TAR_COLORS:-${LS_COLORS:-}}
-# shellcheck disable=SC2207
-color_specs=($(echo "$default_colors:$tar_colors"| tr ":" "\n"))
+tar_colors="$default_colors:${TAR_COLORS:-${LS_COLORS:-}}"
+# shellcheck disable=SC2206,SC2296
+if [[ -n $ZSH_VERSION ]]; then
+	color_specs=(${(@s/:/)tar_colors})
+else
+	IFS=':' read -r -a color_specs <<< "$tar_colors"
+fi
 
 for spec in "${color_specs[@]}"; do
-	[[ -z $spec ]] && continue
-	type=${spec%=*}
+	type=${spec%%=*}
 	codes=${spec#*=}
-	[[ -z $type || -z $codes ]] && continue
-	FILE_TYPE_TO_COLOR[$type]="\033[${codes}m"
+	[[ -n $type && -n $codes ]] && FILE_TYPE_TO_COLOR[$type]="\033[${codes}m"
 done
 
+flds=8
 while IFS= read -r line; do
-	type=$(get_file_code "$line") || true
+	type=$(get_file_code "$line") || false
 	if [[ -n $type && -n ${FILE_TYPE_TO_COLOR[$type]+set} ]]; then
-		[[ $(echo "$line"|awk '{print $4}') == *-*-* ]] && fld=6 || fld=9
-		filename=$(echo "$line"|awk '{print $'"$fld"'}')
-		filename="$filename${line##*"$filename"}"
-		if [[ -n $filename ]]; then
-			printf '%s%b%s%b\n' "${line%"$filename"}" "${FILE_TYPE_TO_COLOR[$type]}" "$filename" "\033[0m"
+		[[ ${line##*/*-*-*:[0-9][0-9] } != "$line" ]] && flds=5
+		# shellcheck disable=SC2086
+		if [[ -n $ZSH_VERSION ]]; then
+			setopt shwordsplit
+			filename=$(get_fname ${=line})
 		else
-			printf '%s\n' "$line"
+			filename=$(get_fname $line)
 		fi
+		printf '%s%b%s%b\n' "${line%"$filename"}" "${FILE_TYPE_TO_COLOR[$type]}" "$filename" "\033[0m"
 	else
 		printf '%s\n' "$line"
 	fi
