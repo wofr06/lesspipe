@@ -338,7 +338,7 @@ get_unpack_cmd () {
 		charmap=
 		return
 	fi
-	[[ "$3" == "$sep" ]] && return
+	[[ "$3" == "$sep" && "$COLOR" != --color=always ]] && return
 	file2=${3#"$sep"}
 	file2=${file2%%"$sep"*}
 	# remember name of file to extract or file type
@@ -399,9 +399,7 @@ get_unpack_cmd () {
 	if [[ -n ${cmd[*]} ]]; then
 		[[ -n "$file2" ]] && file2= && return
 		msg "use ${x}_file${sep}contained_file to view a file in the archive"
-		if [[ $COLOR = --color=always ]]; then
-			has_cmd archive_color && colorizer=(archive_color)
-		fi
+		[[ $3 != "$sep" && $COLOR == --color=always ]] && has_cmd archive_color && colorizer=(archive_color) || colorizer=(no_archive_color)
 	fi
 }
 
@@ -718,8 +716,7 @@ isfinal () {
 		"${cmd[@]}" 2>&1
 	else
 		local final_input="$1"
-		# shellcheck disable=SC2128
-		if [[ -n $fileext && "$1" == - && $colorizer != archive_color ]]; then
+		if [[ -n $fileext && "$1" == - && ${colorizer[0]} != archive_color ]]; then
 			final_input=$(nexttmp)
 			cat "$1" > "$final_input"
 		fi
@@ -938,14 +935,13 @@ ishtml () {
 
 # the main program
 set +o noclobber
-[[ -n "$ZSH_VERSION" ]] && setopt sh_word_split
+[[ -n "$ZSH_VERSION" ]] && setopt shwordsplit
 # the current locale in lowercase (or generic utf-8)
 charmap="utf-8"
 if has_cmd locale ; then
 	map=$(locale -k charmap 2>/dev/null|tr '[:upper:]' '[:lower:]')
-	charmap="${map#charmap=}"
+	eval "$map"
 fi
-
 sep=:					# file name separator
 altsep='='				# alternate separator character
 if [[ -e "$1" && "$1" == *"$sep"* ]]; then

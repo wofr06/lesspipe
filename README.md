@@ -5,8 +5,8 @@ Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto:wp.friebel@gmail.com)
 License: GPL-2.0-or-later
 
 Latest version available as:
- [zip file on github](https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip)
-and the [repository on github](https://github.com/wofr06/lesspipe)
+ [zip file on GitHub](https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip)
+and the [repository on GitHub](https://github.com/wofr06/lesspipe)
 
 The main web page has moved to [lesspipe.org](https://lesspipe.org)
 
@@ -69,7 +69,7 @@ the author by email.
  lesspipe.sh, see
 
  - Section 2 on the Usage of lesspipe.sh, respectively
- - the Wiki at [github](https://github.com/wofr06/lesspipe/wiki)
+ - the Wiki at [GitHub](https://github.com/wofr06/lesspipe/wiki)
 
   For the text and info extraction, lesspipe.sh will depend on external tools,
   but many use cases are covered by an installation of
@@ -262,7 +262,7 @@ the author by email.
 - json			requires `jq`
 - device tree blobs	requires `dtc` (extension dtb or dts)
 
- Files in the html and perl pod format are always rendered. Sometimes
+ Files in HTML and Perl POD format are always rendered. Sometimes
  however the original contents of the file should be viewed instead.
  That can be achieved by appending a colon to the file name. If the correct
  file type (html, pod) follows, the output can get colorized (see also
@@ -292,10 +292,10 @@ the author by email.
 
 ### 5.1 Syntax highlighting
  Syntax highlighting is not always wanted, it can be switched off by
- appending a colon after the file name. If the wrong language was chosen
- for syntax highlighting or no language was recognized, then the correct
- one can be forced by appending a colon and a suffix to the file name as
- follows (assuming plfile is a file with perl syntax):
+ appending a colon after the file name. This is also true for colored archive
+ listings. If the wrong language was chosen for syntax highlighting or no
+ language was recognized, then the correct one can be forced by appending a
+ colon and a suffix to the file name (example for a file with perl syntax):
 ```
         less plfile:pl or less plfile:perl (depending on the colorizer)
 ```
@@ -456,7 +456,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 
 - [CERN Computer Newsletter 2002/1](https://ref.web.cern.ch/CERN/CNL/2002/001/unix-less/)
 - [mentioned in Bash Cookbook, O'Reilly 2007](https://www.oreilly.com/library/view/bash-cookbook/0596526784/ch08s15.html)
-- [Article on Github, 2025](https://github.com/wofr06/lesspipe/wiki/article_en)
+- [Article on GitHub, 2025](https://github.com/wofr06/lesspipe/wiki/article_en)
 
  In German:
 
@@ -464,7 +464,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 - [Bessere Sicht (Linux Magazin 01/2001)](https://www.linux-magazin.de/ausgaben/2001/01/bessere-sicht/)
 - [lesspipe (Linux User 04/2002](https://www.linux-community.de/ausgaben/linuxuser/2002/04/lesspipe/)
 - [lesspipe 2.0 (Linux Magazin 07/2022)](https://www.linux-magazin.de/ausgaben/2022/07/lesspipe-2-0/)
-- [Artikel auf Github, 2025](https://github.com/wofr06/lesspipe/wiki/article_de)
+- [Artikel auf GitHub, 2025](https://github.com/wofr06/lesspipe/wiki/article_de)
 
 ## 12. External links
 
@@ -514,7 +514,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 
  The script lesspipe.sh is constantly enhanced by suggestions from users and
  reporting bugs or deficiencies. Thanks to (in alphabetical order):
- (contributors after Sep 2015 see github history)
+ (contributors after Sep 2015 see GitHub history)
 
  Marc Abramowitz, James Ahlborn, Sören Andersen, Andrew Barnert,
  Peter D. Barnes, Jr., Eduard Bloch, Mathieu Bouillaguet, Florian Cramer,

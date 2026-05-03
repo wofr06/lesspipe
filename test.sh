@@ -206,8 +206,8 @@ fi
 # Test data
 read -r -d '' tests << 'EOF'
 ### archive tests
-1 less tests/archive.tgz			# contents of archive with test files
-~ .* test_tar
+1 less tests/archive.tgz:			# contents of archive with test files
+~ .* test_cab
 2 less $T/tests/test_tar			# tar contents (from unpacked file)
 ~ .* tests/textfile
 3 less tests/archive.tgz:test_tar		# tar contents (from archive without unpacking)

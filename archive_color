@@ -68,10 +68,9 @@ while IFS= read -r line; do
 	type=$(get_file_code "$line") || false
 	if [[ -n $type && -n ${FILE_TYPE_TO_COLOR[$type]+set} ]]; then
 		[[ ${line##*/*-*-*:[0-9][0-9] } != "$line" ]] && flds=5
-		# shellcheck disable=SC2086
+		# shellcheck disable=SC2086,2298
 		if [[ -n $ZSH_VERSION ]]; then
-			setopt shwordsplit
-			filename=$(get_fname ${=line})
+			filename="${${=line}[9,-1]}"
 		else
 			filename=$(get_fname $line)
 		fi

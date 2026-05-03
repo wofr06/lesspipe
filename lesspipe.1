@@ -7,42 +7,42 @@ lesspipe.sh \- a filter for less
 .SH DESCRIPTION
 .PP
 The aim of \fBlesspipe.sh\fP is to enhance the output of \fBless\fP. The choice
-of the rules to be applied to modify the output are based on the file contents.
+of the rules to be applied to modify the output is based on the file contents.
 The file extension is respected only as a last resort.
 Usually \fBlesspipe.sh\fP is called as an input filter to \fBless\fP.
 .PP
-With the help of that filter \fBless\fP
+With the help of that filter, \fBless\fP
 will display the uncompressed contents of compressed (\fIgzip, bzip2,
 compress, zstd, lz4, lzip, xz, lzma, zlib or brotli\fP) files. For files
 containing archives and directories, a table of contents will be displayed
-(\fItar, ar, zip, 7-zip, rar, jar, cpio, rpm, deb ms-cabinet, iso, dmg,
+(\fItar, ar, zip, 7-zip, rar, jar, cpio, rpm, deb, ms-cabinet, iso, dmg,
 appimage and snap formats\fP).
-Many other files will be reformatted for display. It includes
-\fIpdf, dvi, markdown, Office (MS and Openoffice)\fP suites formats,
+Many other files will be reformatted for display. This includes
+\fIpdf, dvi, markdown, Office (MS and OpenOffice)\fP suite formats,
 \fINetCDF, matlab, device tree blob, html, xml\fP and \fImedia (image, audio and
-video)\fP formats. This does require helper programs being installed.
+video)\fP formats. This requires helper programs to be installed.
 .PP
 The filter can also be applied recursively to extract and display
-files in archives on the fly. This works to a depth of 6 where applying a
+files in archives on the fly. This works to a depth of 6, where applying a
 decompression algorithm counts as a separate level.
 .PP
 If the file utility reports text with an encoding different from the one
-used in the terminal then the text will be transformed using \fIiconv\fP into
-the default encoding. This does assume the \fIfile\fP command gets the file
+used in the terminal, the text will be transformed using \fIiconv\fP into
+the default encoding. This assumes that the \fIfile\fP command gets the file
 encoding right, which can be wrong in some situations. An appended colon
-to the file name does suppress the conversion.
+to the file name suppresses the conversion.
 .PP
-When using the programs \fBgit\fP, \fBvim\fP or \fBmutt\fP they can be
+When using the programs \fBgit\fP, \fBvim\fP or \fBmutt\fP, they can be
 enabled to read non-text files by using lesspipe.sh. That is described in
 the Wiki at \fIhttps://github.com/wofr06/lesspipe/wiki\fP.
 .SH FILTER ACTIVATION
-The filter is called from \fBless\fP provided the environment variable
-\fBLESSOPEN\fP is set properly. For ksh like shells (\fIbash, zsh\fP)
+The filter is called from \fBless\fP provided that the environment variable
+\fBLESSOPEN\fP is set properly. For ksh-like shells (\fIbash, zsh\fP),
 the command
 .RS
 .I LESSOPEN="|lesspipe.sh %s"; export LESSOPEN
 .RE
-does activate the filter for less. Use the fully qualified path, if
+activates the filter for less. Use the fully qualified path if
 \fBlesspipe.sh\fP is not in the search path. The command to set \fBLESSOPEN\fP
 can also be displayed by calling \fBlesspipe.sh\fP without arguments.
 This can even be used to set \fBLESSOPEN\fP directly:
@@ -50,84 +50,89 @@ This can even be used to set \fBLESSOPEN\fP directly:
 .RS
 .I eval `lesspipe.sh`
 (bash) or
-.I lesspipe.sh|source /dev/stdin
+.I lesspipe.sh | source /dev/stdin
 (zsh)
 .RE
 .EE
-The above commands work only in the described manner if the file name is
+.PP
+The above commands work only as described if the file name is
 \fBlesspipe.sh\fP.
-If it is installed under a different name then calling it without an argument
-will work as a filter with \fBLESSQUIET\fP set and expecting input from STDIN.
+If it is installed under a different name, calling it without an argument
+will work as a filter with \fBLESSQUIET\fP set and expect input from STDIN.
 .PP
 Having set the environment variable as described above, \fBless\fP
 will then display textual information for a wide range of file formats.
 .PP
-The filter is normally not called if input is piped to less as in
+The filter is normally not called if input is piped to less, as in
 .RS
 .I cat somefile | less
 .RE
-As described in the man page of less, the filtering in a pipe can however
+As described in the man page of less, filtering in a pipe can however
 be forced by starting \fBLESSOPEN\fP with the characters \fI|-\fP.
 .PP
-If commands within \fBlesspipe.sh\fP do fail, in some cases the error messages
-get displayed, this is a regarded buggy behavior and should be reported.
+If commands within \fBlesspipe.sh\fP fail, error messages are sometimes
+displayed; this is a considered buggy behavior and should be reported.
 .PP
-To suppress informal messages in the first line of the filter output the
-ENV variable \fBLESSQUIET\fP can be set to a nonempty value.
+To suppress informal messages in the first line of the filter output, the
+environment variable \fBLESSQUIET\fP can be set to a nonempty value.
 .PP
-To disengage the filter temporarily a colon can be appended to the file name.
+To disengage the filter temporarily, a colon can be appended to the file name.
+If the output was colorful, then the colon only disables the colorizer command.
+A second colon may then be required to display the original content.
 If the file name contains a colon, then an equal sign should be used instead.
+
 .SH HTML, XML and Perl POD Files
-Files in the \fIhtml\fP and \fIperl pod\fP format are always
-rendered. Sometimes however the original contents of the file should be viewed
-instead. As mentioned before that can be achieved by appending a colon to the
+Files in the \fIHTML\fP and \fIPerl POD\fP formats are always
+rendered. Sometimes, however, the original contents of the file should be viewed
+instead. As mentioned before, that can be achieved by appending a colon to the
 file name. If the correct file type (\fIhtml\fP, \fIpod\fP) follows,
-the output can get colorized (see also the section below).
+the output can be colorized (see also the section below).
 .PP
 .RS
 Example: \fBless\fP \fIindex.html:html\fP
 .RE
 .PP
-If the binary \fIxmq\fP is installed, then \fIxml\fP is rendered differently,
-so that the xml structure is better recognized. A similar display for
-\fIhtml\fP contents using \fIxmq\fP is achieved by appending a colon to the
-file name. To get the original html file contents, two colons are
+If the \fIxmq\fP binary is installed, \fIXML\fP is rendered differently,
+so that the XML structure is easier to recognize. A similar display for
+\fIHTML\fP contents using \fIxmq\fP is achieved by appending a colon to the
+file name. To get the original HTML file contents, two colons are
 required in this case.
 .SH OUTPUT COLORIZATION
 The filter is able to do syntax highlighting for a wide variety of
-file types. If installed, \fInvimpager\fP is used for
-colorizing the output. If not, \fIbat\fP/\fIbatcat\fP, \fIpygmentize\fP,
+file types. If installed, \fInvimpager\fP is used to
+colorize the output. If not, \fIbat\fP/\fIbatcat\fP, \fIpygmentize\fP,
 \fIe2ansi-cat\fP, 
 \fIsource-highlight\fP, \fIvimcolor\fP and \fIcode2color\fP are tried in turn.
-For bat/batcat the theme is set to \fIansi\fP and the style is set to
-\fIplain\fP which comes closer to the unfiltered output of \fBless\fP.
+For bat/batcat, the theme is set to \fIansi\fP and the style is set to
+\fIplain\fP, which comes closer to the unfiltered output of \fBless\fP.
 These settings can be changed in \fI~/.config/bat/config\fP or by the
 environment variables \fBBAT_STYLE\fP and \fBBAT_THEME\fP.
 .PP
-The contents of log files can get colorized if the \fItspin\fP program is
+The contents of log files can be colorized if the \fItspin\fP program is
 installed and the string ":log" is appended to the file name or the file
 extension is "log".
 .PP
-Among the colorizers
-a preferred one can be forced for colorizing by setting the ENV variable
+Among the colorizers,
+a preferred one can be forced by setting the environment variable
 \fBLESSCOLORIZER\fP to the name of the colorizer. For \fIpygmentize\fP and
-\fIbat\fP/\fIbatcat\fP restricted option settings are allowed as follows:
+\fIbat\fP/\fIbatcat\fP, restricted option settings are allowed as follows:
 .EX
 .RS
 .I LESSCOLORIZER='pygmentize -O style=foo' # -P allowed as well
 .I LESSCOLORIZER='bat --style=foo --theme=bar' # default: theme=ansi, style=plain
 .RE
 .EE
-Syntax highlighting is activated, if the environment variable \fBLESS\fP
-exists and contains the option \fI-R\fP
-or less is called with this option. This guarantees that escape sequences
-get converted into colors and do not garble the display. Using the option
-\fI-r\fP is not recommended, as the screen layout may be wrong, if long
+.PP
+Syntax highlighting is activated if the environment variable \fBLESS\fP
+exists and contains the option \fI-R\fP,
+or if less is called with this option. This guarantees that escape sequences
+are converted into colors and do not garble the display. Using the option
+\fI-r\fP is not recommended, as the screen layout may be wrong if long
 lines are in the output.
 .PP
 Syntax highlighting can be switched off by
-appending a colon after the file name, if the output was colorful. If the
-wrong language was chosen for syntax highlighting, then another one can be
+appending a colon after the file name if the output was colorful. If the
+wrong language was chosen for syntax highlighting, another one can be
 forced by appending a colon and a suffix to the file name.
 The list of suffixes and supported languages can be printed using the following colorizer commands:
 .EX
@@ -142,29 +147,29 @@ The list of suffixes and supported languages can be printed using the following 
 .RE
 .EE
 .PP
-In a pipe that method cannot be used. As a way out a last argument can be added
-that gets inspected by \fBlesspipe.sh\fP.
-A single colon (disengage filter) or :extension (force language) is possible as e.g with
+In a pipe, that method cannot be used. As a workaround, a last argument can be added
+that is inspected by \fBlesspipe.sh\fP.
+A single colon (disengage filter) or :extension (force language) is possible, as in:
 .RS
-.I command that generates c code | less - :c
+.I command that generates C code | less - :c
 .RE
 .PP
-When the conditions for syntax highlighting are met directory listings and
-listings of tar file contents get colorized as well.
+When the conditions for syntax highlighting are met, directory listings and
+listings of tar file contents are colorized as well.
 .PP
 As \fBless\fP is used as a default browser in other programs (e.g. \fIman\fP,
-\fIgit\fP, and \fIperldoc\fP) \fBlesspipe.sh\fP may be engaged and alter 
+\fIgit\fP, and \fIperldoc\fP), \fBlesspipe.sh\fP may be engaged and alter 
 the output of those programs.
 .SH WATCHING GROWING FILES
-The ability to watch growing files (usually wanted for log files like syslog)
-(using the F command within less or calling less with the +F option)
-may get lost if \fBlesspipe.sh\fP stores the input in a temporary file for
+The ability to watch growing files, usually wanted for log files like syslog,
+using the F command within less or calling less with the +F option,
+may be lost if \fBlesspipe.sh\fP stores the input in a temporary file for
 further processing.
-That can be repaired by adding a colon as the last argument for \fBless\fP such as e.g.
+That can be repaired by adding a colon as the last argument for \fBless\fP, such as:
 .RS
 .I \fBless\fP /var/log/syslog :
 .RE
-or if LESSOPEN starts with |- and less is called in a pipe
+or, if LESSOPEN starts with |- and less is called in a pipe:
 .RS
 .I \fBcat\fP /var/log/syslog | less +F - :
 .RE
@@ -183,13 +188,13 @@ or even
 .B less
 \fIsuper_archive\fP:\fIarchive_file\fP:\fIcontained_file\fP
 .RE
-To display the last file in the chain raw format, a colon (\fI:\fP) has to be
-appended to the file name. If it does contain a colon, then the alternate
+To display the last file in the chain in raw format, a colon (\fI:\fP) has to be
+appended to the file name. If it contains a colon, then the alternate
 separator character equal sign (\fI=\fP) has to be used.
 .PP
 Again, this method of extracting and displaying files does not work if
 \fBless\fP is called in an output pipe and \fBLESSOPEN\fP starts with the
-\fB|-\fP characters. As already for syntax highlighting the solution is to use
+\fB|-\fP characters. As already for syntax highlighting, the solution is to use
 a second argument that starts with a colon. Then the above command would
 be written as
 .RS
@@ -199,12 +204,12 @@ be written as
 .SH COMPLETING MECHANISM FOR ARCHIVE CONTENTS
 With the provided \fIlesscomplete\fP file (for \fBzsh\fP and \fBbash\fP) and the
 \fI_less\fP (for \fBzsh\fP) and \fIless\fP (for \fBbash\fP) files generated
-during installation a tab completion for files in archives can be accomplished.
+during installation, tab completion for files in archives can be accomplished.
 Entering a colon (:) or an equal sign (=) after an archive
 file name and then pressing the tab key triggers the completion mechanism.
 This also works in chained archives. 
-The files required for the completion algorithm get installed in directories
-according the choices made during the installation (configure script).
+The files required for the completion algorithm are installed in directories
+according to the choices made during the installation (configure script).
 
 The file \fIlesscomplete\fP
 has to be in one of the directories listed in \fB$PATH\fP and the function \fI_less\fP for \fBzsh\fP in a directory listed by \fI$fpath\fP. The file \fIless\fP
@@ -213,12 +218,12 @@ initialization script, e.g. in \fI~/.bashrc\fP. New directories such as
 \fI~/scripts\fP and \fI~/.fpath\fP (for zsh) can be added
 using the commands
 .RS
-\fBPATH\fP=\fI~/scripts:$PATH\fP # (lesspipe.sh, less) and
+\fBPATH\fP=\fI~/scripts:$PATH\fP # (lesspipe.sh, less)
 \fBfpath\fP=\fI(~/.fpath $fpath)\fP # (_less, zsh only)
 .RE
 .PP
 In \fBzsh\fP, \fIcompinit\fP has to be called and the menucomplete option has to be
-set if not yet done. That can be achieved with the commands
+set if it has not already been done. That can be achieved with the commands
 .EX
 .RS
 \fIautoload compinit\fP
@@ -227,18 +232,18 @@ set if not yet done. That can be achieved with the commands
 .RE
 .EE
 .PP
-In \fBbash\fP, the \fIbash-completion\fP (usually a package with that name)
-has to be installed
+In \fBbash\fP, \fIbash-completion\fP (usually a package with that name)
+has to be installed.
 .SH USER DEFINED FILTERING
-The lesspipe.sh filtering can be replaced or enhanced  by a user defined
+The lesspipe.sh filtering can be replaced or enhanced  by a user-defined
 program. Such a program has to be called either \fB.lessfilter\fP (and be
-placed in the users home directory), or \fBlessfilter\fP (and be accessible
+placed in the user's home directory) or \fBlessfilter\fP (and be accessible
 from a directory mentioned in \fB$PATH\fP).
-It has to be executable and has to end with an exit code 0, if the filtering
+It has to be executable and must return exit code 0 if the filtering
 was done within that script. Otherwise, a nonzero exit code means the filtering
 is left to lesspipe.sh.
 .PP
-This mechanism can be used to add filtering for new formats or e.g. inhibit
+This mechanism can be used to add filtering for new formats or, for example, to inhibit
 filtering for certain file types. A sample .lessfilter could look as follows:
 
 .EX
@@ -246,11 +251,11 @@ filtering for certain file types. A sample .lessfilter could look as follows:
 .I
 .I case "$1" in
 .I   *.md|*.MD|*.mkd|*.markdown|*.rst)
-.I   # if the python module rich.markdown is not found then
-.I   # the exit code is not null and lesspipe.sh is called
+.I   # if the Python module rich.markdown is not found then
+.I   # the exit code is nonzero and lesspipe.sh is called
 .I     python3 -m rich.markdown -c "$1";;
 .I   *.html|*.htm)
-.I     # call your favorite html beautifier, cat -b is just a boring example
+.I     # call your favorite HTML beautifier, cat -b is just a boring example
 .I     cat -b "$1";;
 .I   *)
 .I     exit 1;;
@@ -260,7 +265,7 @@ filtering for certain file types. A sample .lessfilter could look as follows:
 .SH AUTHOR
 Wolfgang Friebel
 .SH "REPORTING BUGS"
-Report bugs to <wp.friebel AT gmail DOT com>.
+Report bugs to <wp.friebel AT gmail DOT com> or open a github issue.
 .SH COPYRIGHT
 Copyright \(co 2005-2026 Wolfgang Friebel
 .br
@@ -270,4 +275,4 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 less(1)
 .PP
 A description of \fBlesspipe.sh\fP
-can also be found in the file README contained in the source code package
+can also be found in the README contained in the source code package
