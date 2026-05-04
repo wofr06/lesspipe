@@ -1,8 +1,9 @@
 # lesspipe.sh, a preprocessor for less
 
-Version: 2.25
-Author : Wolfgang Friebel [wp.friebel@gmail.com](mailto:wp.friebel@gmail.com)
-License: GPL-2.0-or-later
+![GitHub Release](https://img.shields.io/github/v/release/wofr06/lesspipe) ![GitHub License](https://img.shields.io/github/license/wofr06/lesspipe) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/wofr06/lesspipe) [![CodeFactor](https://www.codefactor.io/repository/github/wofr06/lesspipe/badge)](https://www.codefactor.io/repository/github/wofr06/lesspipe) ![Static Badge](https://img.shields.io/badge/Author-Wolfgang_Friebel-purple)
+
+Email: [wp.friebel@gmail.com](mailto:wp.friebel@gmail.com)
+
 
 Latest version available as:
  [zip file on GitHub](https://github.com/wofr06/lesspipe.sh/archive/lesspipe.zip)
