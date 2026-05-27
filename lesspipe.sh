@@ -566,7 +566,7 @@ isfinal () {
 	if [[ "$2" == *$sep ]]; then
 		if [[ "$2" == "$sep" && "$x" == html ]]; then
 			[[ $COLOR == *always ]] && colarg="--color" || colarg="--mono"
-			has_cmd xmq && isxmq "$1" html && return
+			has_cmd xmq 'xmq: 4.0' && isxmq "$1" html && return
 		fi
 		cat "$1"
 		return
@@ -586,7 +586,7 @@ isfinal () {
 			msg="$x: showing the output of ${cmd[*]}" ;;
 		xml)
 			[[ -z $file2 ]] &&
-			has_cmd xmq && cmd=(isxmq "$1" xml) ;;
+			has_cmd xmq 'xmq: 4.0' && cmd=(isxmq "$1" xml) ;;
 		html)
 			[[ -z $file2 ]] && has_htmlprog && cmd=(ishtml "$1") ;;
 		dtb|dts)
@@ -881,7 +881,8 @@ isoffice2 () {
 }
 
 isxmq () {
-	[[ $COLOR == *always ]] && colarg="--color" || colarg="--mono"
+	[[ $XMQ_THEME == dark ]] && colarg="--bg=dark" || colarg="--bg=light";
+	[[ $COLOR == *always ]] || colarg="--bg=mono"
 	msg "xmq output, append :$2 to the filename to see the (colored) contents"
 	xmq "$1" render-terminal "$colarg"
 }

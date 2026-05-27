@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- adapt xmq calls to changed command line options
 - improved documentation
 - allow switching off archive_color by appending a colon to the file name
 - speedup archive_color and remove external programs from it
