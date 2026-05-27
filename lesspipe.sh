@@ -19,7 +19,7 @@ fileext () {
 		*.*) extension=${fn##*.} ;;
 		*) extension="$fn" ;;
 	esac
-	extension=$(echo $extension|tr -dc '[:alnum:]')
+	extension=$(echo "$extension"|tr -dc '[:alnum:]')
 	echo "$extension"
 }
 
