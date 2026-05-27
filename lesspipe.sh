@@ -17,7 +17,9 @@ fileext () {
 		.*.*) extension=${fn##*.} ;;
 		.*) extension=${fn#.} ;;
 		*.*) extension=${fn##*.} ;;
+		*) extension="$fn" ;;
 	esac
+	extension=$(echo $extension|tr -dc '[:alnum:]')
 	echo "$extension"
 }
 
@@ -180,6 +182,8 @@ nexttmp () {
 	if [[ -n "$fileext" && "$fileext" == *.* ]]; then
 		suffix="${fileext##*/}"
 		suffix="${suffix##*.}"
+	elif [[ "$fileext" && "$ft" == plain:* ]]; then
+		suffix="${fileext##*/}"
 	elif [[ -z "$1" ]]; then
 		suffix="${ft%%:*}"
 	else

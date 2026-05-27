@@ -476,6 +476,8 @@ c test
 = test
 131 less tests/filter.tgz:test.class	# colored java class file git #82, needs procyon
 c package
+132 LESSCOLORIZER=vimcolor less tests/special.tgz:Dockerfile # colored Dockerfile git #203
+c test
 EOF
 # number of last test
 #echo $tests|sed -E '/^[0-9]+ /s/(^[0-9]+).*/\1/'|grep '^[0-9]'|tail -1
