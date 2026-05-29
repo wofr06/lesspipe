@@ -100,9 +100,11 @@ required in this case. The color scheme used is for a light background. To
 select the dark color scheme the ENV variable \fIXMQ_THEME\fP has to be set to the value \fIdark\fP.
 .SH OUTPUT COLORIZATION
 The filter is able to do syntax highlighting for a wide variety of
-file types. If installed, \fInvimpager\fP is used to
-colorize the output. If not, \fIbat\fP/\fIbatcat\fP, \fIpygmentize\fP,
-\fIe2ansi-cat\fP, 
+file types. It is not always wanted and can slow down the file display
+considerably. Therefore, an ENV variable \fBLESS_MAXSIZE_COLOR\fP
+(default: 200000) has been introduced. Larger files do not get colorized.
+If installed, \fInvimpager\fP is used to colorize the output. If not,
+\fIbat\fP/\fIbatcat\fP, \fIpygmentize\fP, \fIe2ansi-cat\fP,
 \fIsource-highlight\fP, \fIvimcolor\fP and \fIcode2color\fP are tried in turn.
 For bat/batcat, the theme is set to \fIansi\fP and the style is set to
 \fIplain\fP, which comes closer to the unfiltered output of \fBless\fP.
@@ -159,21 +161,31 @@ When the conditions for syntax highlighting are met, directory listings and
 listings of tar file contents are colorized as well.
 .PP
 As \fBless\fP is used as a default browser in other programs (e.g. \fIman\fP,
-\fIgit\fP, and \fIperldoc\fP), \fBlesspipe.sh\fP may be engaged and alter 
+\fIgit\fP, and \fIperldoc\fP), \fBlesspipe.sh\fP may be engaged and alter
 the output of those programs.
 .SH WATCHING GROWING FILES
-The ability to watch growing files, usually wanted for log files like syslog,
-using the F command within less or calling less with the +F option,
-may be lost if \fBlesspipe.sh\fP stores the input in a temporary file for
-further processing.
-That can be repaired by adding a colon as the last argument for \fBless\fP, such as:
+For all plain text files not recognized as log files a colorizer is tried
+nevertheless as it sometimes can detect the correct file type and color the
+file aproppriately. This does however destroy the abilty to watch growing
+files using the F command within \fBless\fP.
+To retain the ability to watch growing files without the .log extension
+or when the log file colorizer \fBtspin\fP was called for log files,
+a single colon has to be given to the less call as the second argument as in:
 .RS
 .I \fBless\fP /var/log/syslog :
 .RE
-or, if LESSOPEN starts with |- and less is called in a pipe:
+It can also be achieved by listing such files in a file \fB.lessignore\fP in the
+users home directory. The entries are fully specified path names or contain
+globbing characters. Such a file could look as follows:
+.EX
 .RS
-.I \fBcat\fP /var/log/syslog | less +F - :
+.I syslog
+.I */syslog
+.I *.syslog
 .RE
+.EE
+This would allow watching growing files with the name syslog, all syslog
+files in arbitrary directories and all files with the ending .syslog.
 .SH ADVANCED USAGE
 This version of \fBlesspipe.sh\fP
 allows you to view individual files contained in a file archive, which itself

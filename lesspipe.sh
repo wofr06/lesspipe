@@ -4,6 +4,8 @@ lesspipe_version=2.25
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
 # LICENSE: GPL-2.0-or-later
 
+# do not colorize files larger than this size
+[[ -n "$LESS_MAXSIZE_COLOR" ]] || LESS_MAXSIZE_COLOR=200000
 has_cmd () {
 	[[ -n "$2" && "$2" > $($1 --version 2>/dev/null) ]] && return 1
 	cmdpath=$(command -v "$1")
@@ -545,6 +547,7 @@ colorizer_cmd () {
 
 has_colorizer () {
 	[[ $COLOR == *always ]] || return
+	[[ $(wc -c  < "$1") -lt $LESS_MAXSIZE_COLOR ]] || return
 	[[ $2 == plain || -z $2 ]] && return
 	prog=$(find_colorizer)
 	# prefer an explicitly requested language
@@ -676,7 +679,8 @@ isfinal () {
 			{ has_cmd eyeD3 && cmd=(istemp "eyeD3" "$1"); } ||
 			{ has_cmd id3v2 && cmd=(istemp "id3v2 --list" "$1"); } ;;
 		log)
-			[[ $COLOR == *always* ]] && has_cmd tspin && colorizer=(nodash tspin -f "$1") ;;
+			[[ $COLOR == *always* ]] && has_cmd tspin &&
+				cmd=(nodash tspin -f "$1") ;;
 		csv)
 			msg "type -S<ENTER> for better display of very wide tables"
 			{ has_cmd csvtable && cmd=(csvtable "$1"); } ||
@@ -965,12 +969,8 @@ analyze_args
 [[ $LESSOPEN == *\|\|* ]] && retval=1 || retval=0
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
 	t=$(nexttmp)
-	if [[ "$fext" == log && $COLOR == *always* ]] && has_cmd tspin; then
-		tspin
-	else
-		cat > "$t"
-		set "$1" "$t"
-	fi
+	cat > "$t"
+	set "$1" "$t"
 fi
 
 if [[ -z "$1" && "$0" == */lesspipe.sh ]]; then
@@ -982,6 +982,16 @@ if [[ -z "$1" && "$0" == */lesspipe.sh ]]; then
 		echo "export LESSOPEN"
 	fi
 else
+	# no filtering for file names contained in .lessignore
+	if [[ -r "${HOME}/.lessignore" ]]; then
+		name="$1"
+		while IFS= read -r pattern || [[ -n "$pattern" ]]; do
+			[[ -z "$pattern" ]] && continue
+			[[ "$pattern" == \#* ]] && continue
+			# shellcheck disable=SC2053
+			[[ "$name" == $pattern ]] && exit 0
+		done < "${HOME}/.lessignore"
+	fi
 	[[ -x "${HOME}/.lessfilter" ]] && "${HOME}/.lessfilter" "$1" && exit "$retval"
 	if has_cmd lessfilter; then
 		lessfilter "$1" && exit "$retval"

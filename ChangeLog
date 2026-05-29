@@ -1,6 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- improve log file handling (colorizing, watching growing files)
+- limit colorizing file up to sizes of LESS_MAXSIZE_COLOR (200 000)
+- introduced .lessignore to not filter files by lesspipe.sh
 - use file names without file extension as hint for colorizing (fixes #203)
 - adapt xmq calls to changed command line options
 - improved documentation

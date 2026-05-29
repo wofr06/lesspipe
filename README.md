@@ -292,11 +292,14 @@ the author by email [(wp.friebel@gmail.com)](mailto:wp.friebel@gmail.com).
  [the FAQ on www.greenwoodsoftware.com](https://www.greenwoodsoftware.com/less/faq.html#dashr)
 
 ### 5.1 Syntax highlighting
- Syntax highlighting is not always wanted, it can be switched off by
- appending a colon after the file name. This is also true for colored archive
- listings. If the wrong language was chosen for syntax highlighting or no
- language was recognized, then the correct one can be forced by appending a
- colon and a suffix to the file name (example for a file with perl syntax):
+ Syntax highlighting is not always wanted and can slow down the file display
+ considerably. Therefore, an ENV variable **LESS_MAXSIZE_COLOR** (default: 200000)
+ has been introduced. Larger files do not get colorized. The highlighting can
+ be switched off as well by appending a colon after the file name. This is also
+ true for colored archive listings.
+ If the wrong language was chosen for syntax highlighting or no language was
+ recognized, then the correct one can be forced by appending a colon and a
+ suffix to the file name (example for a file with perl syntax):
 ```
         less plfile:pl or less plfile:perl (depending on the colorizer)
 ```
@@ -344,23 +347,47 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
  If the executable `archive_color` is installed, then the listing of tar file
  contents is colored in a similar fashion as directory contents.
 
-### 5.4 Colored listing of log file contents
- Log files are typically recognized as plain text files only and do not get
- filtered. Within lesspipe.sh a file is recognized as a log file if it  has the
- extension .log or the string :log is appended to the file name. Then the log
- file gets colorized using the program `tspin` if installed. The colored output
- can be suppressed by appending only a colon to the file name.
+## 6. Log file handling
+ Log files are typically recognized as plain text files only. Within
+ `lesspipe.sh` a file is recognized as a log file if it has the extension .log
+ or the string :log is appended to the file name.
 
- To colorize e.g the syslog the following command can be used:
+### 6.1 Watching growing files
+ For all plain text files not recognized as log files a colorizer is tried
+ nevertheless as it sometimes can detect the correct file type and color the
+ file aproppriately. This does however destroy the abilty to watch growing
+ files using the F command within less.
+ To retain the ability to watch growing files without the .log extension
+ or when the log file colorizer `tspin` was called for log files,
+ a single colon has to be given to the less call as the second argument.
+ It can also be achieved by listing such files in a file `.lessignore` in the
+ users home directory. The entries are fully specified path names or contain
+ globbing characters. Such a file could look as follows:
+
+```
+ syslog
+ */syslog
+ *.syslog
+```
+ This would allow watching growing files with the name syslog, all syslog
+ files in arbitrary directories and all files with the ending .syslog.
+
+### 6.2 Colorizing log files
+ If the file is recognized as log file (see above), the program `tspin` is
+ installed and the file size is below the value **LESS_MAXSIZE_COLOR**
+ (default 200000 bytes) then file gets colorized.
+
+ As already described, colorizing can be suppressed by appending a colon to
+ the file name. To colorize e.g the syslog the following command can be used:
 ```
         less /var/log/syslog:log
 ```
 
- To to colorize growing files you need to use `tspin` directly such as:
+ To colorize growing files you have to use `tspin` directly such as:
 ```
         tspin -f /var/log/syslog
 ```
-## 6. Calling less from standard input
+## 7. Calling less from standard input
 
  Normally `lesspipe.sh` is not called when less is used within a pipe, such as
 ```
@@ -377,7 +404,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
         cat some_c_file | less - :c          # equivalent to less some_c_file:c
         cat archive | less - :contained_file # extracts a file from the archive
 ```
-## 7. Displaying files with special characters in the file name
+## 8. Displaying files with special characters in the file name
 
  Shell meta characters in file names: space (frequently used in windows
  file names),
@@ -387,7 +414,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
  must be escaped by a \ when used in the shell, e.g. `less a\ b.tar.gz:a\\"b`
  will display the file a"b contained in the gzipped tar archive a b.tar.gz.
 
-## 8. Tab completion for zsh and bash
+## 9. Tab completion for zsh and bash
 
  An existing `zsh` completion script has been enhanced to provide tab completion
  within archives, similar to what is possible with the `tar` command completion.
@@ -423,7 +450,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
  sourcing the bash-completion script usually found in /usr/share/bash-completion
  or /etc. On many system this is already done in the system initialisation
  scripts.
-## 9. User defined filtering
+## 10. User defined filtering
 
  The lesspipe.sh filtering can be replaced or enhanced by a user defined
  program. Such a program has to be called either `.lessfilter` (and be placed in
@@ -436,7 +463,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
  This mechanism can be used to add filtering for new formats or e.g. inhibit
  filtering for certain file types.
 
-## 10. Debugging
+## 11. Debugging
 
  If the script does not work as expected for a given file contents, one could
  try to output the commands executed by lesspipe.sh. That is achieved by
@@ -451,7 +478,7 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
  and then use `less` with the file to be displayed. The normal output goes to
  STDOUT and the commands executed to STDERR.
 
-## 11. (Old) documentation about lesspipe
+## 12. (Old) documentation about lesspipe
 
  In English
 
@@ -467,11 +494,11 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 - [lesspipe 2.0 (Linux Magazin 07/2022)](https://www.linux-magazin.de/ausgaben/2022/07/lesspipe-2-0/)
 - [Artikel auf GitHub, 2025](https://github.com/wofr06/lesspipe/wiki/article_de)
 
-## 12. External links
+## 13. External links
 
 (last checked: Mar 22 2026):
 
-### 12.1 URLs to some utilities (with last known release)
+### 13.1 URLs to some utilities (with last known release)
 
 - [7z, 7zr](https://github.com/ip7z/7zip) (2026)
 - [7zz](https://sourceforge.net/projects/sevenzip/) (2026)
@@ -505,13 +532,13 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
 - [xmq](https://github.com/libxmq/xmq/releases/latest) (2026)
 - [zlib-flate](https://github.com/qpdf/qpdf)(2026)
 
-### 12.2 References
+### 13.2 References
 - [1] [www.greenwoodsoftware.com/less](https://www.greenwoodsoftware.com/less) (less)
 - [2] [www.darwinsys.com/file](https://www.darwinsys.com/file/) (file)
 - [3] [github.com/wofr06/lesspipe](https://github.com/wofr06/lesspipe) (lesspipe)
 - [5] [www.palfrader.org/code2html](https://www.palfrader.org/code2html/)	(code2html)
 
-## 13. Contributors
+## 14. Contributors
 
  The script lesspipe.sh is constantly enhanced by suggestions from users and
  reporting bugs or deficiencies. Thanks to (in alphabetical order):
