@@ -694,6 +694,8 @@ isfinal () {
 			[[ $1 == - ]] && arg='/dev/stdin' || arg="$1"
 			{ has_cmd pigz && pigz -d -z < "$arg" && return ; } ||
 			{ has_cmd zlib-flate && zlib-flate -uncompress < "$arg" && return ; } ;;
+		sqlite3)
+			has_cmd sqlite3 && cmd=(sqlite3  "$1" .dbinfo .dump) ;;
 	esac
 	fi
 	# not a specific file format

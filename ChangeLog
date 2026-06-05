@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- add support for sqlite3 files (fixes #204)
 - improve log file handling (colorizing, watching growing files)
 - limit colorizing file up to sizes of LESS_MAXSIZE_COLOR (200 000)
 - introduced .lessignore to not filter files by lesspipe.sh
