@@ -5,7 +5,7 @@
 %global zsh_completion		%{_datarootdir}/zsh/site-functions
 
 %define packagename lesspipe
-%define packageversion 2.25
+%define packageversion 2.26
 %define packagerelease 1
 
 Name:		%{packagename}
@@ -57,6 +57,7 @@ BuildRequires:	/usr/bin/ps
 BuildRequires:	/usr/bin/unzip
 BuildRequires:	/usr/bin/vim
 BuildRequires:	/usr/bin/xz
+#BuildRequires:	/usr/bin/sqlite3
 # needed for color tests in test.sh
 BuildRequires:	bat
 #BuildRequires:	/usr/bin/dtc
@@ -131,6 +132,8 @@ env TERM=xterm-256color ./test.sh %{buildroot}%{lesspipe_exec_dir}/lesspipe.sh
 %{_sysconfdir}/profile.d/*
 
 %changelog
+* Fri Jun 05 2026 2.26-1 - wp.friebel@gmail.com
+- speed up log file processing and improve color handling
 * Sat Apr 25 2026 2.25-1 - wp.friebel@gmail.com
 - emacs based colorizer e2ansi-cat added, procyon output can get colored
 * Sat Apr 04 2026 2.24-1 - wp.friebel@gmail.com
