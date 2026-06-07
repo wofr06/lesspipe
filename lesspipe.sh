@@ -412,6 +412,7 @@ get_unpack_cmd () {
 analyze_args () {
 	# determine how we are called
 	cmdtree=$(ps -oargs= 2>/dev/null)
+	[[ $cmdtree == *perldoc\ * ]] && exit 0
 	while read -r line; do
 		arg1=${line%% *}; arg1=${arg1##*/}
 		[[ $arg1 == less ]] && lessarg=$line
@@ -795,7 +796,11 @@ isarchive () {
 				separatorline
 				isoinfo -fR"$joliet" -i "$t" ;;
 			cpio)
-				cpio -tv --quiet < "$2" ;;
+				if [[ "$2" == - ]]; then
+					cpio -tv --quiet
+				else
+					cpio -tv --quiet < "$2"
+				fi ;;
 			7z|7zz|7za|7zr)
 				istemp "$prog l" "$2" ;;
 		esac

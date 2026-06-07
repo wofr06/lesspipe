@@ -294,7 +294,11 @@ isarchive () {
 				istemp "isoinfo -d -i" "$t"| grep -E '^Joliet' && joliet=J
 				isoinfo -fR"$joliet" -i "$t" ;;
 			cpio)
-				cpio -t --quiet < "$2" ;;
+				if [[ "$2" == - ]]; then
+					cpio -t --quiet
+				else
+					cpio -t --quiet < "$2"
+				fi ;;
 			7zz|7za|7zr)
 				istemp "$prog l" "$2"|grep -E '^[0-9][0-9][0-9[0-9]'|cut -c 54-|grep -Ev ' files$'
 		esac

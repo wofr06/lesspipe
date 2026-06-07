@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- fix perldoc not showing contents (#205) and no cpio contents listing (#206)
 Version 2.26 Jun 05 2026
 - add support for sqlite3 files (fixes #204)
 - improve log file handling (colorizing, watching growing files)
