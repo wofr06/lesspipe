@@ -389,7 +389,10 @@ get_unpack_cmd () {
 		case "$x" in
 			dmg)
 				has_cmd 7z && 7z l "$2" >/dev/null 2>&1 && prog=7z ;;
-			7z-compressed|lzma|xz|cab|arj|bzip2|cpio|iso)
+			cpio|iso)
+				{ has_cmd 7z && prog=7z; } ||
+				{ has_cmd 7zz && prog=7zz; } ;;
+			7z-compressed|lzma|xz|cab|arj|bzip2)
 				{ has_cmd 7zz && prog=7zz; } ||
 				{ has_cmd 7zr && prog=7zr; } ||
 				{ has_cmd 7z && prog=7z; } ||
