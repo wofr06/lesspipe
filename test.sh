@@ -367,7 +367,7 @@ c public class test
 ~ test
 78 less tests/filter.tgz:test_so		# shared library (.so), needs nm
 ~ .* T test
-79 less tests/filter.tgz:test.pod		# pod text, needs pod2text|perldoc
+79 less tests/filter.tgz:test_pod		# pod text, needs pod2text|perldoc
 ~ ^NAME
 80 less tests/filter.tgz:test.pod:		# unmodified pod text, needs pod2text|perldoc
 ~ test
@@ -409,7 +409,7 @@ c void
 c void
 98 LESSCOLORIZER=nvimpager less tests/filter.tgz:test_html:html	# html colorized text, needs nvimpager
 c "created"
-99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test.pod:pod	# unmodified pod text, colorized, needs pod2text,vimcolor
+99 LESSCOLORIZER=vimcolor less tests/filter.tgz:test_pod:pod	# unmodified pod text, colorized, needs pod2text,vimcolor
 c NAME
 100 LESSCOLORIZER=pygmentize less tests/filter.tgz:test_plain:sh	# plain text, force colored shellscript, needs pygmentize
 c test
@@ -478,6 +478,10 @@ c test
 c package
 132 LESSCOLORIZER=vimcolor less tests/special.tgz:Dockerfile # colored Dockerfile git #203
 c test
+133 less tests/archive.tgz:test_cpio # show cpio contents git #206, needs cpio
+~ .rw-rw-r .*
+134 perldoc $T/tests/test_pod	# do not engage lesspipe twice git #205, needs perldoc
+~ ^NAME
 EOF
 # number of last test
 #echo $tests|sed -E '/^[0-9]+ /s/(^[0-9]+).*/\1/'|grep '^[0-9]'|tail -1
