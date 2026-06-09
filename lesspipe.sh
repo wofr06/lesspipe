@@ -672,7 +672,10 @@ isfinal () {
 			has_cmd djvutxt && cmd=(djvutxt "$1") ;;
 		x509|crl|pem-file|csr)
 			[[ "$x" = csr ]] && x509=req || x509="$x"
-			has_cmd openssl && cmd=(istemp "openssl $x509 -text -noout -in" "$1") ;;
+			if has_cmd openssl; then
+				while openssl "$x509" -noout -text 2>/dev/null; do :; done < "$1";
+				return
+			fi ;;
 		pgp)
 			has_cmd gpg && cmd=(gpg --decrypt --quiet --no-tty --batch --yes "$1") ;;
 		bplist|plist)
