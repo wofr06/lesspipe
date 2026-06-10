@@ -58,7 +58,7 @@ compare() {
 
 	# Handle colored output (c)
 	if [[ ${type:0:1} == c ]]; then
-		if echo "$res"|grep -qE '\[[0-9;]+m'; then
+		if echo "$res"|grep -qE '[[0-9;]+m'; then
 			res=$(echo "$res" | grep -E "$comp" 2>/dev/null)
 			local str="${res%"$comp"*}ok"
 			str=$(echo "$str" | sed -E 's/^.*(\x1b\[[0-9;]+m) ?ok/\1ok/g')
@@ -405,7 +405,7 @@ c void
 c void
 96 LESSCOLORIZER='pygmentize -O style=vim' less tests/filter.tgz:test.c # allow setting pygmentize style option git #5, needs pygmentize
 c void
-97 cat $T/tests/test.c|LESSCOLORIZER=pygmentize less - :c		# even colorize piped files, needs vimcolor
+97 cat $T/tests/test.c|LESSCOLORIZER=pygmentize less - :c		# even colorize piped files, needs pygmentize
 c void
 98 LESSCOLORIZER=nvimpager less tests/filter.tgz:test_html:html	# html colorized text, needs nvimpager
 c "created"
