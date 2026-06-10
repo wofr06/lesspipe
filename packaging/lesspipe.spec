@@ -5,7 +5,7 @@
 %global zsh_completion		%{_datarootdir}/zsh/site-functions
 
 %define packagename lesspipe
-%define packageversion 2.26
+%define packageversion 2.27
 %define packagerelease 1
 
 Name:		%{packagename}
@@ -132,6 +132,8 @@ env TERM=xterm-256color ./test.sh %{buildroot}%{lesspipe_exec_dir}/lesspipe.sh
 %{_sysconfdir}/profile.d/*
 
 %changelog
+* Wed Jun 10 2026 2.27-1 - wp.friebel@gmail.com
+- better certicicate files handling, add sqlite db display
 * Fri Jun 05 2026 2.26-1 - wp.friebel@gmail.com
 - speed up log file processing and improve color handling
 * Sat Apr 25 2026 2.25-1 - wp.friebel@gmail.com

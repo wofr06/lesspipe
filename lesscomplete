@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# synced with lesspipe 2.26
+# synced with lesspipe 2.27
 # lesscomplete, a helper script for the _less (zsh) and less (bash) completion
 # mechanisms.
 # Author: Wolfgang Friebel (wp.friebel AT gmail.com)
@@ -112,7 +112,6 @@ show () {
 			show "-$rest1"
 		else
 			# if nothing to convert, exit without a command
-
 			isfinal "$ft" "$file1" "$rest11"
 		fi
 	elif [[ "$c1" == "" ]]; then

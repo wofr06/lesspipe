@@ -1,11 +1,13 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.27 Jun 10 2026
+- show all certificates contained in a pem or crt file
 - fix perldoc not showing contents (#205) and no cpio contents listing (#206)
 Version 2.26 Jun 05 2026
 - add support for sqlite3 files (fixes #204)
 - improve log file handling (colorizing, watching growing files)
-- limit colorizing file up to sizes of LESS_MAXSIZE_COLOR (200 000)
+- limit colorizing file up to sizes of LESS_MAXSIZE_COLOR (200 000) for speed
 - introduced .lessignore to not filter files by lesspipe.sh
 - use file names without file extension as hint for colorizing (fixes #203)
 - adapt xmq calls to changed command line options
