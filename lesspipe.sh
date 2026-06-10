@@ -673,6 +673,7 @@ isfinal () {
 		x509|crl|pem-file|csr)
 			[[ "$x" = csr ]] && x509=req || x509="$x"
 			if has_cmd openssl; then
+				[[ "$1" == - ]] && set "$1" /dev/stdin
 				while openssl "$x509" -noout -text 2>/dev/null; do :; done < "$1";
 				return
 			fi ;;
@@ -733,7 +734,7 @@ isfinal () {
 		"${cmd[@]}" 2>&1
 	else
 		local final_input="$1"
-		if [[ -n $fileext && "$1" == - && ${colorizer[0]} != archive_color ]]; then
+		if [[ -n $fileext && "$1" == - && ${colorizer[*]} != archive_color ]]; then
 			final_input=$(nexttmp)
 			cat "$1" > "$final_input"
 		fi
