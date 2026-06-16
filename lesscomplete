@@ -382,7 +382,7 @@ elif [[ "$a" == *"$altsep"* ]]; then
 	[[ -e "${a%%"$altsep"*}" ]] && sep=$altsep
 fi
 
-tmpdir=$(mktemp -d --tmpdir "lesspipe.XXXXXX") || exit 1
+tmpdir=$(mktemp -d -t "lesspipe.XXXXXX") || exit 1
 trap 'rm -rf "$tmpdir"; exit 1' SIGINT
 trap 'rm -rf "$tmpdir"' EXIT
 trap - PIPE

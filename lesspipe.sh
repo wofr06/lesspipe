@@ -65,6 +65,8 @@ filetype () {
 			ftype=epub ;;
 		matlab-data)
 			ftype=matlab ;;
+		xhtml+xml)
+			ftype=html ;;
 	# file may report wrong type for given file names (ok in file 5.39)
 		troff)
 			case "${fname##*/}" in
@@ -973,7 +975,7 @@ elif [[ "$1" == *"$altsep"* ]]; then
 	[[ -e "${1%%"$altsep"*}" ]] && sep=$altsep
 fi
 
-tmpdir=$(mktemp -d --tmpdir "lesspipe.XXXXXX") || exit 1
+tmpdir=$(mktemp -d -t "lesspipe.XXXXXX") || exit 1
 trap 'rm -rf "$tmpdir"; exit 1' SIGINT
 trap 'rm -rf "$tmpdir"' EXIT
 trap - PIPE
