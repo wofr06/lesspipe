@@ -201,9 +201,10 @@ or even
 .B less
 \fIsuper_archive\fP:\fIarchive_file\fP:\fIcontained_file\fP
 .RE
-To display the last file in the chain in raw format, a colon (\fI:\fP) has to be
-appended to the file name. If it contains a colon, then the alternate
-separator character equal sign (\fI=\fP) has to be used.
+To display or extract the last file in the chain in raw format, a colon
+(\fI:\fP) has to be appended to the file name. If it contains a colon, then the
+alternate separator character equal sign (\fI=\fP) has to be used. To extract
+archives or compressed files, a second colon or equal sign may be required.
 .PP
 Again, this method of extracting and displaying files does not work if
 \fBless\fP is called in an output pipe and \fBLESSOPEN\fP starts with the

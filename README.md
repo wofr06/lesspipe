@@ -155,14 +155,19 @@ the author by email [(wp.friebel@gmail.com)](mailto:wp.friebel@gmail.com).
 ```
  This can be used to extract files from an archive:
 ```
-        less archive_file:contained_file > extracted_file
+        less archive_file:contained_file: > extracted_file
 ```
  For extracting files less is not required, that can be done also using:
 ```
-        lesspipe.sh archive_file:contained_file > extracted_file
+        lesspipe.sh archive_file:contained_file: > extracted_file
 ```
+ Please note the trailing separator character, it ensures that the file is
+ extracted in raw format and not modified by lesspipe. For extracting archives
+ or compressed files unmodified, a second separator character (colon) may be
+ required at the end.
+
  Even a file in an archive, that itself is contained in yet
- another archive can be viewed this way:
+ another archive can be viewed using the colon separated notation:
 ```
         less super_archive:archive_file:contained_file
 ```
