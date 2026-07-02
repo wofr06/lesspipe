@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- treat zip files as xlsx if file has the extension xlsx
 Version 2.27 Jun 10 2026
 - show all certificates contained in a pem or crt file
 - fix perldoc not showing contents (#205) and no cpio contents listing (#206)

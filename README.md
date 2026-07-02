@@ -265,6 +265,7 @@ the author by email [(wp.friebel@gmail.com)](mailto:wp.friebel@gmail.com).
 - binary data		requires `strings`
 - json			requires `jq`
 - device tree blobs	requires `dtc` (extension dtb or dts)
+- sqlite3		requires `sqlite3`
 
  Files in HTML and Perl POD format are always rendered. Sometimes
  however the original contents of the file should be viewed instead.

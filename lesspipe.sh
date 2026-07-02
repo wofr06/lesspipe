@@ -76,6 +76,8 @@ filetype () {
 	esac
 	# correct for a more specific file type
 	case "$fext" in
+		xlsx)
+			[[ $ftype == zip ]] && ftype=xlsx ;;
 		sxi)
 			[[ $ftype == zip ]] && ftype=ooffice1 ;;
 		epub)
