@@ -367,8 +367,8 @@ vimcolor -L (this command is valid both for vimcolor and nvimpager)
  or when the log file colorizer `tspin` was called for log files,
  a single colon has to be given to the less call as the second argument.
  It can also be achieved by listing such files in a file `.lessignore` in the
- users home directory. The entries are fully specified path names or contain
- globbing characters. Such a file could look as follows:
+ users home directory. The entries are relative or absolute path names or can
+ contain globbing characters. Such a file could look as follows:
 
 ```
  syslog

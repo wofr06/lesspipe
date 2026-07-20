@@ -1000,14 +1000,17 @@ if [[ -z "$1" && "$0" == */lesspipe.sh ]]; then
 		echo "export LESSOPEN"
 	fi
 else
-	# no filtering for file names contained in .lessignore
+	# no filtering for file names contained in .lessignore, check given parameter + resolved absolute path
 	if [[ -r "${HOME}/.lessignore" ]]; then
-		name="$1"
+		rawfilename="$1"
+		resolvedname=$(realpath "$rawfilename" 2>/dev/null)
 		while IFS= read -r pattern || [[ -n "$pattern" ]]; do
 			[[ -z "$pattern" ]] && continue
 			[[ "$pattern" == \#* ]] && continue
 			# shellcheck disable=SC2053
-			[[ "$name" == $pattern ]] && exit 0
+			[[ "$rawfilename" == $pattern ]] && exit 0
+			# shellcheck disable=SC2053
+			[[ "$resolvedname" == $pattern ]] && exit 0
 		done < "${HOME}/.lessignore"
 	fi
 	[[ -x "${HOME}/.lessfilter" ]] && "${HOME}/.lessfilter" "$1" && exit "$retval"
