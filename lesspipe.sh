@@ -419,7 +419,7 @@ get_unpack_cmd () {
 analyze_args () {
 	# determine how we are called
 	cmdtree=$(ps -oargs= 2>/dev/null)
-	[[ $cmdtree == *perldoc\ * ]] && exit 0
+	[[ $cmdtree == *perldoc\ * ]] && exit "$retval"
 	while read -r line; do
 		arg1=${line%% *}; arg1=${arg1##*/}
 		[[ $arg1 == less ]] && lessarg=$line
@@ -427,8 +427,8 @@ analyze_args () {
 	# last argument starting with colon or equal sign is used for piping into less
 	[[ $lessarg == *\ [:=]* ]] && fext=${lessarg#*[:=]}
 	# return if we want to watch growing files
-	[[ $lessarg == *less\ *\ : ]] && exit 0
-	[[ $lessarg == *less\ *\+F\ * && $fext != log ]] && exit 0
+	[[ $lessarg == *less\ *\ : ]] && exit "$retval"
+	[[ $lessarg == *less\ *\+F\ * && $fext != log ]] && exit "$retval"
 	# color is set when calling less with -r or -R or LESS contains that option
 	COLOR="--color=auto"
 	colors=0
@@ -982,9 +982,9 @@ trap 'rm -rf "$tmpdir"; exit 1' SIGINT
 trap 'rm -rf "$tmpdir"' EXIT
 trap - PIPE
 
+[[ $LESSOPEN == *\|\|* ]] && retval=1 || retval=0
 analyze_args
 # make LESSOPEN="|- ... " work
-[[ $LESSOPEN == *\|\|* ]] && retval=1 || retval=0
 if [[ $LESSOPEN == *\|-* && $1 == - ]]; then
 	t=$(nexttmp)
 	cat > "$t"
@@ -1008,9 +1008,9 @@ else
 			[[ -z "$pattern" ]] && continue
 			[[ "$pattern" == \#* ]] && continue
 			# shellcheck disable=SC2053
-			[[ "$rawfilename" == $pattern ]] && exit 0
+			[[ "$rawfilename" == $pattern ]] && exit "$retval"
 			# shellcheck disable=SC2053
-			[[ "$resolvedname" == $pattern ]] && exit 0
+			[[ "$resolvedname" == $pattern ]] && exit "$retval"
 		done < "${HOME}/.lessignore"
 	fi
 	[[ -x "${HOME}/.lessfilter" ]] && "${HOME}/.lessfilter" "$1" && exit "$retval"
