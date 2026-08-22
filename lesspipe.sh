@@ -419,7 +419,6 @@ get_unpack_cmd () {
 analyze_args () {
 	# determine how we are called
 	cmdtree=$(ps -oargs= 2>/dev/null)
-	[[ $cmdtree == *perldoc\ * ]] && exit "$retval"
 	while read -r line; do
 		arg1=${line%% *}; arg1=${arg1##*/}
 		[[ $arg1 == less ]] && lessarg=$line
