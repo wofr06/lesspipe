@@ -1000,18 +1000,22 @@ if [[ -z "$1" && "$0" == */lesspipe.sh ]]; then
 	fi
 else
 	# no filtering for file names contained in .lessignore, check given parameter + resolved absolute path
-	if [[ -r "${HOME}/.lessignore" ]]; then
-		rawfilename="$1"
-		resolvedname=$(realpath "$rawfilename" 2>/dev/null)
-		while IFS= read -r pattern || [[ -n "$pattern" ]]; do
-			[[ -z "$pattern" ]] && continue
-			[[ "$pattern" == \#* ]] && continue
-			# shellcheck disable=SC2053
-			[[ "$rawfilename" == $pattern ]] && exit "$retval"
-			# shellcheck disable=SC2053
-			[[ "$resolvedname" == $pattern ]] && exit "$retval"
-		done < "${HOME}/.lessignore"
-	fi
+	# check "${HOME}/.lessignore" and global "/etc/lessignore", just process the first file found, do not mix them
+	for lessignore_file in "${HOME}/.lessignore" "/etc/lessignore"; do
+		if [[ -r "$lessignore_file" ]]; then
+			rawfilename="$1"
+			resolvedname=$(realpath "$rawfilename" 2>/dev/null)
+			while IFS= read -r pattern || [[ -n "$pattern" ]]; do
+				[[ -z "$pattern" ]] && continue
+				[[ "$pattern" == \#* ]] && continue
+				# shellcheck disable=SC2053
+				[[ "$rawfilename" == $pattern ]] && exit "$retval"
+				# shellcheck disable=SC2053
+				[[ "$resolvedname" == $pattern ]] && exit "$retval"
+			done < "$lessignore_file"
+			break
+		fi
+	done
 	[[ -x "${HOME}/.lessfilter" ]] && "${HOME}/.lessfilter" "$1" && exit "$retval"
 	if has_cmd lessfilter; then
 		lessfilter "$1" && exit "$retval"
