@@ -1,6 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- do not try colorizer for unspecific plain ascii files
+- allow for watching of growing files in more cases
+- revert #205 temporarily (due to SELinux problems in Fedora)
 - treat zip files as xlsx if file has the extension xlsx
 Version 2.27 Jun 10 2026
 - show all certificates contained in a pem or crt file

@@ -21,7 +21,7 @@ fileext () {
 		*.*) extension=${fn##*.} ;;
 		*) extension="$fn" ;;
 	esac
-	extension=$(echo "$extension"|tr -dc '[:alnum:]')
+	extension=$(echo "$extension"|tr -dc '[:alnum:]'|tr '[:upper:]' '[:lower:]')
 	echo "$extension"
 }
 
@@ -42,6 +42,9 @@ filetype () {
 	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-script.}"; ft="${ft#x-}"
 	ftype="${ft#vnd\.}"
 	# chose better name
+	if [[ $ftype == html && -n $fext && $fext != htm* ]]; then
+		ftype="$fext"
+	fi
 	case "$ftype" in
 		openxmlformats-officedocument.wordprocessingml.document)
 			ftype=docx ;;
@@ -745,7 +748,8 @@ isfinal () {
 		[[ -z ${colorizer[*]} ]] && has_colorizer "$final_input" "$fext" "$fileext"
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" 2>/dev/null && return
 		# if fileext set, we need to filter to get rid of .fileext
-		[[ -n $fileext && "$1" != - ]] && cat "$1" && return
+		#[[ -n $fileext && "$1" != - ]] && cat "$1" && return
+		[[ -n $fileext && "$1" != - ]] && return
 		cat "$final_input"
 	fi
 }
