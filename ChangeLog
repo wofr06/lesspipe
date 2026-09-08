@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.28 Sep 8 2026
 - do not try colorizer for unspecific plain ascii files
 - allow for watching of growing files in more cases
 - revert #205 temporarily (due to SELinux problems in Fedora)
