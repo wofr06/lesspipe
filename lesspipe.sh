@@ -140,6 +140,8 @@ filetype () {
 						ftype=brotli ;;
 					lz4|lt4|tz4|tlz4)
 						ftype=lz4 ;;
+				    pgp|gpg)
+						ftype=pgp ;;
 			esac
 		esac
 		### decide file type based on extension
