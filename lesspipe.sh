@@ -326,7 +326,7 @@ get_unpack_cmd () {
 			[[ $x == compress ]] && x=gzip
 			has_cmd "$x" && cmd=("$x" -cd "$2") ;;
 		brotli)
-			has_cmd "$x" "brotli 1.2.0" && cmd=("$x" -cd "$2") ;;
+			has_cmd "$x" "brotli 1.2.1" && cmd=("$x" -cd "$2") ;;
 		zstd)
 			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") ;;
 		lz4)
