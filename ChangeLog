@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- security fixes: check brotli at least at 1.2.0 and use strings -a
 Version 2.28 Sep 8 2026
 - do not try colorizer for unspecific plain ascii files
 - allow for watching of growing files in more cases

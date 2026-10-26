@@ -140,7 +140,7 @@ filetype () {
 						ftype=brotli ;;
 					lz4|lt4|tz4|tlz4)
 						ftype=lz4 ;;
-				    pgp|gpg)
+					pgp|gpg)
 						ftype=pgp ;;
 			esac
 		esac
@@ -319,12 +319,14 @@ get_unpack_cmd () {
 	[[ "$3" == $sep$sep ]] && return
 	# uncompress / transform
 	case $x in
-		gzip|bzip2|lzip|lzma|xz|brotli|compress)
+		gzip|bzip2|lzip|lzma|xz|compress)
 			# remember name of uncompressed file
 			[[ $2 == - ]] || fileext="$2"
 			fileext=${fileext%%.gz}; fileext=${fileext%%.bz2}
 			[[ $x == compress ]] && x=gzip
 			has_cmd "$x" && cmd=("$x" -cd "$2") ;;
+		brotli)
+			has_cmd "$x" "brotli 1.2.0" && cmd=("$x" -cd "$2") ;;
 		zstd)
 			has_cmd zstd && cmd=(zstd -cdqM1073741824 "$2") ;;
 		lz4)
@@ -723,7 +725,7 @@ isfinal () {
 			{ has_cmd exiftool && cmd=(exiftool "$1"); } ||
 			{ has_cmd identify && [[ $fcat == image ]] && cmd=(identify -verbose "$1"); }
 		else
-			cmd=(nodash strings "$1")
+			cmd=(nodash "strings -a" "$1")
 		fi
 	fi
 	if [[ -n ${cmd[*]} && "${cmd[*]}" != "cat" ]]; then
@@ -747,11 +749,12 @@ isfinal () {
 			cat "$1" > "$final_input"
 		fi
 
-		[[ -z ${colorizer[*]} ]] && has_colorizer "$final_input" "$fext" "$fileext"
+		#[[ -z ${colorizer[*]} ]] && has_colorizer "$final_input" "$fext" "$fileext"
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" 2>/dev/null && return
 		# if fileext set, we need to filter to get rid of .fileext
 		#[[ -n $fileext && "$1" != - ]] && cat "$1" && return
-		[[ -n $fileext && "$1" != - ]] && return
+		#[[ -n $fileext && "$1" != - ]] && return
+		[[ "$1" != - ]] && return
 		cat "$final_input"
 	fi
 }
