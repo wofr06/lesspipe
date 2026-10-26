@@ -749,7 +749,7 @@ isfinal () {
 			cat "$1" > "$final_input"
 		fi
 
-		#[[ -z ${colorizer[*]} ]] && has_colorizer "$final_input" "$fext" "$fileext"
+		[[ -z ${colorizer[*]} ]] && has_colorizer "$final_input" "$fext" "$fileext"
 		[[ -n ${colorizer[*]} && $fcat != binary ]] && "${colorizer[@]}" 2>/dev/null && return
 		# if fileext set, we need to filter to get rid of .fileext
 		#[[ -n $fileext && "$1" != - ]] && cat "$1" && return
