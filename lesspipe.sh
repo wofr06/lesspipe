@@ -37,6 +37,7 @@ filetype () {
 	fext=$(fileext "$fname")
 	### get file type from mime type
 	ft=$(file -L -s -b --mime "$1" 2> /dev/null)
+	[[ $? ]] && ft=$(file -s -b --mime "$1" 2> /dev/null)
 	[[ $ft == *=* ]] && fchar="${ft##*=}" || fchar=utf-8
 	fcat="${ft%/*}"
 	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-script.}"; ft="${ft#x-}"
