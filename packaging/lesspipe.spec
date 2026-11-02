@@ -5,7 +5,7 @@
 %global zsh_completion		%{_datarootdir}/zsh/site-functions
 
 %define packagename lesspipe
-%define packageversion 2.28
+%define packageversion 2.29
 %define packagerelease 1
 
 Name:		%{packagename}
@@ -132,6 +132,8 @@ env TERM=xterm-256color ./test.sh %{buildroot}%{lesspipe_exec_dir}/lesspipe.sh
 %{_sysconfdir}/profile.d/*
 
 %changelog
+* Tue Nov 02 2026 2.29-1 - wp.friebel@gmail.com
+- security fixes (brotli and strings) and gpg format fix
 * Tue Sep 08 2026 2.28-1 - wp.friebel@gmail.com
 - improvements for watching growing files and text files with large HTML content
 * Wed Jun 10 2026 2.27-1 - wp.friebel@gmail.com
