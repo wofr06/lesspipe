@@ -1,6 +1,7 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+- fix some gpg formats (#214) and do not resolve symlink to pipes (#213)
 - security fixes: check brotli at least at 1.2.0 and use strings -a
 Version 2.28 Sep 8 2026
 - do not try colorizer for unspecific plain ascii files

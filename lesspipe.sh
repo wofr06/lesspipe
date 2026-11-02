@@ -121,7 +121,7 @@ filetype () {
 				ftype=docx ;;
 			Apple\ binary\ property\ list)
 				ftype=plist ;;
-			PGP\ *ncrypted*|GPG\ encrypted*)
+			PGP\ *ncrypted*|GPG\ *ncrypted*)
 				ftype=pgp ;;
 			Audio\ file\ with\ ID3\ *)
 				ftype=mp3 ;;
