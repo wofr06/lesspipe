@@ -116,6 +116,8 @@ filetype () {
 				ftype=csr ;;
 			*PEM\ certificate)
 				ftype=x509 ;;
+			*Perl*)
+				ftype=perl ;;
 			*Microsoft\ OOXML)
 				ftype=docx ;;
 			Apple\ binary\ property\ list)
@@ -561,7 +563,7 @@ colorizer_cmd () {
 
 has_colorizer () {
 	[[ $COLOR == *always ]] || return
-	[[ $(wc -c  < "$1") -lt $LESS_MAXSIZE_COLOR ]] || return
+	[[ $1 == - || $(wc -c  < "$1") -lt $LESS_MAXSIZE_COLOR ]] || return
 	[[ $2 == plain || -z $2 ]] && return
 	prog=$(find_colorizer)
 	# prefer an explicitly requested language

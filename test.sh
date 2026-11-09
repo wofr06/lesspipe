@@ -315,7 +315,7 @@ read -r -d '' tests << 'EOF'
 53 less tests/compress.tgz:test.tar.xz:tests/textfile	# extract from xz, needs xz
 = test
 # do not call dd for brotli files git #19 (revert git #16)
-### skip brotli test until at least version 1.2.1 installed
+### skip brotli test until at least version 1.2.1 installed on github
 #54 less tests/compress.tgz:test.bro:tests/textfile		# extract from brotli, needs brotli
 #= test
 55 less tests/compress.tgz:test.tar.zst:tests/textfile	# extract from zstandard git #13,20,36,44, needs zstd
@@ -506,6 +506,7 @@ done <<< "$tests"
 for ((num = 1 ; num <= nmax ; num++)); do
 
 	cmd="${cmds[num]}"
+	[[ -z $cmd ]] && continue
 	comp="${comps[num]}"
 	comm="${comments[num]}"
 
