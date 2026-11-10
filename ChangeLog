@@ -1,6 +1,9 @@
 ****************************************************************************
 # ChangeLog for lesspipe.sh						   #
 ****************************************************************************
+Version 2.30 Nov 10 2026
+- correct bug when symlinks were involved (#217) and add tests for symlinks
+- fix git not displaying the output (e.g. for git diff)
 Version 2.29 Nov 2 2026
 - fix some gpg formats (#214) and do not resolve symlink to pipes (#213)
 - security fixes: check brotli at least at 1.2.0 and use strings -a

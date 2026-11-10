@@ -289,9 +289,9 @@ read -r -d '' tests << 'EOF'
 = test
 41 less tests/archive.tgz:test_iso:ISO.TXT	# (on the fly), needs bsdtar
 = test
-42 less $T/tests/test_iso:/ISO.TXT\;1		# extract file from iso9660, needs isoinfo,!bsdtar
-= test
-43 less tests/archive.tgz:test_iso:/ISO.TXT\;1	# (on the fly), needs isoinfo,!bsdtar
+42 less <(head -1 test.sh)			# git #213, symlink to pipe, needs head
+~ #!/usr/.*
+43 less tests/filter:test_data		# git #217 symlinked input works
 = test
 44 less $T/tests/test_ar			# ar archive contents, needs ar
 ~ .* a=b/?
