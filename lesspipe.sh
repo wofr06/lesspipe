@@ -41,10 +41,10 @@ filetype () {
 	fcat="${ft%/*}"
 	ft="${ft#*/}"; ft="${ft%;*}"; ft="${ft#x-script.}"; ft="${ft#x-}"
 	ftype="${ft#vnd\.}"
-	# chose better name
-	if [[ $ftype == html && -n $fext && $fext != htm* ]]; then
-		ftype="$fext"
-	fi
+	# chose better filetype name
+	[[ -n $fext && $fchar != binary && $fext == log ]] && ftype="log"
+	[[ $ftype == html && -n $fext && $fext != htm* ]] && ftype="$fext"
+
 	case "$ftype" in
 		openxmlformats-officedocument.wordprocessingml.document)
 			ftype=docx ;;
